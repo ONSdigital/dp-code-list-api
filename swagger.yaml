@@ -1,0 +1,111 @@
+swagger: "2.0"
+info:
+  description: "An API used to query information about resources"
+  version: "1.0.0"
+  title: "ONS Resource API"
+  license:
+    name: "Open Government Licence v3.0"
+    url: "http://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/"
+basePath: "/v1"
+tags:
+- name: "Resources"
+schemes:
+- "http"
+parameters:
+  id:
+    name: id
+    description: "Id that represents a resource type"
+    in: path
+    type: string
+    required: true
+  codeId:
+    name: codeId
+    description: "CodeId that represents a type within a resource"
+    in: path
+    type: string
+    required: true
+paths:
+  /resources/{id}:
+    get:
+      tags:
+      - "Resources"
+      summary: "Get metadata about dimension or information about a set"
+      description: "Get metadata about the resource"
+      parameters:
+      - $ref: '#/parameters/id'
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "Json object containing information about the resource"
+          schema:
+            $ref: '#/definitions/Resource'
+  /resources/{id}/codes:
+    get:
+      tags:
+       - "Resources"
+      summary: "Get a list of all codes within a resource"
+      description: "Get a list of codes within a resource type"
+      parameters:
+      - $ref: '#/parameters/id'
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "A json array of codes within a resource"
+          schema:
+            $ref: '#/definitions/ArrayOfCodes'
+  /resources/{id}/codes/{codeId}:
+    get:
+      tags:
+       - "Resources"
+      summary: "Get in depth information about a code"
+      description: "Get information about a code within a resource"
+      parameters:
+      - $ref: '#/parameters/id'
+      - $ref: '#/parameters/codeId'
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "Get in depth information about a code"
+          schema:
+            $ref: '#/definitions/CodeInformation'
+definitions:
+  Resource:
+    type: object
+    properties:
+      id:
+        type: string
+        description: "The id for the resource"
+      name:
+        type: string
+        description: "The name of the resource"
+      metadata:
+        description: "Metadata from the resource"
+        type: object
+  Code:
+    type: object
+    properties:
+      id:
+        type: string
+        description: "The id for the code"
+      name:
+        type: string
+        description: "The name for the code"
+  ArrayOfCodes:
+    type: array
+    items:
+      $ref: '#/definitions/Code'
+  CodeInformation:
+    type: object
+    properties:
+      id:
+        type: string
+        description: "The id for the code"
+      name:
+        type: string
+        description: "The name for the code"
+      information:
+        type: object
+        description: "Additional information about the code"

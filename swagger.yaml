@@ -1,66 +1,136 @@
 swagger: "2.0"
 info:
-  description: "An API used to query information about resources"
+  description: "An API used to query information about data dictionaries"
   version: "1.0.0"
-  title: "ONS Resource API"
+  title: "ONS Data Dictionary API"
   license:
     name: "Open Government Licence v3.0"
     url: "http://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/"
 basePath: "/v1"
 tags:
-- name: "Resources"
+- name: "Data Dictionary"
 schemes:
 - "http"
 parameters:
   id:
     name: id
-    description: "Id that represents a resource type"
+    description: "Id that represents a data dictionary type"
     in: path
     type: string
     required: true
   codeId:
     name: codeId
-    description: "CodeId that represents a type within a resource"
+    description: "CodeId that represents a type within a data dictionary"
     in: path
     type: string
     required: true
+  pageSize:
+    name: pageSize
+    description: "Pagination size for returned data dictionaries"
+    in: query
+    type: integer
+    required: true
+  pageNumber:
+    name: pageNumber
+    description: "Pagination page number"
+    in: query
+    type: integer
+    required: true
+  query:
+    name: query
+    description: "Query all data dictionaries"
+    in: body
+    required: true
+    schema:
+      $ref: '#/definitions/Query'
 paths:
-  /resources/{id}:
+  /datadictionary:
     get:
       tags:
-      - "Resources"
-      summary: "Get metadata about dimension or information about a set"
-      description: "Get metadata about the resource"
+      - "Data Dictionary"
+      summary: "Get a list of data dictionaries"
+      description: "Get a list of data dictionary containing information about dimensions which are used for all datasets at the ONS"
+      parameters:
+      - $ref: '#/parameters/pageSize'
+      - $ref: '#/parameters/pageNumber'
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "A Json message containing a list of data dictionaries"
+          schema:
+            $ref: '#/definitions/DataDictionary'
+        400:
+          description: "Missing parameters within request"
+        500:
+          description: "Failed to process the request due to an internal error"
+  /datadictionary/search:
+    post:
+      tags:
+      - "Data Dictionary"
+      summary: "Get a list of data dictionaries containing information about a dimensions"
+      description: "Get a list of data dictionaries containing information about dimensions which are used for all datasets at the ONS"
+      parameters:
+      - $ref: '#/parameters/pageSize'
+      - $ref: '#/parameters/pageNumber'
+      - $ref: '#/parameters/query'
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "A Json message containing a list of data dictionaries"
+          schema:
+            $ref: '#/definitions/DataDictionaries'
+        400:
+          description: "Missing parameters within request or invalid query"
+        500:
+          description: "Failed to process the request due to an internal error"
+  /datadictionary/{id}:
+    get:
+      tags:
+      - "Data Dictionary"
+      summary: "Get a data dictionary"
+      description: "Get information about a data dictionary"
       parameters:
       - $ref: '#/parameters/id'
       produces:
       - "application/json"
       responses:
         200:
-          description: "Json object containing information about the resource"
+          description: "Json object containing information about the data dictionary"
           schema:
-            $ref: '#/definitions/Resource'
-  /resources/{id}/codes:
+            $ref: '#/definitions/DataDictionary'
+        404:
+          description: "Data dictionary not found"
+        500:
+          description: "Failed to process the request due to an internal error"
+  /datadictionary/{id}/codes:
     get:
       tags:
-       - "Resources"
-      summary: "Get a list of all codes within a resource"
-      description: "Get a list of codes within a resource type"
+       - "Data Dictionary"
+      summary: "Get a list of all codes within a data dictionary type"
+      description: "Get a list of codes within a data dictionary type"
       parameters:
       - $ref: '#/parameters/id'
+      - $ref: '#/parameters/pageSize'
+      - $ref: '#/parameters/pageNumber'
       produces:
       - "application/json"
       responses:
         200:
-          description: "A json array of codes within a resource"
+          description: "A Json message containing a list of Codes"
           schema:
-            $ref: '#/definitions/ArrayOfCodes'
-  /resources/{id}/codes/{codeId}:
+            $ref: '#/definitions/Codes'
+        404:
+          description: "Data dictionary not found"
+        500:
+          description: "Failed to process the request due to an internal error"
+  /datadictionary/{id}/codes/{codeId}:
     get:
       tags:
-       - "Resources"
+       - "Data Dictionary"
       summary: "Get in depth information about a code"
-      description: "Get information about a code within a resource"
+      description: "Get information about a code within a data dictionary"
       parameters:
       - $ref: '#/parameters/id'
       - $ref: '#/parameters/codeId'
@@ -71,19 +141,34 @@ paths:
           description: "Get in depth information about a code"
           schema:
             $ref: '#/definitions/CodeInformation'
+        404:
+          description: "Data dictionary or code not found"
+        500:
+          description: "Failed to process the request due to an internal error"
+
 definitions:
-  Resource:
+  DataDictionary:
     type: object
     properties:
       id:
         type: string
-        description: "The id for the resource"
+        description: "The id for the data dictionary"
       name:
         type: string
-        description: "The name of the resource"
+        description: "The name of the data dictionary"
       metadata:
-        description: "Metadata from the resource"
+        description: "Metadata from the data dictionary"
         type: object
+  DataDictionaries:
+    type: object
+    properties:
+      items:
+        type: array
+        items:
+          $ref: '#/definitions/DataDictionary'
+      numberOfPages:
+        type: integer
+        description: "The number of pages available"
   Code:
     type: object
     properties:
@@ -93,10 +178,16 @@ definitions:
       name:
         type: string
         description: "The name for the code"
-  ArrayOfCodes:
-    type: array
-    items:
-      $ref: '#/definitions/Code'
+  Codes:
+    type: object
+    properties:
+      items:
+        type: array
+        items:
+          $ref: '#/definitions/Code'
+      numberOfPages:
+        type: integer
+        description: "The number of pages available"
   CodeInformation:
     type: object
     properties:
@@ -109,3 +200,12 @@ definitions:
       information:
         type: object
         description: "Additional information about the code"
+  Query:
+    type: object
+    properties:
+      contains:
+        type: string
+        description: "Search by checking if a dataset contains keywords"
+      topic:
+        type: string
+        description: "Filter search by topic"

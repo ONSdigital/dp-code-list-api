@@ -14,13 +14,13 @@ schemes:
 parameters:
   id:
     name: id
-    description: "Id that represents a list code"
+    description: "Id for a list code"
     in: path
     type: string
     required: true
   codeId:
     name: codeId
-    description: "CodeId that represents a type within a code list"
+    description: "CodeId for a discrete value within a code list"
     in: path
     type: string
     required: true
@@ -68,7 +68,7 @@ paths:
     post:
       tags:
       - "Code List"
-      summary: "Get a set of code lists containing information about a dimensions"
+      summary: "Get a set of code lists containing information about dimensions"
       description: "Get a list of codes containing information about dimensions which are used for all datasets at the ONS"
       parameters:
       - $ref: '#/parameters/pageSize'

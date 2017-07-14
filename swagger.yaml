@@ -24,18 +24,16 @@ parameters:
     in: path
     type: string
     required: true
-  pageSize:
-    name: pageSize
-    description: "Pagination size for returned code lists"
+  offset:
+    name: offset
+    description: "The offset from the start of results. This defaults to 0"
     in: query
     type: integer
-    required: true
-  pageNumber:
-    name: pageNumber
-    description: "Pagination page number"
+  maxResults:
+    name: maxResults
+    description: "The maximum number of results to be returned. This defaults to 20"
     in: query
     type: integer
-    required: true
   query:
     name: query
     description: "Query all code lists"
@@ -51,8 +49,8 @@ paths:
       summary: "Get a set of codes lists"
       description: "Get a set of codes lists containing information about dimensions which are used for all datasets at the ONS"
       parameters:
-      - $ref: '#/parameters/pageSize'
-      - $ref: '#/parameters/pageNumber'
+      - $ref: '#/parameters/offset'
+      - $ref: '#/parameters/maxResults'
       produces:
       - "application/json"
       responses:
@@ -71,8 +69,8 @@ paths:
       summary: "Get a set of code lists containing information about dimensions"
       description: "Get a list of codes containing information about dimensions which are used for all datasets at the ONS"
       parameters:
-      - $ref: '#/parameters/pageSize'
-      - $ref: '#/parameters/pageNumber'
+      - $ref: '#/parameters/offset'
+      - $ref: '#/parameters/maxResults'
       - $ref: '#/parameters/query'
       produces:
       - "application/json"
@@ -112,8 +110,8 @@ paths:
       description: "Get a list of codes within a code list type"
       parameters:
       - $ref: '#/parameters/id'
-      - $ref: '#/parameters/pageSize'
-      - $ref: '#/parameters/pageNumber'
+      - $ref: '#/parameters/offset'
+      - $ref: '#/parameters/maxResults'
       produces:
       - "application/json"
       responses:
@@ -145,7 +143,6 @@ paths:
           description: "Code list or code not found"
         500:
           description: "Failed to process the request due to an internal error"
-
 definitions:
   CodeList:
     type: object

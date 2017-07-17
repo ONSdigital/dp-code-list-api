@@ -60,7 +60,7 @@ paths:
           description: "Missing parameters within request"
         500:
           description: "Failed to process the request due to an internal error"
-  /code-list/search:
+  /search/code-list:
     post:
       tags:
       - "Code List"

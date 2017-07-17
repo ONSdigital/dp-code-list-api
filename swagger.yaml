@@ -14,13 +14,13 @@ schemes:
 parameters:
   id:
     name: id
-    description: "Id for a list code"
+    description: "The ID of a code list"
     in: path
     type: string
     required: true
   codeId:
-    name: codeId
-    description: "CodeId for a discrete value within a code list"
+    name: code_id
+    description: "The ID of the Code within a code list"
     in: path
     type: string
     required: true
@@ -29,18 +29,16 @@ parameters:
     description: "The offset from the start of results. This defaults to 0"
     in: query
     type: integer
-  maxResults:
-    name: maxResults
+  limit:
+    name: limit
     description: "The maximum number of results to be returned. This defaults to 20"
     in: query
     type: integer
   query:
-    name: query
+    name: q
     description: "Query all code lists"
-    in: body
-    required: true
-    schema:
-      $ref: '#/definitions/Query'
+    in: query
+    type: string
 paths:
   /code-list:
     get:
@@ -50,7 +48,7 @@ paths:
       description: "Get a set of codes lists containing information about dimensions which are used for all datasets at the ONS"
       parameters:
       - $ref: '#/parameters/offset'
-      - $ref: '#/parameters/maxResults'
+      - $ref: '#/parameters/limit'
       produces:
       - "application/json"
       responses:
@@ -69,9 +67,9 @@ paths:
       summary: "Get a set of code lists containing information about dimensions"
       description: "Get a list of codes containing information about dimensions which are used for all datasets at the ONS"
       parameters:
-      - $ref: '#/parameters/offset'
-      - $ref: '#/parameters/maxResults'
       - $ref: '#/parameters/query'
+      - $ref: '#/parameters/offset'
+      - $ref: '#/parameters/limit'
       produces:
       - "application/json"
       responses:
@@ -111,7 +109,7 @@ paths:
       parameters:
       - $ref: '#/parameters/id'
       - $ref: '#/parameters/offset'
-      - $ref: '#/parameters/maxResults'
+      - $ref: '#/parameters/limit'
       produces:
       - "application/json"
       responses:
@@ -123,7 +121,7 @@ paths:
           description: "Code list not found"
         500:
           description: "Failed to process the request due to an internal error"
-  /code-list/{id}/codes/{codeId}:
+  /code-list/{id}/codes/{code_id}:
     get:
       tags:
        - "Code List"
@@ -163,9 +161,9 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/CodeList'
-      numberOfPages:
+      number_of_results:
         type: integer
-        description: "The number of pages available"
+        description: "The number of results available"
   Code:
     type: object
     properties:
@@ -182,9 +180,9 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/Code'
-      numberOfPages:
-        type: integer
-        description: "The number of pages available"
+      number_of_results:
+              type: integer
+              description: "The number of results available"
   CodeInformation:
     type: object
     properties:
@@ -197,12 +195,3 @@ definitions:
       information:
         type: object
         description: "Additional information about the code"
-  Query:
-    type: object
-    properties:
-      contains:
-        type: string
-        description: "Search by checking if a dataset contains keywords"
-      topic:
-        type: string
-        description: "Filter search by topic"

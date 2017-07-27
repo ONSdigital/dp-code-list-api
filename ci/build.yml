@@ -1,0 +1,19 @@
+---
+
+platform: linux
+
+image_resource:
+  type: docker-image
+  source:
+    repository: golang
+    tag: 1.8.3
+
+inputs:
+  - name: dp-code-list-api
+    path: go/src/github.com/ONSdigital/dp-code-list-api
+
+outputs:
+  - name: build
+
+run:
+  path: go/src/github.com/ONSdigital/dp-code-list-api/ci/scripts/build.sh

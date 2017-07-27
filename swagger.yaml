@@ -55,7 +55,7 @@ paths:
         200:
           description: "A Json message containing a set of code lists"
           schema:
-            $ref: '#/definitions/CodeList'
+            $ref: '#/definitions/CodeLists'
         400:
           description: "Missing parameters within request"
         500:

@@ -1,14 +1,15 @@
 dp-code-list-api
-===================
+================
+
 An API used to navigate code lists
 
 ### Getting started
       
 ### Configuration
     
-| Environment variable | Default | Description
-| -------------------- | ------- | -----------
-|                      |         | 
+| Environment variable | Default                                   | Description
+| -------------------- | ----------------------------------------- | -----------
+| BIND_ADDR            | :21800                                    | The host and port to bind to
     
 ### Contributing
     

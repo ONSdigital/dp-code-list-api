@@ -40,7 +40,7 @@ parameters:
     in: query
     type: string
 paths:
-  /code-list:
+  /code-lists:
     get:
       tags:
       - "Code List"
@@ -60,7 +60,7 @@ paths:
           description: "Missing parameters within request"
         500:
           description: "Failed to process the request due to an internal error"
-  /search/code-list:
+  /search/code-lists:
     post:
       tags:
       - "Code List"
@@ -81,7 +81,7 @@ paths:
           description: "Missing parameters within request or invalid query"
         500:
           description: "Failed to process the request due to an internal error"
-  /code-list/{id}:
+  /code-lists/{id}:
     get:
       tags:
       - "Code List"
@@ -100,7 +100,7 @@ paths:
           description: "Code list not found"
         500:
           description: "Failed to process the request due to an internal error"
-  /code-list/{id}/codes:
+  /code-lists/{id}/codes:
     get:
       tags:
        - "Code List"
@@ -121,7 +121,7 @@ paths:
           description: "Code list not found"
         500:
           description: "Failed to process the request due to an internal error"
-  /code-list/{id}/codes/{code_id}:
+  /code-lists/{id}/codes/{code_id}:
     get:
       tags:
        - "Code List"

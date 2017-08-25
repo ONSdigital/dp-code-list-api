@@ -4,7 +4,7 @@ job "dp-code-list-api" {
   type        = "service"
 
   group "web" {
-    count = {{WEB_TASK_COUNT}}
+    count = "{{WEB_TASK_COUNT}}"
 
     constraint {
       attribute = "${node.class}"
@@ -15,15 +15,18 @@ job "dp-code-list-api" {
       driver = "exec"
 
       artifact {
-        source = "s3::https://s3-eu-west-1.amazonaws.com/ons-dp-deployments/dp-code-list-api/latest.tar.gz"
+        source = "s3::https://s3-eu-west-1.amazonaws.com/{{BUILD_BUCKET}}/dp-code-list-api/{{REVISION}}.tar.gz"
+      }
+
+      artifact {
+        source = "s3::https://s3-eu-west-1.amazonaws.com/{{DEPLOYMENT_BUCKET}}/dp-code-list-api/{{REVISION}}.tar.gz"
       }
 
       config {
         command = "${NOMAD_TASK_DIR}/start-task"
-
-         args = [
-                  "${NOMAD_TASK_DIR}/dp-code-list-api",
-                ]
+        args    = [
+          "${NOMAD_TASK_DIR}/dp-code-list-api",
+        ]
       }
 
       service {
@@ -53,7 +56,7 @@ job "dp-code-list-api" {
   }
 
   group "publishing" {
-    count = {{PUBLISHING_TASK_COUNT}}
+    count = "{{PUBLISHING_TASK_COUNT}}"
 
     constraint {
       attribute = "${node.class}"
@@ -64,15 +67,18 @@ job "dp-code-list-api" {
       driver = "exec"
 
       artifact {
-        source = "s3::https://s3-eu-west-1.amazonaws.com/ons-dp-deployments/dp-code-list-api/latest.tar.gz"
+        source = "s3::https://s3-eu-west-1.amazonaws.com/{{BUILD_BUCKET}}/dp-code-list-api/{{REVISION}}.tar.gz"
+      }
+
+      artifact {
+        source = "s3::https://s3-eu-west-1.amazonaws.com/{{DEPLOYMENT_BUCKET}}/dp-code-list-api/{{REVISION}}.tar.gz"
       }
 
       config {
         command = "${NOMAD_TASK_DIR}/start-task"
-
-         args = [
-                  "${NOMAD_TASK_DIR}/dp-code-list-api",
-                ]
+        args    = [
+          "${NOMAD_TASK_DIR}/dp-code-list-api",
+        ]
       }
 
       service {

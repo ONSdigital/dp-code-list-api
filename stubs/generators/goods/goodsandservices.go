@@ -1,4 +1,4 @@
-package main
+package goods
 
 import (
 	"encoding/csv"

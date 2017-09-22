@@ -1,26 +1,26 @@
 package config
 
-import "github.com/ian-kent/gofigure"
+import (
+	"github.com/kelseyhightower/envconfig"
+)
 
-type appConfiguration struct {
-	BindAddr string `env:"BIND_ADDR" flag:"bind-addr" flagDesc:"The port to bind to"`
+type Configuration struct {
+	BindAddr   string `envconfig:"BIND_ADDR"`
+	MongoDBURL string `envconfig:"MONGODB_IMPORTS_ADDR"`
 }
 
-var configuration *appConfiguration
+var cfg *Configuration
 
 // Get - configures the application and returns the configuration
-func Get() (*appConfiguration, error) {
-	if configuration != nil {
-		return configuration, nil
+func Get() (*Configuration, error) {
+	if cfg != nil {
+		return cfg, nil
 	}
 
-	configuration = &appConfiguration{
-		BindAddr: ":22400",
+	cfg = &Configuration{
+		BindAddr:   ":22400",
+		MongoDBURL: "localhost:27017",
 	}
 
-	if err := gofigure.Gofigure(configuration); err != nil {
-		return configuration, err
-	}
-
-	return configuration, nil
+	return cfg, envconfig.Process("", cfg)
 }

@@ -5,7 +5,9 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/ONSdigital/dp-code-list-api/api"
 	"github.com/ONSdigital/dp-code-list-api/config"
+	"github.com/ONSdigital/dp-code-list-api/mongo"
 	"github.com/ONSdigital/dp-code-list-api/stubs"
 	"github.com/ONSdigital/go-ns/log"
 	"github.com/ONSdigital/go-ns/server"
@@ -14,25 +16,47 @@ import (
 
 func main() {
 	log.Namespace = "dp-code-list-api"
-	configuration, configErr := config.Get()
-	if configErr != nil {
-		log.Error(configErr, nil)
+	cfg, err := config.Get()
+	if err != nil {
+		log.Error(err, nil)
 		os.Exit(1)
 	}
-
+	mongoDatastore, err := mongo.CreateMongoDataStore(cfg.MongoDBURL)
+	if err != nil {
+		log.Error(err, nil)
+		os.Exit(1)
+	}
 	router := mux.NewRouter()
-	router.Path("/code-lists").HandlerFunc(codeListsHandler)
-	router.Path("/code-lists/{codelist_id}").HandlerFunc(codeListHandler)
-	router.Path("/code-lists/{codelist_id}/codes").HandlerFunc(codesHandler)
-	router.Path("/code-lists/{codelist_id}/codes/{code_id}").HandlerFunc(codeHandler)
-
-	log.Debug("starting http server", log.Data{"bind_addr": configuration.BindAddr})
-	srv := server.New(configuration.BindAddr, router)
+	_ = api.CreateCodeListAPI(router, mongoDatastore)
+	log.Info("code List API listening .....", log.Data{"BIND_ADDR": cfg.BindAddr})
+	srv := server.New(cfg.BindAddr, router)
 	if err := srv.ListenAndServe(); err != nil {
 		log.Error(err, nil)
 		os.Exit(1)
 	}
 }
+
+//func main() {
+//	log.Namespace = "dp-code-list-api"
+//	configuration, configErr := config.Get()
+//	if configErr != nil {
+//		log.Error(configErr, nil)
+//		os.Exit(1)
+//	}
+//
+//	router := mux.NewRouter()
+//	router.Path("/code-lists").HandlerFunc(codeListsHandler)
+//	router.Path("/code-lists/{codelist_id}").HandlerFunc(codeListHandler)
+//	router.Path("/code-lists/{codelist_id}/codes").HandlerFunc(codesHandler)
+//	router.Path("/code-lists/{codelist_id}/codes/{code_id}").HandlerFunc(codeHandler)
+//
+//	log.Debug("starting http server", log.Data{"bind_addr": configuration.BindAddr})
+//	srv := server.New(configuration.BindAddr, router)
+//	if err := srv.ListenAndServe(); err != nil {
+//		log.Error(err, nil)
+//		os.Exit(1)
+//	}
+//}
 
 type codeListsResponse struct {
 	Count        int                `json:"count"`

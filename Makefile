@@ -14,6 +14,6 @@ debug:
 	HUMAN_LOG=1 go run cmd/dp-code-list-api/main.go
 
 test:
-	go test -cover $(shell go list ./... | grep -v /vendor/)
+	go test -cover $(shell go list ./... | grep -v /vendor/ )
 
 .PHONY: test build debug

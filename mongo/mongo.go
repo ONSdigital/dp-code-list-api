@@ -10,11 +10,12 @@ const DATABASE = "codelists"
 const CODE_LISTS = "codelists"
 const CODES = "codes"
 
-//MongoDataStore
+// MongoDataStore contains collections of codes and code lists
 type MongoDataStore struct {
 	session *mgo.Session
 }
 
+// CreateMongoDataStore which can fetch and store data about codes and code lists
 func CreateMongoDataStore(url string) (*MongoDataStore, error) {
 	session, err := mgo.Dial(url)
 	if err != nil {
@@ -23,11 +24,11 @@ func CreateMongoDataStore(url string) (*MongoDataStore, error) {
 	return &MongoDataStore{session: session}, nil
 }
 
-// GetCodes
+// GetCodes returns all codes which are stored in mongodb
 func (mds *MongoDataStore) GetCodes(codeListID string) (*models.CodeResults, error) {
 	s := mds.session.Clone()
 	defer s.Clone()
-	iter := s.DB(DATABASE).C(CODES).Find(nil).Iter()
+	iter := s.DB(DATABASE).C(CODES).Find(bson.M{"code_list": codeListID}).Iter()
 	defer iter.Close()
 	var codes []models.Code
 	err := iter.All(&codes)
@@ -37,19 +38,19 @@ func (mds *MongoDataStore) GetCodes(codeListID string) (*models.CodeResults, err
 	return &models.CodeResults{Items: codes}, nil
 }
 
-// GetCode
+// GetCode returns a single code from a code list
 func (mds *MongoDataStore) GetCode(codeListID, CodeID string) (*models.Code, error) {
 	s := mds.session.Clone()
 	defer s.Clone()
 	var result models.Code
-	err := s.DB(DATABASE).C(CODES).Find(bson.M{"_id": codeListID, "code": CodeID}).One(&result)
+	err := s.DB(DATABASE).C(CODES).Find(bson.M{"code_list": codeListID, "code": CodeID}).One(&result)
 	if err != nil {
 		return nil, err
 	}
 	return &result, nil
 }
 
-// GetCodeLists
+// GetCodeLists returns all code lists which are stored in mongodb
 func (mds *MongoDataStore) GetCodeLists() (*models.CodeListResults, error) {
 	s := mds.session.Clone()
 	defer s.Clone()
@@ -63,7 +64,7 @@ func (mds *MongoDataStore) GetCodeLists() (*models.CodeListResults, error) {
 	return &models.CodeListResults{Items: codeLists}, nil
 }
 
-// GetCodeList
+// GetCodeList returns a single code list or a not found error
 func (mds *MongoDataStore) GetCodeList(codeListID string) (*models.CodeList, error) {
 	s := mds.session.Clone()
 	defer s.Clone()

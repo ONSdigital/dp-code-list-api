@@ -12,5 +12,6 @@ func TestGetRetrunsDefaultValues(t *testing.T) {
 		configuration, error := Get()
 		So(error, ShouldBeNil)
 		So(configuration.BindAddr, ShouldEqual, ":22400")
+		So(configuration.MongoDBURL, ShouldEqual, "localhost:27017")
 	})
 }

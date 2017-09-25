@@ -39,19 +39,65 @@ func (c *CodeListAPI) getCodeLists(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeBody(w, bytes)
-	log.Debug("get all instances", nil)
+	log.Debug("get all code lists", nil)
 }
 
 func (c *CodeListAPI) getCodeList(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id := vars["id"]
+	codeList, err := c.store.GetCodeList(id)
+	if err != nil {
+		log.Error(err, nil)
+		return
+	}
 
+	bytes, err := json.Marshal(codeList)
+	if err != nil {
+		internalError(w, err)
+		return
+	}
+
+	writeBody(w, bytes)
+	log.Debug("get a code list", log.Data{"id": id})
 }
 
 func (c *CodeListAPI) getCodes(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id := vars["id"]
+	codes, err := c.store.GetCodes(id)
+	if err != nil {
+		log.Error(err, nil)
+		return
+	}
 
+	bytes, err := json.Marshal(codes)
+	if err != nil {
+		internalError(w, err)
+		return
+	}
+
+	writeBody(w, bytes)
+	log.Debug("get all codes", log.Data{"id": id})
 }
 
 func (c *CodeListAPI) getCode(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id := vars["id"]
+	codeID := vars["code"]
+	code, err := c.store.GetCode(id, codeID)
+	if err != nil {
+		log.Error(err, nil)
+		return
+	}
 
+	bytes, err := json.Marshal(code)
+	if err != nil {
+		internalError(w, err)
+		return
+	}
+
+	writeBody(w, bytes)
+	log.Debug("get a code", log.Data{"id": id, "code": codeID})
 }
 
 func internalError(w http.ResponseWriter, err error) {

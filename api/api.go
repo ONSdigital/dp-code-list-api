@@ -28,7 +28,7 @@ func (c *CodeListAPI) getCodeLists(w http.ResponseWriter, r *http.Request) {
 
 	codeLists, err := c.store.GetCodeLists()
 	if err != nil {
-		log.Error(err, nil)
+		handleError(w, err)
 		return
 	}
 
@@ -47,7 +47,7 @@ func (c *CodeListAPI) getCodeList(w http.ResponseWriter, r *http.Request) {
 	id := vars["id"]
 	codeList, err := c.store.GetCodeList(id)
 	if err != nil {
-		log.Error(err, nil)
+		handleError(w, err)
 		return
 	}
 
@@ -98,6 +98,15 @@ func (c *CodeListAPI) getCode(w http.ResponseWriter, r *http.Request) {
 
 	writeBody(w, bytes)
 	log.Debug("get a code", log.Data{"id": id, "code": codeID})
+}
+
+func handleError(w http.ResponseWriter, err error) {
+	log.Error(err, nil)
+	if datastore.NOT_FOUND == err {
+		http.Error(w, err.Error(), http.StatusNotFound)
+	} else {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 }
 
 func internalError(w http.ResponseWriter, err error) {

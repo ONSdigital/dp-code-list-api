@@ -1,6 +1,11 @@
 package datastore
 
-import "github.com/ONSdigital/dp-code-list-api/models"
+import (
+	"errors"
+	"github.com/ONSdigital/dp-code-list-api/models"
+)
+
+var NOT_FOUND = errors.New("resource not found")
 
 //go:generate moq -out datastoretest/datastore.go -pkg storetest . DataStore
 

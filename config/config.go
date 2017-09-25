@@ -6,7 +6,7 @@ import (
 
 type Configuration struct {
 	BindAddr   string `envconfig:"BIND_ADDR"`
-	MongoDBURL string `envconfig:"MONGODB_IMPORTS_ADDR"`
+	MongoDBURL string `envconfig:"MONGODB_ADDR"`
 }
 
 var cfg *Configuration

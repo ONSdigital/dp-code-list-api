@@ -66,7 +66,7 @@ func (c *CodeListAPI) getCodes(w http.ResponseWriter, r *http.Request) {
 	id := vars["id"]
 	codes, err := c.store.GetCodes(id)
 	if err != nil {
-		log.Error(err, nil)
+		handleError(w, err)
 		return
 	}
 
@@ -86,7 +86,7 @@ func (c *CodeListAPI) getCode(w http.ResponseWriter, r *http.Request) {
 	codeID := vars["code"]
 	code, err := c.store.GetCode(id, codeID)
 	if err != nil {
-		log.Error(err, nil)
+		handleError(w, err)
 		return
 	}
 

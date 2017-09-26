@@ -1,8 +1,8 @@
-package mongo
+package mongostore
 
 import (
 	"github.com/ONSdigital/dp-code-list-api/models"
-	"gopkg.in/mgo.v2"
+	mgo "gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -12,7 +12,7 @@ const CODES = "codes"
 
 // MongoDataStore contains collections of codes and code lists
 type MongoDataStore struct {
-	session *mgo.Session
+	Session *mgo.Session
 }
 
 // CreateMongoDataStore which can fetch and store data about codes and code lists
@@ -21,12 +21,12 @@ func CreateMongoDataStore(url string) (*MongoDataStore, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &MongoDataStore{session: session}, nil
+	return &MongoDataStore{Session: session}, nil
 }
 
 // GetCodes returns all codes which are stored in mongodb
 func (mds *MongoDataStore) GetCodes(codeListID string) (*models.CodeResults, error) {
-	s := mds.session.Clone()
+	s := mds.Session.Clone()
 	defer s.Clone()
 	iter := s.DB(DATABASE).C(CODES).Find(bson.M{"code_list": codeListID}).Iter()
 	defer iter.Close()
@@ -40,7 +40,7 @@ func (mds *MongoDataStore) GetCodes(codeListID string) (*models.CodeResults, err
 
 // GetCode returns a single code from a code list
 func (mds *MongoDataStore) GetCode(codeListID, CodeID string) (*models.Code, error) {
-	s := mds.session.Clone()
+	s := mds.Session.Clone()
 	defer s.Clone()
 	var result models.Code
 	err := s.DB(DATABASE).C(CODES).Find(bson.M{"code_list": codeListID, "code": CodeID}).One(&result)
@@ -52,7 +52,7 @@ func (mds *MongoDataStore) GetCode(codeListID, CodeID string) (*models.Code, err
 
 // GetCodeLists returns all code lists which are stored in mongodb
 func (mds *MongoDataStore) GetCodeLists() (*models.CodeListResults, error) {
-	s := mds.session.Clone()
+	s := mds.Session.Clone()
 	defer s.Clone()
 	iter := s.DB(DATABASE).C(CODE_LISTS).Find(nil).Iter()
 	defer iter.Close()
@@ -66,7 +66,7 @@ func (mds *MongoDataStore) GetCodeLists() (*models.CodeListResults, error) {
 
 // GetCodeList returns a single code list or a not found error
 func (mds *MongoDataStore) GetCodeList(codeListID string) (*models.CodeList, error) {
-	s := mds.session.Clone()
+	s := mds.Session.Clone()
 	defer s.Clone()
 	var result models.CodeList
 	err := s.DB(DATABASE).C(CODE_LISTS).Find(bson.M{"_id": codeListID}).One(&result)

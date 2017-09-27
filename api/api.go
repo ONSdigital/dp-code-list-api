@@ -34,7 +34,7 @@ func (c *CodeListAPI) getCodeLists(w http.ResponseWriter, r *http.Request) {
 
 	bytes, err := json.Marshal(codeLists)
 	if err != nil {
-		internalError(w, err)
+		handleError(w, err)
 		return
 	}
 
@@ -53,7 +53,7 @@ func (c *CodeListAPI) getCodeList(w http.ResponseWriter, r *http.Request) {
 
 	bytes, err := json.Marshal(codeList)
 	if err != nil {
-		internalError(w, err)
+		handleError(w, err)
 		return
 	}
 
@@ -72,7 +72,7 @@ func (c *CodeListAPI) getCodes(w http.ResponseWriter, r *http.Request) {
 
 	bytes, err := json.Marshal(codes)
 	if err != nil {
-		internalError(w, err)
+		handleError(w, err)
 		return
 	}
 
@@ -92,7 +92,7 @@ func (c *CodeListAPI) getCode(w http.ResponseWriter, r *http.Request) {
 
 	bytes, err := json.Marshal(code)
 	if err != nil {
-		internalError(w, err)
+		handleError(w, err)
 		return
 	}
 
@@ -107,11 +107,6 @@ func handleError(w http.ResponseWriter, err error) {
 	} else {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
-}
-
-func internalError(w http.ResponseWriter, err error) {
-	log.Error(err, nil)
-	http.Error(w, err.Error(), http.StatusInternalServerError)
 }
 
 func writeBody(w http.ResponseWriter, bytes []byte) {

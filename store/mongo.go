@@ -1,4 +1,4 @@
-package mongostore
+package store
 
 import (
 	"github.com/ONSdigital/dp-code-list-api/models"
@@ -28,7 +28,7 @@ func CreateMongoDataStore(url string) (*MongoDataStore, error) {
 func (mds *MongoDataStore) GetCodes(codeListID string) (*models.CodeResults, error) {
 	s := mds.Session.Clone()
 	defer s.Clone()
-	iter := s.DB(DATABASE).C(CODES).Find(bson.M{"code_list": codeListID}).Iter()
+	iter := s.DB(DATABASE).C(CODES).Find(bson.M{"links.code_list.id": codeListID}).Iter()
 	defer iter.Close()
 	var codes []models.Code
 	err := iter.All(&codes)
@@ -43,7 +43,7 @@ func (mds *MongoDataStore) GetCode(codeListID, CodeID string) (*models.Code, err
 	s := mds.Session.Clone()
 	defer s.Clone()
 	var result models.Code
-	err := s.DB(DATABASE).C(CODES).Find(bson.M{"code_list": codeListID, "code": CodeID}).One(&result)
+	err := s.DB(DATABASE).C(CODES).Find(bson.M{"links.code_list.id": codeListID, "code": CodeID}).One(&result)
 	if err != nil {
 		return nil, err
 	}

@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"github.com/ONSdigital/dp-code-list-api/api"
 	"github.com/ONSdigital/dp-code-list-api/config"
-	"github.com/ONSdigital/dp-code-list-api/mongostore"
+	"github.com/ONSdigital/dp-code-list-api/store"
 	"github.com/ONSdigital/go-ns/log"
 	"github.com/ONSdigital/go-ns/server"
 	"github.com/ONSdigital/go-ns/mongo"
@@ -29,7 +29,7 @@ func main() {
 		log.Error(err, nil)
 		os.Exit(1)
 	}
-	mongoDatastore, err := mongostore.CreateMongoDataStore(cfg.MongoDBURL)
+	mongoDatastore, err := store.CreateMongoDataStore(cfg.MongoDBURL)
 	if err != nil {
 		log.Error(err, nil)
 		os.Exit(1)

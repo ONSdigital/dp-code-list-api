@@ -4,13 +4,25 @@ dp-code-list-api
 An API used to navigate code lists
 
 ### Getting started
+
+* Install mongodb
+* Run `./scripts/setup.sh` to setup the code data
+
+### Updating codes / code lists
+Currently only a developer can add / update codes. To do this the following files need to be updated
+* scripts/codelists.json (For all code lists)
+* scripts/codes.json (For all codes)
+* Run `./scripts/setup.sh` (This will drop the current data stored in mongodb)
+
       
 ### Configuration
     
-| Environment variable | Default                                   | Description
-| -------------------- | ----------------------------------------- | -----------
-| BIND_ADDR            | :21800                                    | The host and port to bind to
-    
+| Environment variable     | Default                                   | Description
+| -------------------------| ----------------------------------------- | -----------
+| BIND_ADDR                | :21800                                    | The host and port to bind to
+| MONGODB_ADDR             | localhost:27017                           | A URL to mongodb
+| GRACEFUL_SHUTDOWN_TIMEOUT| 5 seconds                                 | The amount of time given when shutting down the API
+
 ### Contributing
     
 See [CONTRIBUTING](CONTRIBUTING.md) for details.

@@ -151,9 +151,13 @@ definitions:
       name:
         type: string
         description: "The name of the code list"
-      metadata:
-        description: "Metadata from the code list"
+      links:
         type: object
+        properties:
+          self:
+            $ref: '#/definitions/Href'
+          code:
+            $ref: '#/definitions/Href'
   CodeLists:
     type: object
     properties:
@@ -167,12 +171,19 @@ definitions:
   Code:
     type: object
     properties:
-      id:
+      code:
         type: string
-        description: "The id for the code"
-      name:
+        description: "The value of a code"
+      label:
         type: string
-        description: "The name for the code"
+        description: "A label used by the code"
+      links:
+        type: object
+        properties:
+          self:
+            $ref: '#/definitions/Href'
+          code_list:
+            $ref: '#/definitions/Href'
   Codes:
     type: object
     properties:
@@ -195,3 +206,12 @@ definitions:
       information:
         type: object
         description: "Additional information about the code"
+  Href:
+    type: object
+    properties:
+      id:
+        type: string
+        description: "The id of the resource"
+      href:
+        type: string
+        description: "The URL to the resource"

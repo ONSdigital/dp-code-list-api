@@ -27,6 +27,18 @@
 			"revisionTime": "2017-09-25T15:05:00Z"
 		},
 		{
+			"checksumSHA1": "yIkYzW7bzAD81zHyuCNmEj4+oxQ=",
+			"path": "github.com/gopherjs/gopherjs/js",
+			"revision": "b40cd48c38f9a18eb3db20d163bad78de12cf0b7",
+			"revisionTime": "2017-09-06T18:39:36Z"
+		},
+		{
+			"checksumSHA1": "iIUYZyoanCQQTUaWsu8b+iOSPt4=",
+			"path": "github.com/gorilla/context",
+			"revision": "aed02d124ae4a0e94fea4541c8effd05bf0c8296",
+			"revisionTime": "2016-05-25T20:33:19Z"
+		},
+		{
 			"checksumSHA1": "D1BVROe0MVJEDgm++mv1iVQ6+80=",
 			"path": "github.com/gorilla/mux",
 			"revision": "8c683ee571b6ee7ffc9f1cafd13103c422e71cbf",

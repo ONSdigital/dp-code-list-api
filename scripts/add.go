@@ -104,6 +104,8 @@ func createCodes(recs [][]string, listID string) {
 func createCodeList(header []string) string {
 	listID := uuid.New().String()
 
+	// if header does not include an ID we might not be able to create one here
+	// this might need to be done in the recipe API and then passed in via csv
 	if len(header[0]) > 0 {
 		listID = header[0]
 	}

@@ -13,6 +13,8 @@ import (
 )
 
 // Code for a single dimensions type
+// Other models are taken from the package but the json tags
+// for a code are different on import than output (the ID field)
 type Code struct {
 	ID    string           `json:"id"`
 	Code  string           `json:"code"    bson:"code"`
@@ -21,20 +23,20 @@ type Code struct {
 }
 
 func main() {
-
-	//args - input file, output code file
 	input := flag.String("input", "", "input file name")
-
 	flag.Parse()
 
 	if len(*input) == 0 {
 		log.Fatal("-input argument required")
 	}
 
-	f, _ := os.Open(*input)
-	csvr := csv.NewReader(f)
+	f, err := os.Open(*input)
+	if err != nil {
+		log.Fatal("Could not open input file", err)
+	}
 	defer f.Close()
 
+	csvr := csv.NewReader(f)
 	recs, err := csvr.ReadAll()
 	if err != nil {
 		log.Fatal("Failed to read csv file", err)
@@ -45,7 +47,6 @@ func main() {
 	recs = recs[1:]
 
 	listID := createCodeList(header)
-
 	createCodes(recs, listID)
 
 	log.Print("Successfully added rows to both files")

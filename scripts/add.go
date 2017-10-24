@@ -83,7 +83,7 @@ func createCodes(recs [][]string, listID string) {
 		}
 
 		wg.Add(1)
-		go func(code Code) {
+		go func(code Code, filename string) {
 			b, err := json.Marshal(code)
 			if err != nil {
 				log.Fatal("cannot marshal json for codes", err)
@@ -93,8 +93,9 @@ func createCodes(recs [][]string, listID string) {
 				log.Fatal("failed to append code-list to file", err)
 			}
 			wg.Done()
-		}(code)
+		}(code, filename)
 	}
+
 	wg.Wait()
 
 	imp := "mongoimport --db codelists --collection codes --file $scriptDir/" + filename

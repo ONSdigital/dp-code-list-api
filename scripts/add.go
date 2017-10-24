@@ -6,6 +6,7 @@ import (
 	"flag"
 	"log"
 	"os"
+	"strings"
 	"sync"
 
 	"github.com/ONSdigital/dp-code-list-api/models"
@@ -56,8 +57,10 @@ func main() {
 func createCodes(recs [][]string, listID string) {
 	filename := "codes/" + listID + ".json"
 
-	if err := os.Rename(filename, filename+".old"); err != nil {
-		log.Fatal("File already exists and cannot be renamed", err)
+	if _, err := os.Stat(filename); os.IsExist(err) {
+		if err = os.Rename(filename, filename+".old"); err != nil {
+			log.Fatal("File already exists and cannot be renamed", err)
+		}
 	}
 
 	var wg sync.WaitGroup
@@ -106,9 +109,15 @@ func createCodeList(header []string) string {
 
 	// if header does not include an ID we might not be able to create one here
 	// this might need to be done in the recipe API and then passed in via csv
-	if len(header[0]) > 0 {
-		listID = header[0]
+	parts := strings.Split(header[0], "_")
+
+	if len(parts) > 1 && parts[1] != "codelist" {
+		listID = parts[1]
+	} else if len(parts) == 1 {
+		listID = parts[0]
 	}
+
+	listID = strings.Replace(listID, " ", "", -1)
 
 	cl := models.CodeList{
 		ID:   listID,

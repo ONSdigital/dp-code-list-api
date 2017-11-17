@@ -17,10 +17,17 @@ import (
 // Other models are taken from the package but the json tags
 // for a code are different on import than output (the ID field)
 type Code struct {
-	ID    string           `json:"id"`
+	ID    string           `json:"_id"`
 	Code  string           `json:"code"    bson:"code"`
 	Label string           `json:"label"   bson:"label"`
 	Links models.CodeLinks `json:"links"   bson:"links"`
+}
+
+// CodeList differs from models.CodeList so json (output) of ID field has underscore: _id
+type CodeList struct {
+	ID    string `json:"_id"`
+	Name  string
+	Links models.CodeListLink
 }
 
 func main() {
@@ -41,7 +48,6 @@ func main() {
 	recs, err := csvr.ReadAll()
 	if err != nil {
 		log.Fatal("Failed to read csv file", err)
-		os.Exit(0)
 	}
 
 	header := recs[0]
@@ -51,7 +57,6 @@ func main() {
 	createCodes(recs, listID)
 
 	log.Print("Successfully added rows to both files")
-	os.Exit(1)
 }
 
 func createCodes(recs [][]string, listID string) {
@@ -59,11 +64,30 @@ func createCodes(recs [][]string, listID string) {
 
 	if _, err := os.Stat(filename); os.IsExist(err) {
 		if err = os.Rename(filename, filename+".old"); err != nil {
-			log.Fatal("File already exists and cannot be renamed", err)
+			log.Fatal("File already exists and cannot be renamed: ", err)
 		}
 	}
 
+	f, err := os.OpenFile(filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		log.Fatal("failed to open code file: ", err)
+	}
+	defer f.Close()
+
 	var wg sync.WaitGroup
+
+	// read marshalled lines, write them to the file
+	jsonLineChan := make(chan []byte)
+	go func(f *os.File) {
+		for msg := range jsonLineChan {
+			if _, err := f.WriteString(string(msg) + "\n"); err != nil {
+				log.Fatal("failed to append code to file: ", err)
+			}
+			wg.Done()
+		}
+	}(f)
+
+	// marshal lines, send them to the file-writer above
 	for _, v := range recs {
 		id := uuid.New().String()
 		code := Code{
@@ -83,23 +107,25 @@ func createCodes(recs [][]string, listID string) {
 		}
 
 		wg.Add(1)
-		go func(code Code, filename string) {
+		go func(code Code) {
 			b, err := json.Marshal(code)
 			if err != nil {
-				log.Fatal("cannot marshal json for codes", err)
+				log.Fatal("cannot marshal json for code: ", err)
 			}
 
-			if err := appendToFile(b, filename); err != nil {
-				log.Fatal("failed to append code-list to file", err)
-			}
-			wg.Done()
-		}(code, filename)
+			jsonLineChan <- b
+		}(code)
 	}
 
 	wg.Wait()
+	close(jsonLineChan)
 
-	imp := "mongoimport --db codelists --collection codes --file $scriptDir/" + filename
+	if err := f.Close(); err != nil {
+		log.Fatal("failed to close code file: ", err)
+	}
 
+	// add import command to setup script, for above file
+	imp := "import_to codes " + filename
 	if err := appendToFile([]byte(imp), "setup.sh"); err != nil {
 		log.Fatal("failed to append code file to setup script", err)
 	}
@@ -120,7 +146,7 @@ func createCodeList(header []string) string {
 
 	listID = strings.Replace(listID, " ", "", -1)
 
-	cl := models.CodeList{
+	cl := CodeList{
 		ID:   listID,
 		Name: header[1],
 		Links: models.CodeListLink{

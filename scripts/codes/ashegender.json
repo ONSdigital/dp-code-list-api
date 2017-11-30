@@ -1,3 +1,0 @@
-{"_id":"3d132da2-bbc7-4c7f-91d2-00a719409056","code":"2","label":"Female","links":{"code_list":{"id":"ashegender","href":"http://localhost:22400/code-lists/ashegender"},"self":{"id":"2","href":"http://localhost:22400/code-lists/ashegender/codes/2"}}}
-{"_id":"1f7d9234-f8c2-40b4-83c9-e3a68f7a6471","code":"0","label":"All","links":{"code_list":{"id":"ashegender","href":"http://localhost:22400/code-lists/ashegender"},"self":{"id":"0","href":"http://localhost:22400/code-lists/ashegender/codes/0"}}}
-{"_id":"5bc50854-c848-4815-aa6a-1f2b3bf0d907","code":"1","label":"Male","links":{"code_list":{"id":"ashegender","href":"http://localhost:22400/code-lists/ashegender"},"self":{"id":"1","href":"http://localhost:22400/code-lists/ashegender/codes/1"}}}

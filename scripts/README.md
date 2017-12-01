@@ -17,7 +17,9 @@ codes all in the same input file.
 Code lists must be in a CSV file, where the codes are the first column and the labels are the second.
 Headers should be the code list ID and list name respectively.
 
-This is most easily achieved by taking the 2 dimension columns from an established V4 formatted file.
+This is most easily achieved by taking the 2 dimension columns from an established V4 formatted file, and replacing the headers.
+
+The header `geography_abcd1234, geography` from a V4 would become `abcd1234, geography` before importing here.
 
 
 ### Run the script

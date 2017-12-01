@@ -42,7 +42,7 @@ func main() {
 	if err != nil {
 		log.Fatal("Could not open input file", err)
 	}
-	defer f.Close()
+	defer closeFile(f)
 
 	csvr := csv.NewReader(f)
 	recs, err := csvr.ReadAll()
@@ -54,9 +54,10 @@ func main() {
 	recs = recs[1:]
 
 	listID := createCodeList(header)
+	log.Print("Added row to codelists.json")
+
 	createCodes(recs, listID)
 
-	log.Print("Successfully added rows to both files")
 }
 
 func createCodes(recs [][]string, listID string) {
@@ -72,7 +73,7 @@ func createCodes(recs [][]string, listID string) {
 	if err != nil {
 		log.Fatal("failed to open code file: ", err)
 	}
-	defer f.Close()
+	defer closeFile(f)
 
 	var wg sync.WaitGroup
 
@@ -120,31 +121,23 @@ func createCodes(recs [][]string, listID string) {
 	wg.Wait()
 	close(jsonLineChan)
 
-	if err := f.Close(); err != nil {
-		log.Fatal("failed to close code file: ", err)
-	}
-
 	// add import command to setup script, for above file
 	imp := "import_to codes " + filename
 	if err := appendToFile([]byte(imp), "setup.sh"); err != nil {
 		log.Fatal("failed to append code file to setup script", err)
 	}
+
+	log.Printf("Added codes file: [%s]", filename)
 }
 
 func createCodeList(header []string) string {
 	listID := uuid.New().String()
+	headerListID := header[0]
 
-	// if header does not include an ID we might not be able to create one here
-	// this might need to be done in the recipe API and then passed in via csv
-	parts := strings.Split(header[0], "_")
-
-	if len(parts) > 1 && parts[1] != "codelist" {
-		listID = parts[1]
-	} else if len(parts) == 1 {
-		listID = parts[0]
+	if headerListID != "" {
+		listID = headerListID
+		listID = strings.Replace(listID, " ", "", -1)
 	}
-
-	listID = strings.Replace(listID, " ", "", -1)
 
 	cl := CodeList{
 		ID:   listID,
@@ -177,16 +170,19 @@ func appendToFile(b []byte, filename string) error {
 	if err != nil {
 		return err
 	}
-	defer f.Close()
+	defer closeFile(f)
 
 	s := string(b) + "\n"
 
 	if _, err := f.WriteString(s); err != nil {
 		return err
 	}
-	if err := f.Close(); err != nil {
-		return err
-	}
 
 	return nil
+}
+
+func closeFile(f *os.File) {
+	if err := f.Close(); err != nil {
+		log.Fatal("failed to close file: ", err)
+	}
 }

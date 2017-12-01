@@ -42,7 +42,7 @@ func main() {
 	if err != nil {
 		log.Fatal("Could not open input file", err)
 	}
-	defer f.Close()
+	defer closeFile(f)
 
 	csvr := csv.NewReader(f)
 	recs, err := csvr.ReadAll()
@@ -73,7 +73,7 @@ func createCodes(recs [][]string, listID string) {
 	if err != nil {
 		log.Fatal("failed to open code file: ", err)
 	}
-	defer f.Close()
+	defer closeFile(f)
 
 	var wg sync.WaitGroup
 
@@ -120,10 +120,6 @@ func createCodes(recs [][]string, listID string) {
 
 	wg.Wait()
 	close(jsonLineChan)
-
-	if err := f.Close(); err != nil {
-		log.Fatal("failed to close code file: ", err)
-	}
 
 	// add import command to setup script, for above file
 	imp := "import_to codes " + filename
@@ -174,7 +170,7 @@ func appendToFile(b []byte, filename string) error {
 	if err != nil {
 		return err
 	}
-	defer f.Close()
+	defer closeFile(f)
 
 	s := string(b) + "\n"
 
@@ -183,4 +179,10 @@ func appendToFile(b []byte, filename string) error {
 	}
 
 	return nil
+}
+
+func closeFile(f *os.File) {
+	if err := f.Close(); err != nil {
+		log.Fatal("failed to close file: ", err)
+	}
 }

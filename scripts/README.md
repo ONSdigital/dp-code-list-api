@@ -48,6 +48,16 @@ header of your input file.
 * `setup.sh` will have a line added to ensure the new file is included in the mongo import when the
 setup script is run
 
+### Setting up a remote environment
+
+If you want to run the `setup.sh` script against a remote/tunnelled environment, set the environment
+variable similar to `export MONGODB_ADDR=mongodb://user:pass@localhost:tunnelled_port` before
+running the script, e.g.:
+
+```
+    $ export MONGODB_ADDR=mongodb://user:pass@localhost:tunnelled_port
+    $ ./scripts/setup.sh
+```
 
 ### TODO
 * Setup script is currently destructive. This is ok for a developer environment but shouldn't be

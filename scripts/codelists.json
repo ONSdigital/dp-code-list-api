@@ -12,3 +12,6 @@
 {"_id":"asheunits","Name":"Units","Links":{"self":{"id":"asheunits","href":"http://localhost:22400/code-lists/asheunits"},"codes":{"href":"http://localhost:22400/code-lists/asheunits/codes"}}}
 {"_id":"townscitiesagegroup","Name":"agegroup","Links":{"self":{"id":"townscitiesagegroup","href":"http://localhost:22400/code-lists/townscitiesagegroup"},"codes":{"href":"http://localhost:22400/code-lists/townscitiesagegroup/codes"}}}
 {"_id":"TownsCities","Name":"Geography","Links":{"self":{"id":"TownsCities","href":"http://localhost:22400/code-lists/TownsCities"},"codes":{"href":"http://localhost:22400/code-lists/TownsCities/codes"}}}
+{"_id":"midyearpopgeography","Name":"Geography","Links":{"self":{"id":"midyearpopgeography","href":"http://localhost:22400/code-lists/midyearpopgeography"},"codes":{"href":"http://localhost:22400/code-lists/midyearpopgeography/codes"}}}
+{"_id":"midyearpopage","Name":"Age","Links":{"self":{"id":"midyearpopage","href":"http://localhost:22400/code-lists/midyearpopage"},"codes":{"href":"http://localhost:22400/code-lists/midyearpopage/codes"}}}
+{"_id":"midyearpopsex","Name":"Sex","Links":{"self":{"id":"midyearpopsex","href":"http://localhost:22400/code-lists/midyearpopsex"},"codes":{"href":"http://localhost:22400/code-lists/midyearpopsex/codes"}}}

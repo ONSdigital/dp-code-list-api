@@ -42,6 +42,6 @@ import_to codes codes/time.json
 import_to codes codes/cpi1dim1aggid.json
 import_to codes codes/cpih1dim1aggid.json
 import_to codes codes/uk-only.json
-import_to codes codes/midyearpopgeography.json
-import_to codes codes/midyearpopage.json
-import_to codes codes/midyearpopsex.json
+import_to codes codes/mid-year-pop-geography.json
+import_to codes codes/mid-year-pop-age.json
+import_to codes codes/mid-year-pop-sex.json

@@ -1,7 +1,7 @@
 Importing a new Code List
 ================
 
-A script used to convert CSV code lists to json files for mongo import
+A script used to convert CSV code lists to JSON files for mongo import
 
 ### Getting started
 
@@ -41,8 +41,8 @@ $ go run add.go -input $HOME/files/example.csv
 
 The script will change 3 files:
 
-* `codelists.json` will have a line added containing the json document for the list you've just added
-* A new file will be created of the format `<listID>.json` - this file will contain json documents for
+* `codelists.json` will have a line added containing the JSON document for the list you've just added
+* A new file will be created of the format `<listID>.json` - this file will contain JSON documents for
 each individual code in the code list, and the filename will contain the code list ID provided in the
 header of your input file.
 * `setup.sh` will have a line added to ensure the new file is included in the mongo import when the

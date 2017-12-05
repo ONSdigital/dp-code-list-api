@@ -30,6 +30,3 @@ import_to codes codes/asheprovision.json
 import_to codes codes/asheunits.json
 import_to codes codes/townscitiesagegroup.json
 import_to codes codes/TownsCities.json
-import_to codes codes/midyearpop.json
-import_to codes codes/midyearpopage.json
-import_to codes codes/midyearpopsex.json

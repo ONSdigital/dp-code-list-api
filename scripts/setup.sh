@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
 
-mongo mongodb://localhost:27017/codelists <<EOF
+MONGODB_ADDR=${MONGODB_ADDR:-mongodb://localhost:27017}
+auth_source=
+if [[ $MONGODB_ADDR == *@* ]]; then
+        auth_source="?authSource=admin"
+fi
+
+mongo $MONGODB_ADDR/codelists$auth_source <<EOF
 db.dropDatabase();
 db.codelists.ensureIndex({"id":1},{"background":true});
 db.codes.ensureIndex({"links.code_list.id":1},{"background":true});
@@ -13,7 +19,7 @@ cd $scriptDir || exit 2
 import_to() {
         local collection=$1 file=$2; shift 2
         echo Importing $file ...
-        mongoimport --db codelists --collection $collection --file $file || exit 2
+        mongoimport --uri $MONGODB_ADDR/codelists$auth_source --collection $collection --file $file || exit 2
 }
 
 import_to codelists codelists.json

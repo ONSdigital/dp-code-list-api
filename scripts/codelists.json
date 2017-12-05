@@ -3,3 +3,6 @@
 {"_id":"cpi1dim1aggid","name":"Aggregate","links":{"self":{"id":"cpi1dim1aggid","href":"http://localhost:22400/code-lists/cpi1dim1aggid"},"codes":{"href":"http://localhost:22400/code-lists/cpi1dim1aggid/codes"}}}
 {"_id":"cpih1dim1aggid","Name":"aggregate","Links":{"self":{"id":"cpih1dim1aggid","href":"http://localhost:22400/code-lists/cpih1dim1aggid"},"codes":{"href":"http://localhost:22400/code-lists/cpih1dim1aggid/codes"}}}
 {"_id":"uk-only","Name":"geography","Links":{"self":{"id":"uk-only","href":"http://localhost:22400/code-lists/uk-only"},"codes":{"href":"http://localhost:22400/code-lists/uk-only/codes"}}}
+{"_id":"midyearpopgeography","Name":"Geography","Links":{"self":{"id":"midyearpopgeography","href":"http://localhost:22400/code-lists/midyearpopgeography"},"codes":{"href":"http://localhost:22400/code-lists/midyearpopgeography/codes"}}}
+{"_id":"midyearpopage","Name":"Age","Links":{"self":{"id":"midyearpopage","href":"http://localhost:22400/code-lists/midyearpopage"},"codes":{"href":"http://localhost:22400/code-lists/midyearpopage/codes"}}}
+{"_id":"midyearpopsex","Name":"Sex","Links":{"self":{"id":"midyearpopsex","href":"http://localhost:22400/code-lists/midyearpopsex"},"codes":{"href":"http://localhost:22400/code-lists/midyearpopsex/codes"}}}

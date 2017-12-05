@@ -145,10 +145,10 @@ func createCodeList(header []string) string {
 		Links: models.CodeListLink{
 			Self: models.Link{
 				ID:   listID,
-				Href: "http://localhost:22400/code-lists/" + listID,
+				Href: "http://localhost:10500/code-lists/" + listID,
 			},
 			Codes: models.Link{
-				Href: "http://localhost:22400/code-lists/" + listID + "/codes",
+				Href: "http://localhost:10500/code-lists/" + listID + "/codes",
 			},
 		},
 	}

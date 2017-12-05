@@ -1,1 +1,1 @@
-{"_id":"d9b63926-e4d5-4ecc-a9bb-cba7e5aa1b3b","code":"K02000001 ","label":"United Kingdom","links":{"code_list":{"id":"uk-only","href":"http://localhost:22400/code-lists/uk-only"},"self":{"id":"K02000001 ","href":"http://localhost:22400/code-lists/uk-only/codes/K02000001 "}}}
+{"_id":"d9b63926-e4d5-4ecc-a9bb-cba7e5aa1b3b","code":"K02000001 ","label":"United Kingdom","links":{"code_list":{"id":"uk-only","href":"http://localhost:10500/code-lists/uk-only"},"self":{"id":"K02000001 ","href":"http://localhost:10500/code-lists/uk-only/codes/K02000001 "}}}

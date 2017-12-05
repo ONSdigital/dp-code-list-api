@@ -52,11 +52,11 @@ setup script is run
 
 If you want to run the `setup.sh` script against a remote/tunnelled environment, set the environment
 variable similar to `export MONGODB_ADDR=mongodb://user:pass@localhost:tunnelled_port` before
-running the script, e.g.:
+running the script, and add the `--env` argument to ensure ports are translated from dev to env, e.g.:
 
 ```
     $ export MONGODB_ADDR=mongodb://user:pass@localhost:tunnelled_port
-    $ ./scripts/setup.sh
+    $ ./scripts/setup.sh --env
 ```
 
 ### TODO

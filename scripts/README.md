@@ -1,7 +1,7 @@
 Importing a new Code List
 ================
 
-A script used to convert CSV code lists to json files for mongo import
+A script used to convert CSV code lists to JSON files for mongo import
 
 ### Getting started
 
@@ -17,7 +17,9 @@ codes all in the same input file.
 Code lists must be in a CSV file, where the codes are the first column and the labels are the second.
 Headers should be the code list ID and list name respectively.
 
-This is most easily achieved by taking the 2 dimension columns from an established V4 formatted file.
+This is most easily achieved by taking the 2 dimension columns from an established V4 formatted file, and replacing the headers.
+
+The header `geography_abcd1234, geography` from a V4 would become `abcd1234, geography` before importing here.
 
 
 ### Run the script
@@ -39,13 +41,23 @@ $ go run add.go -input $HOME/files/example.csv
 
 The script will change 3 files:
 
-* `codelists.json` will have a line added containing the json document for the list you've just added
-* A new file will be created of the format `<listID>.json` - this file will contain json documents for
+* `codelists.json` will have a line added containing the JSON document for the list you've just added
+* A new file will be created of the format `<listID>.json` - this file will contain JSON documents for
 each individual code in the code list, and the filename will contain the code list ID provided in the
 header of your input file.
 * `setup.sh` will have a line added to ensure the new file is included in the mongo import when the
 setup script is run
 
+### Setting up a remote environment
+
+If you want to run the `setup.sh` script against a remote/tunnelled environment, set the environment
+variable similar to `export MONGODB_ADDR=mongodb://user:pass@localhost:tunnelled_port` before
+running the script, and add the `--env` argument to ensure ports are translated from dev to env, e.g.:
+
+```
+    $ export MONGODB_ADDR=mongodb://user:pass@localhost:tunnelled_port
+    $ ./scripts/setup.sh --env
+```
 
 ### TODO
 * Setup script is currently destructive. This is ok for a developer environment but shouldn't be

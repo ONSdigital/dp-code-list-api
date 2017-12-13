@@ -1,6 +1,23 @@
 #!/usr/bin/env bash
 
-mongo mongodb://localhost:27017/codelists <<EOF
+# setup.sh [ --env ]
+#
+# use `--env` if running against an environment
+
+MONGODB_ADDR=${MONGODB_ADDR:-mongodb://localhost:27017}
+auth_source=
+use_env=
+
+if [[ $1 == --env ]]; then
+        use_env=1
+        shift
+fi
+
+if [[ $MONGODB_ADDR == *@* ]]; then
+        auth_source="?authSource=admin"
+fi
+
+mongo $MONGODB_ADDR/codelists$auth_source <<EOF
 db.dropDatabase();
 db.codelists.ensureIndex({"id":1},{"background":true});
 db.codes.ensureIndex({"links.code_list.id":1},{"background":true});
@@ -13,13 +30,18 @@ cd $scriptDir || exit 2
 import_to() {
         local collection=$1 file=$2; shift 2
         echo Importing $file ...
-        mongoimport --db codelists --collection $collection --file $file || exit 2
+        if [[ -n $use_env ]]; then
+                mongoimport --uri $MONGODB_ADDR/codelists$auth_source --collection $collection --file <(sed 's/localhost:22400/localhost:10500/g' $file) || exit 2
+        else
+                mongoimport --uri $MONGODB_ADDR/codelists$auth_source --collection $collection --file $file || exit 2
+        fi
 }
 
 import_to codelists codelists.json
 import_to codes codes/time.json
 import_to codes codes/cpi1dim1aggid.json
-import_to codes codes/54ff5089-ea78-45ef-afa2-0dfe58f89497.json
-import_to codes codes/4e1a21a9-3fb9-4a71-b2ad-9be29457236b.json
 import_to codes codes/cpih1dim1aggid.json
 import_to codes codes/uk-only.json
+import_to codes codes/mid-year-pop-geography.json
+import_to codes codes/mid-year-pop-age.json
+import_to codes codes/mid-year-pop-sex.json

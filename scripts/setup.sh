@@ -17,13 +17,6 @@ if [[ $MONGODB_ADDR == *@* ]]; then
         auth_source="?authSource=admin"
 fi
 
-mongo $MONGODB_ADDR/codelists$auth_source <<EOF
-db.dropDatabase();
-db.codelists.ensureIndex({"id":1},{"background":true});
-db.codes.ensureIndex({"links.code_list.id":1},{"background":true});
-db.codes.ensureIndex({"code":1,"links.code_list.id":1},{"background":true});
-EOF
-
 scriptDir=$( dirname "${BASH_SOURCE[0]}" )
 cd $scriptDir || exit 2
 

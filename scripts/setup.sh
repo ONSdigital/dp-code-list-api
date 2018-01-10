@@ -45,3 +45,8 @@ import_to codes codes/uk-only.json
 import_to codes codes/mid-year-pop-geography.json
 import_to codes codes/mid-year-pop-age.json
 import_to codes codes/mid-year-pop-sex.json
+import_to codes codes/ashe-earnings.json
+import_to codes codes/ashe-sex.json
+import_to codes codes/ashe-working-pattern.json
+import_to codes codes/ashe-hours.json
+import_to codes codes/ashe-statistics.json

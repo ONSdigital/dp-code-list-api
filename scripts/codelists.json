@@ -11,3 +11,4 @@
 {"_id":"ashe-working-pattern","Name":"working pattern","Links":{"self":{"id":"ashe-working-pattern","href":"http://localhost:22400/code-lists/ashe-working-pattern"},"codes":{"href":"http://localhost:22400/code-lists/ashe-working-pattern/codes"}}}
 {"_id":"ashe-hours","Name":"hours","Links":{"self":{"id":"ashe-hours","href":"http://localhost:22400/code-lists/ashe-hours"},"codes":{"href":"http://localhost:22400/code-lists/ashe-hours/codes"}}}
 {"_id":"ashe-statistics","Name":"statistics","Links":{"self":{"id":"ashe-statistics","href":"http://localhost:22400/code-lists/ashe-statistics"},"codes":{"href":"http://localhost:22400/code-lists/ashe-statistics/codes"}}}
+{"_id":"ashe-table-7-geography","Name":"geography","Links":{"self":{"id":"ashe-table-7-geography","href":"http://localhost:22400/code-lists/ashe-table-7-geography"},"codes":{"href":"http://localhost:22400/code-lists/ashe-table-7-geography/codes"}}}

@@ -51,3 +51,4 @@ import_to codes codes/ashe-working-pattern.json
 import_to codes codes/ashe-hours.json
 import_to codes codes/ashe-statistics.json
 import_to codes codes/ashe-table-7-geography.json
+import_to codes codes/ashe-table-8-geography.json

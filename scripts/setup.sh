@@ -52,3 +52,9 @@ import_to codes codes/ashe-hours.json
 import_to codes codes/ashe-statistics.json
 import_to codes codes/ashe-table-7-geography.json
 import_to codes codes/ashe-table-8-geography.json
+import_to codes codes/opss-benefit-type.json
+import_to codes codes/opss-contributor.json
+import_to codes codes/opss-membership-type.json
+import_to codes codes/opss-public-private-sector.json
+import_to codes codes/opss-scheme-membership-sizeband.json
+import_to codes codes/opss-status.json

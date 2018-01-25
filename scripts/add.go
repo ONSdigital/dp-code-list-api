@@ -121,12 +121,6 @@ func createCodes(recs [][]string, listID string) {
 	wg.Wait()
 	close(jsonLineChan)
 
-	// add import command to setup script, for above file
-	imp := "import_to codes " + filename
-	if err := appendToFile([]byte(imp), "setup.sh"); err != nil {
-		log.Fatal("failed to append code file to setup script", err)
-	}
-
 	log.Printf("Added codes file: [%s]", filename)
 }
 

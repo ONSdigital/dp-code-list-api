@@ -1,0 +1,2 @@
+{"_id":"540327ad-6177-4e5d-b5d5-12a593f9b3da","code":"1","label":"Male","links":{"code_list":{"id":"npp-sex","href":"http://localhost:22400/code-lists/npp-sex"},"self":{"id":"1","href":"http://localhost:22400/code-lists/npp-sex/codes/1"}}}
+{"_id":"88d111fd-987a-43ff-a249-7324a008b1a3","code":"2","label":"Female","links":{"code_list":{"id":"npp-sex","href":"http://localhost:22400/code-lists/npp-sex"},"self":{"id":"2","href":"http://localhost:22400/code-lists/npp-sex/codes/2"}}}

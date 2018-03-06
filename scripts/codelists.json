@@ -11,4 +11,8 @@
 {"_id":"crime-age","Name":"age","Links":{"self":{"id":"crime-age","href":"http://localhost:22400/code-lists/crime-age"},"codes":{"href":"http://localhost:22400/code-lists/crime-age/codes"}}}
 {"_id":"crime-type","Name":"crimetype","Links":{"self":{"id":"crime-type","href":"http://localhost:22400/code-lists/crime-type"},"codes":{"href":"http://localhost:22400/code-lists/crime-type/codes"}}}
 {"_id":"crime-measurement-type","Name":"measurementtype","Links":{"self":{"id":"crime-measurement-type","href":"http://localhost:22400/code-lists/crime-measurement-type"},"codes":{"href":"http://localhost:22400/code-lists/crime-measurement-type/codes"}}}
-{"_id":"crime-sex","Name":"sex","Links":{"self":{"id":"crime-sex","href":"http://localhost:22400/code-lists/crime-sex"},"codes":{"href":"http://localhost:22400/code-lists/crime-sex/codes"}}}
+{"_id":"calendar-years","Name":"time","Links":{"self":{"id":"calendar-years","href":"http://localhost:22400/code-lists/calendar-years"},"codes":{"href":"http://localhost:22400/code-lists/calendar-years/codes"}}}
+{"_id":"npp-sex","Name":"sex","Links":{"self":{"id":"npp-sex","href":"http://localhost:22400/code-lists/npp-sex"},"codes":{"href":"http://localhost:22400/code-lists/npp-sex/codes"}}}
+{"_id":"npp-age","Name":"age","Links":{"self":{"id":"npp-age","href":"http://localhost:22400/code-lists/npp-age"},"codes":{"href":"http://localhost:22400/code-lists/npp-age/codes"}}}
+{"_id":"npp-projection-type","Name":"projectiontype","Links":{"self":{"id":"npp-projection-type","href":"http://localhost:22400/code-lists/npp-projection-type"},"codes":{"href":"http://localhost:22400/code-lists/npp-projection-type/codes"}}}
+{"_id":"npp-population-measure","Name":"populationmeasure","Links":{"self":{"id":"npp-population-measure","href":"http://localhost:22400/code-lists/npp-population-measure"},"codes":{"href":"http://localhost:22400/code-lists/npp-population-measure/codes"}}}

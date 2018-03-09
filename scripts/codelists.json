@@ -17,4 +17,10 @@
 {"_id":"npp-age","Name":"age","Links":{"self":{"id":"npp-age","href":"http://localhost:22400/code-lists/npp-age"},"codes":{"href":"http://localhost:22400/code-lists/npp-age/codes"}}}
 {"_id":"npp-projection-type","Name":"projectiontype","Links":{"self":{"id":"npp-projection-type","href":"http://localhost:22400/code-lists/npp-projection-type"},"codes":{"href":"http://localhost:22400/code-lists/npp-projection-type/codes"}}}
 {"_id":"npp-population-measure","Name":"populationmeasure","Links":{"self":{"id":"npp-population-measure","href":"http://localhost:22400/code-lists/npp-population-measure"},"codes":{"href":"http://localhost:22400/code-lists/npp-population-measure/codes"}}}
-
+{"_id":"geography","Name":"geography_codelist","Links":{"self":{"id":"geography","href":"http://localhost:22400/code-lists/geography"},"codes":{"href":"http://localhost:22400/code-lists/geography/codes"}}}
+{"_id":"offence","Name":"offence_codelist","Links":{"self":{"id":"offence","href":"http://localhost:22400/code-lists/offence"},"codes":{"href":"http://localhost:22400/code-lists/offence/codes"}}}
+{"_id":"age_codelist","Name":"age","Links":{"self":{"id":"age_codelist","href":"http://localhost:22400/code-lists/age_codelist"},"codes":{"href":"http://localhost:22400/code-lists/age_codelist/codes"}}}
+{"_id":"citizenshipgroup_codelist","Name":"citizenshipgroup","Links":{"self":{"id":"citizenshipgroup_codelist","href":"http://localhost:22400/code-lists/citizenshipgroup_codelist"},"codes":{"href":"http://localhost:22400/code-lists/citizenshipgroup_codelist/codes"}}}
+{"_id":"country_codelist","Name":"country","Links":{"self":{"id":"country_codelist","href":"http://localhost:22400/code-lists/country_codelist"},"codes":{"href":"http://localhost:22400/code-lists/country_codelist/codes"}}}
+{"_id":"flow_codelist","Name":"flow","Links":{"self":{"id":"flow_codelist","href":"http://localhost:22400/code-lists/flow_codelist"},"codes":{"href":"http://localhost:22400/code-lists/flow_codelist/codes"}}}
+{"_id":"sex_codelist","Name":"sex","Links":{"self":{"id":"sex_codelist","href":"http://localhost:22400/code-lists/sex_codelist"},"codes":{"href":"http://localhost:22400/code-lists/sex_codelist/codes"}}}

@@ -24,3 +24,5 @@
 {"_id":"country_codelist","Name":"country","Links":{"self":{"id":"country_codelist","href":"http://localhost:22400/code-lists/country_codelist"},"codes":{"href":"http://localhost:22400/code-lists/country_codelist/codes"}}}
 {"_id":"flow_codelist","Name":"flow","Links":{"self":{"id":"flow_codelist","href":"http://localhost:22400/code-lists/flow_codelist"},"codes":{"href":"http://localhost:22400/code-lists/flow_codelist/codes"}}}
 {"_id":"sex_codelist","Name":"sex","Links":{"self":{"id":"sex_codelist","href":"http://localhost:22400/code-lists/sex_codelist"},"codes":{"href":"http://localhost:22400/code-lists/sex_codelist/codes"}}}
+{"_id":"police-force-geography","Name":"geography","Links":{"self":{"id":"police-force-geography","href":"http://localhost:22400/code-lists/police-force-geography"},"codes":{"href":"http://localhost:22400/code-lists/police-force-geography/codes"}}}
+{"_id":"crime-offence","Name":"offence","Links":{"self":{"id":"crime-offence","href":"http://localhost:22400/code-lists/crime-offence"},"codes":{"href":"http://localhost:22400/code-lists/crime-offence/codes"}}}

@@ -5,7 +5,7 @@ An API used to navigate code lists
 
 ### Getting started
 
-* Install mongodb
+* Install [mongodb](https://www.mongodb.com/)
 * Run `./scripts/setup.sh` to setup the code data
 
 ### Updating codes / code lists

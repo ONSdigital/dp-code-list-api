@@ -1,8 +1,12 @@
 swagger: "2.0"
 info:
-  description: "An API used to query codes for information"
+  description: "Used to get details about codes and code lists stored by ONS.
+  Codes are used to provide a common definition when presenting statistics
+  with related categories. Codes are gathered in code lists, which may change over time
+  to include new or different codes. The meaning of a code should not change over
+  time, but new codes may be created where new meaning is required."
   version: "1.0.0"
-  title: "Code list API"
+  title: "Explore codes & lists"
   license:
     name: "Open Government Licence v3.0"
     url: "http://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/"
@@ -44,7 +48,7 @@ paths:
     get:
       tags:
       - "Code List"
-      summary: "Get a set of codes lists"
+      summary: "Get a list of code lists"
       description: "Get a set of codes lists containing information about dimensions which are used for all datasets at the ONS"
       parameters:
       - $ref: '#/parameters/offset'
@@ -58,27 +62,6 @@ paths:
             $ref: '#/definitions/CodeLists'
         400:
           description: "Missing parameters within request"
-        500:
-          description: "Failed to process the request due to an internal error"
-  /search/code-lists:
-    post:
-      tags:
-      - "Code List"
-      summary: "Get a set of code lists containing information about dimensions"
-      description: "Get a list of codes containing information about dimensions which are used for all datasets at the ONS"
-      parameters:
-      - $ref: '#/parameters/query'
-      - $ref: '#/parameters/offset'
-      - $ref: '#/parameters/limit'
-      produces:
-      - "application/json"
-      responses:
-        200:
-          description: "A Json message containing a set of code lists"
-          schema:
-            $ref: '#/definitions/CodeLists'
-        400:
-          description: "Missing parameters within request or invalid query"
         500:
           description: "Failed to process the request due to an internal error"
   /code-lists/{id}:
@@ -104,7 +87,7 @@ paths:
     get:
       tags:
        - "Code List"
-      summary: "Get a list of all codes within a code list type"
+      summary: "Get a list of all codes within a code list"
       description: "Get a list of codes within a code list type"
       parameters:
       - $ref: '#/parameters/id'
@@ -125,7 +108,7 @@ paths:
     get:
       tags:
        - "Code List"
-      summary: "Get in depth information about a code"
+      summary: "Get a code"
       description: "Get information about a code within a code list"
       parameters:
       - $ref: '#/parameters/id'

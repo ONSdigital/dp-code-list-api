@@ -28,21 +28,6 @@ parameters:
     in: path
     type: string
     required: true
-  offset:
-    name: offset
-    description: "The offset from the start of results. This defaults to 0"
-    in: query
-    type: integer
-  limit:
-    name: limit
-    description: "The maximum number of results to be returned. This defaults to 20"
-    in: query
-    type: integer
-  query:
-    name: q
-    description: "Query all code lists"
-    in: query
-    type: string
 paths:
   /code-lists:
     get:
@@ -50,9 +35,6 @@ paths:
       - "Code List"
       summary: "Get a list of code lists"
       description: "Get a set of codes lists containing information about dimensions which are used for all datasets at the ONS"
-      parameters:
-      - $ref: '#/parameters/offset'
-      - $ref: '#/parameters/limit'
       produces:
       - "application/json"
       responses:
@@ -91,8 +73,6 @@ paths:
       description: "Get a list of codes within a code list type"
       parameters:
       - $ref: '#/parameters/id'
-      - $ref: '#/parameters/offset'
-      - $ref: '#/parameters/limit'
       produces:
       - "application/json"
       responses:

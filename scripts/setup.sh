@@ -54,28 +54,4 @@ import_to() {
         fi
 }
 
-<<<<<<< HEAD
-import_to codelists codelists.json
-import_to codes codes/time.json
-import_to codes codes/cpi1dim1aggid.json
-import_to codes codes/cpih1dim1aggid.json
-import_to codes codes/uk-only.json
-import_to codes codes/mid-year-pop-geography.json
-import_to codes codes/mid-year-pop-age.json
-import_to codes codes/mid-year-pop-sex.json
-import_to codes codes/ashe-earnings.json
-import_to codes codes/ashe-sex.json
-import_to codes codes/ashe-working-pattern.json
-import_to codes codes/ashe-hours.json
-import_to codes codes/ashe-statistics.json
-import_to codes codes/ashe-table-7-geography.json
-import_to codes codes/ashe-table-8-geography.json
-import_to codes codes/opss-benefit-type.json
-import_to codes codes/opss-contributor.json
-import_to codes codes/opss-membership-type.json
-import_to codes codes/opss-public-private-sector.json
-import_to codes codes/opss-scheme-membership-sizeband.json
-import_to codes codes/opss-status.json
-=======
 import_to $collection $file
->>>>>>> cmd-develop

@@ -26,8 +26,8 @@ type Code struct {
 // CodeList differs from models.CodeList so json (output) of ID field has underscore: _id
 type CodeList struct {
 	ID    string `json:"_id"`
-	Name  string
-	Links models.CodeListLink
+	Name  string `json:"name"`
+	Links models.CodeListLink `json:"links"`
 }
 
 func main() {

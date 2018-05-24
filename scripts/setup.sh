@@ -7,22 +7,39 @@
 MONGODB_ADDR=${MONGODB_ADDR:-mongodb://localhost:27017}
 auth_source=
 use_env=
+file=
+collection=
 
-if [[ $1 == --env ]]; then
+for var in "$@"
+do
+    if [[ $1 == --codelist ]]; then
+        shift
+        collection=codelist
+    elif [[ $1 == --codes ]]; then
+       shift
+       collection=codes
+    elif [[ $1 == --file ]]; then
+        shift
+        file=$1
+        shift
+        if [ ! -f $file ]; then
+            echo "$1 does not exist"
+            exit 1
+        fi
+    elif [[ $1 == --env ]]; then
         use_env=1
         shift
+    fi
+done
+
+if [[ -z $collection ]]; then
+    echo "must include --codelist or --codes"
+    exit 1
 fi
 
 if [[ $MONGODB_ADDR == *@* ]]; then
         auth_source="?authSource=admin"
 fi
-
-mongo $MONGODB_ADDR/codelists$auth_source <<EOF
-db.dropDatabase();
-db.codelists.ensureIndex({"id":1},{"background":true});
-db.codes.ensureIndex({"links.code_list.id":1},{"background":true});
-db.codes.ensureIndex({"code":1,"links.code_list.id":1},{"background":true});
-EOF
 
 scriptDir=$( dirname "${BASH_SOURCE[0]}" )
 cd $scriptDir || exit 2
@@ -37,6 +54,7 @@ import_to() {
         fi
 }
 
+<<<<<<< HEAD
 import_to codelists codelists.json
 import_to codes codes/time.json
 import_to codes codes/cpi1dim1aggid.json
@@ -58,3 +76,6 @@ import_to codes codes/opss-membership-type.json
 import_to codes codes/opss-public-private-sector.json
 import_to codes codes/opss-scheme-membership-sizeband.json
 import_to codes codes/opss-status.json
+=======
+import_to $collection $file
+>>>>>>> cmd-develop

@@ -1,0 +1,7 @@
+FROM onsdigital/dp-concourse-tools-ubuntu
+
+WORKDIR /app/
+
+ADD dp-code-list-api .
+
+CMD ./dp-code-list-api

@@ -4,18 +4,19 @@ import (
 	"os"
 
 	"context"
+	"errors"
 	"fmt"
+	"net/http"
+	"os/signal"
+	"syscall"
+
 	"github.com/ONSdigital/dp-code-list-api/api"
 	"github.com/ONSdigital/dp-code-list-api/config"
 	"github.com/ONSdigital/dp-code-list-api/store"
 	"github.com/ONSdigital/go-ns/log"
-	"github.com/ONSdigital/go-ns/server"
 	"github.com/ONSdigital/go-ns/mongo"
+	"github.com/ONSdigital/go-ns/server"
 	"github.com/gorilla/mux"
-	"os/signal"
-	"syscall"
-	"errors"
-	"net/http"
 )
 
 func main() {
@@ -29,7 +30,7 @@ func main() {
 		log.Error(err, nil)
 		os.Exit(1)
 	}
-	mongoDatastore, err := store.CreateMongoDataStore(cfg.MongoDBURL)
+	mongoDatastore, err := store.CreateMongoDataStore(cfg.MongoConfig)
 	if err != nil {
 		log.Error(err, nil)
 		os.Exit(1)

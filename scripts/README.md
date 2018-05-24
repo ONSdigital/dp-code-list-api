@@ -45,8 +45,13 @@ The script will change 3 files:
 * A new file will be created of the format `<listID>.json` - this file will contain JSON documents for
 each individual code in the code list, and the filename will contain the code list ID provided in the
 header of your input file.
-* `setup.sh` will have a line added to ensure the new file is included in the mongo import when the
-setup script is run
+
+### Importing codes / codelist
+To import a generated codelist run the following script `setup.sh`. 
+* use `--codes or --codelist` to set the type of data
+* use `--file` followed by a file to import
+
+Eg `./setup.sh --file codes/mid-year-pop-geography.json --codes ` 
 
 ### Setting up a remote environment
 

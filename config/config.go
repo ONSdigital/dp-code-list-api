@@ -1,14 +1,23 @@
 package config
 
 import (
-	"github.com/kelseyhightower/envconfig"
 	"time"
+
+	"github.com/kelseyhightower/envconfig"
 )
 
 type Configuration struct {
 	BindAddr                string        `envconfig:"BIND_ADDR"`
-	MongoDBURL              string        `envconfig:"MONGODB_ADDR"`
 	GracefulShutdownTimeout time.Duration `envconfig:"GRACEFUL_SHUTDOWN_TIMEOUT"`
+	MongoConfig             MongoConfig
+}
+
+// MongoConfig contains the config required to connect to MongoDB.
+type MongoConfig struct {
+	BindAddr            string `envconfig:"MONGODB_ADDR"`
+	Database            string `envconfig:"MONGODB_DATABASE"`
+	CodelistsCollection string `envconfig:"MONGODB_CODELISTS_COLLECTION"`
+	CodesCollection     string `envconfig:"MONGODB_CODES_COLLECTION"`
 }
 
 var cfg *Configuration
@@ -21,8 +30,13 @@ func Get() (*Configuration, error) {
 
 	cfg = &Configuration{
 		BindAddr:                ":22400",
-		MongoDBURL:              "localhost:27017",
 		GracefulShutdownTimeout: time.Second * 5,
+		MongoConfig: MongoConfig{
+			BindAddr:            "localhost:27017",
+			Database:            "codelists",
+			CodelistsCollection: "codelists",
+			CodesCollection:     "codes",
+		},
 	}
 
 	return cfg, envconfig.Process("", cfg)

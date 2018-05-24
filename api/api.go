@@ -2,10 +2,11 @@ package api
 
 import (
 	"encoding/json"
+	"net/http"
+
 	"github.com/ONSdigital/dp-code-list-api/datastore"
 	"github.com/ONSdigital/go-ns/log"
 	"github.com/gorilla/mux"
-	"net/http"
 )
 
 // CodeListAPI holds all endpoints which are used to access the code list resources
@@ -31,6 +32,9 @@ func (c *CodeListAPI) getCodeLists(w http.ResponseWriter, r *http.Request) {
 		handleError(w, err)
 		return
 	}
+
+	codeLists.Count = len(codeLists.Items)
+	codeLists.Limit = len(codeLists.Items)
 
 	bytes, err := json.Marshal(codeLists)
 	if err != nil {
@@ -69,6 +73,9 @@ func (c *CodeListAPI) getCodes(w http.ResponseWriter, r *http.Request) {
 		handleError(w, err)
 		return
 	}
+
+	codes.Count = len(codes.Items)
+	codes.Limit = len(codes.Items)
 
 	bytes, err := json.Marshal(codes)
 	if err != nil {

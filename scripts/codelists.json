@@ -17,7 +17,6 @@
 {"_id":"npp-age","Name":"age","Links":{"self":{"id":"npp-age","href":"http://localhost:22400/code-lists/npp-age"},"codes":{"href":"http://localhost:22400/code-lists/npp-age/codes"}}}
 {"_id":"npp-projection-type","Name":"projectiontype","Links":{"self":{"id":"npp-projection-type","href":"http://localhost:22400/code-lists/npp-projection-type"},"codes":{"href":"http://localhost:22400/code-lists/npp-projection-type/codes"}}}
 {"_id":"npp-population-measure","Name":"populationmeasure","Links":{"self":{"id":"npp-population-measure","href":"http://localhost:22400/code-lists/npp-population-measure"},"codes":{"href":"http://localhost:22400/code-lists/npp-population-measure/codes"}}}
-
-{"_id":"wellbeing-estimate","Name":"estimate","Links":{"self":{"id":"wellbeing-estimate","href":"http://localhost:22400/code-lists/wellbeing-estimate"},"codes":{"href":"http://localhost:22400/code-lists/wellbeing-estimate/codes"}}}
-{"_id":"wellbeing-measureofwellbeing","Name":"allmeasuresofwellbeing","Links":{"self":{"id":"wellbeing-measureofwellbeing","href":"http://localhost:22400/code-lists/wellbeing-measureofwellbeing"},"codes":{"href":"http://localhost:22400/code-lists/wellbeing-measureofwellbeing/codes"}}}
-{"_id":"year-ending","Name":"time","Links":{"self":{"id":"year-ending","href":"http://localhost:22400/code-lists/year-ending"},"codes":{"href":"http://localhost:22400/code-lists/year-ending/codes"}}}
+{"_id":"wellbeing-estimate","name":"estimate","links":{"self":{"id":"wellbeing-estimate","href":"http://localhost:22400/code-lists/wellbeing-estimate"},"codes":{"href":"http://localhost:22400/code-lists/wellbeing-estimate/codes"}}}
+{"_id":"wellbeing-measureofwellbeing","name":"allmeasuresofwellbeing","links":{"self":{"id":"wellbeing-measureofwellbeing","href":"http://localhost:22400/code-lists/wellbeing-measureofwellbeing"},"codes":{"href":"http://localhost:22400/code-lists/wellbeing-measureofwellbeing/codes"}}}
+{"_id":"year-ending","name":"time","links":{"self":{"id":"year-ending","href":"http://localhost:22400/code-lists/year-ending"},"codes":{"href":"http://localhost:22400/code-lists/year-ending/codes"}}}

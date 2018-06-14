@@ -1,8 +1,8 @@
 package datastore
 
 import (
-	"github.com/ONSdigital/dp-code-list-api/models"
 	"errors"
+	"github.com/ONSdigital/dp-code-list-api/models"
 )
 
 var NOT_FOUND = errors.New("resource not found")

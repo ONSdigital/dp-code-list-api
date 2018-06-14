@@ -1,0 +1,11 @@
+npp-projectiontype_codelist,projectiontype
+low-life-expectancy,low-life-expectancy
+high-migration,high-migration
+low-migration,low-migration
+principal,principal
+zero-net-migration-natural-change-only,zero-net-migration-(natural-change-only)
+high-population,high-population
+high-fertility,high-fertility
+low-population,low-population
+low-fertility,low-fertility
+high-life-expectancy,high-life-expectancy

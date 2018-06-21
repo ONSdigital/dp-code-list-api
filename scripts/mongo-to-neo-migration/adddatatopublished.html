@@ -1,0 +1,95 @@
+<html>
+    <body>
+        <div id = "cypher"></div>
+    </body>
+
+<script>
+    // let root = "https://api.dev.cmd.onsdigital.co.uk/v1/datasets"
+    let root = "https://api.beta.ons.gov.uk/v1/datasets"
+    // let root = "http://localhost:23200/v1/datasets"
+
+    document.addEventListener("DOMContentLoaded", function () {
+        fetch(root, {
+                mode: 'cors'
+            })
+            .then(data => data.json())
+            .then(function (data) {
+                
+                data.items.map(function (data) {
+
+                    // console.log(data.links.latest_version.href)
+                    latestVersion = data.links.latest_version.href
+                        getVersion(latestVersion)
+                })
+            })
+    })
+
+
+
+    function getVersion(latestVersion) {
+        fetch(latestVersion, {
+                mode: 'cors'
+            })
+            .then(data => data.json())
+            .then(function (data) {
+                if (data.version > 2 ){
+                    // console.log (">1" + data.version + "name" + data.id)
+                    for (i = data.version; i > 0; i--){
+                        // console.log (i)
+                        // console.log (data.links.self.href)
+                        version = data.links.self.href
+                        version = version.replace(data.version,i)
+                        fetch(version, {
+                            mode: 'cors'
+                            })
+                            .then(data => data.json())
+                            .then(function (data) {
+                                // console.log (data.links.self.href + " : " + data.id)
+                                data = data.links.self.href + " : " + data.id
+
+                                writeCypher (data)
+                            })
+
+
+                    }
+
+
+                } else {
+                    // console.log (latestVersion + " : " + data.id)
+                    data = latestVersion + " : " + data.id
+
+                    writeCypher (data)
+                }
+            })
+    }
+
+    function writeCypher (data){
+
+        // console.log (data)
+
+            data = data.split(" : ")
+            datasetHref = data[0]
+            instance = data[1]
+
+
+            versionWorking = datasetHref.split("/versions/")
+            version = versionWorking[1]
+            editionWorking = versionWorking[0].split("/editions/")
+            edition = editionWorking[1]
+            datasetWorking = editionWorking[0].split("/datasets/")
+            dataset = datasetWorking[1]
+            // console.log (datasetHref)
+            // console.log(dataset + edition + version)
+
+            
+            
+
+                    let node = document.createElement("p");                 // Create a <h1> node
+                    let textnode = document.createTextNode("MATCH (n:`_" + instance + "_Instance`) SET n.is_published =true, n.dataset ='"+dataset+"', n.edition ='"+edition+"', n.version ="+version+";");     // Create a text node
+                    node.appendChild(textnode);                              // Append the text to <h1>
+                    document.getElementById("cypher").appendChild(node);
+
+    }
+</script>
+
+</html>

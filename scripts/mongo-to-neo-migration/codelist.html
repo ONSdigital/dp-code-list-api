@@ -1,0 +1,57 @@
+<html>
+    <body>
+        <div id = "cypher"></div>
+    </body>
+
+<script>
+    let root = "https://api.dev.cmd.onsdigital.co.uk/v1/code-lists"
+    // let root = "https://api.beta.ons.gov.uk/v1/code-lists"
+    // let root = "http://localhost:23200/v1/code-lists"
+
+    document.addEventListener("DOMContentLoaded", function () {
+        fetch(root, {
+                mode: 'cors'
+            })
+            .then(data => data.json())
+            .then(function (data) {
+                // console.log (data)
+                
+                data.items.map(function (data) {
+
+                    // console.log(data.links.latest_version.href)
+                    codelist = data.links.codes.href
+                        getCodes(codelist)
+                        let node = document.createElement("p");                 // Create a <h1> node
+                        let textnode = document.createTextNode("CREATE (node:`_code_list`:`_name_"+data.id+"` { label:'"+ data.name+ "', edition:'one-off' });");     // Create a text node
+                        node.appendChild(textnode);                              // Append the text to <h1>
+                        document.getElementById("cypher").appendChild(node);
+                })
+            })
+    })
+
+function getCodes(codelist) {
+        fetch(codelist, {
+                mode: 'cors'
+            })
+            .then(data => data.json())
+            .then(function (data) {
+                // console.log (data)
+                data.items.map(function (data) {
+
+                    // console.log (data.id)
+                    writeCypher (data)
+                    })
+
+            })
+        }
+    function writeCypher (data){
+
+        let node = document.createElement("p");                 // Create a <h1> node
+        let textnode = document.createTextNode("MATCH (parent:`_code_list`:`_" + data.links.code_list.id + "`) WITH parent CREATE (node:`_code` { label:'"+ data. id +"' })-[:usedBy { value:'"+ data.id+ "'}]->(parent);");     // Create a text node
+        node.appendChild(textnode);                              // Append the text to <h1>
+        document.getElementById("cypher").appendChild(node);
+
+    }
+</script>
+
+</html>

@@ -4,8 +4,8 @@
     </body>
 
 <script>
-    let root = "https://api.dev.cmd.onsdigital.co.uk/v1/code-lists"
-    // let root = "https://api.beta.ons.gov.uk/v1/code-lists"
+    // let root = "https://api.dev.cmd.onsdigital.co.uk/v1/code-lists"
+    let root = "https://api.beta.ons.gov.uk/v1/code-lists"
     // let root = "http://localhost:23200/v1/code-lists"
 
     document.addEventListener("DOMContentLoaded", function () {
@@ -47,7 +47,7 @@ function getCodes(codelist) {
     function writeCypher (data){
 
         let node = document.createElement("p");                 // Create a <h1> node
-        let textnode = document.createTextNode("MATCH (parent:`_code_list`:`_" + data.links.code_list.id + "`) WITH parent CREATE (node:`_code` { label:'"+ data. id +"' })-[:usedBy { value:'"+ data.id+ "'}]->(parent);");     // Create a text node
+        let textnode = document.createTextNode("MATCH (parent:`_code_list`:`_name_" + data.links.code_list.id + "`) WITH parent CREATE (node:`_code` { value:'" + data.id + "' })-[:usedBy { label:\""+ data.label + "\"}]->(parent);");     // Create a text node
         node.appendChild(textnode);                              // Append the text to <h1>
         document.getElementById("cypher").appendChild(node);
 

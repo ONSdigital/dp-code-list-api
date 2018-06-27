@@ -10,7 +10,7 @@ import (
 
 func (c *CodeListAPI) getCodeLists(w http.ResponseWriter, r *http.Request) {
 
-	codeLists, err := c.neostore.GetCodeLists(r.Context())
+	codeLists, err := c.store.GetCodeLists(r.Context())
 	if err != nil {
 		handleError(w, err)
 		return
@@ -35,7 +35,7 @@ func (c *CodeListAPI) getCodeLists(w http.ResponseWriter, r *http.Request) {
 func (c *CodeListAPI) getCodeList(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["id"]
-	codeList, err := c.neostore.GetCodeList(r.Context(), id)
+	codeList, err := c.store.GetCodeList(r.Context(), id)
 	if err != nil {
 		handleError(w, err)
 		return

@@ -4,15 +4,14 @@
 package storetest
 
 import (
+	"context"
 	"github.com/ONSdigital/dp-code-list-api/models"
 	"sync"
 )
 
 var (
-	lockDataStoreMockGetCode      sync.RWMutex
 	lockDataStoreMockGetCodeList  sync.RWMutex
 	lockDataStoreMockGetCodeLists sync.RWMutex
-	lockDataStoreMockGetCodes     sync.RWMutex
 )
 
 // DataStoreMock is a mock implementation of DataStore.
@@ -21,17 +20,11 @@ var (
 //
 //         // make and configure a mocked DataStore
 //         mockedDataStore := &DataStoreMock{
-//             GetCodeFunc: func(codeListID string, CodeID string) (*models.Code, error) {
-// 	               panic("TODO: mock out the GetCode method")
-//             },
-//             GetCodeListFunc: func(codeListID string) (*models.CodeList, error) {
+//             GetCodeListFunc: func(ctx context.Context, codeListID string) (*models.CodeList, error) {
 // 	               panic("TODO: mock out the GetCodeList method")
 //             },
-//             GetCodeListsFunc: func() (*models.CodeListResults, error) {
+//             GetCodeListsFunc: func(ctx context.Context) (*models.CodeListResults, error) {
 // 	               panic("TODO: mock out the GetCodeLists method")
-//             },
-//             GetCodesFunc: func(codeListID string) (*models.CodeResults, error) {
-// 	               panic("TODO: mock out the GetCodes method")
 //             },
 //         }
 //
@@ -40,101 +33,56 @@ var (
 //
 //     }
 type DataStoreMock struct {
-	// GetCodeFunc mocks the GetCode method.
-	GetCodeFunc func(codeListID string, CodeID string) (*models.Code, error)
-
 	// GetCodeListFunc mocks the GetCodeList method.
-	GetCodeListFunc func(codeListID string) (*models.CodeList, error)
+	GetCodeListFunc func(ctx context.Context, codeListID string) (*models.CodeList, error)
 
 	// GetCodeListsFunc mocks the GetCodeLists method.
-	GetCodeListsFunc func() (*models.CodeListResults, error)
-
-	// GetCodesFunc mocks the GetCodes method.
-	GetCodesFunc func(codeListID string) (*models.CodeResults, error)
+	GetCodeListsFunc func(ctx context.Context) (*models.CodeListResults, error)
 
 	// calls tracks calls to the methods.
 	calls struct {
-		// GetCode holds details about calls to the GetCode method.
-		GetCode []struct {
-			// CodeListID is the codeListID argument value.
-			CodeListID string
-			// CodeID is the CodeID argument value.
-			CodeID string
-		}
 		// GetCodeList holds details about calls to the GetCodeList method.
 		GetCodeList []struct {
+			// Ctx is the ctx argument value.
+			Ctx context.Context
 			// CodeListID is the codeListID argument value.
 			CodeListID string
 		}
 		// GetCodeLists holds details about calls to the GetCodeLists method.
 		GetCodeLists []struct {
-		}
-		// GetCodes holds details about calls to the GetCodes method.
-		GetCodes []struct {
-			// CodeListID is the codeListID argument value.
-			CodeListID string
+			// Ctx is the ctx argument value.
+			Ctx context.Context
 		}
 	}
-}
-
-// GetCode calls GetCodeFunc.
-func (mock *DataStoreMock) GetCode(codeListID string, CodeID string) (*models.Code, error) {
-	if mock.GetCodeFunc == nil {
-		panic("moq: DataStoreMock.GetCodeFunc is nil but DataStore.GetCode was just called")
-	}
-	callInfo := struct {
-		CodeListID string
-		CodeID     string
-	}{
-		CodeListID: codeListID,
-		CodeID:     CodeID,
-	}
-	lockDataStoreMockGetCode.Lock()
-	mock.calls.GetCode = append(mock.calls.GetCode, callInfo)
-	lockDataStoreMockGetCode.Unlock()
-	return mock.GetCodeFunc(codeListID, CodeID)
-}
-
-// GetCodeCalls gets all the calls that were made to GetCode.
-// Check the length with:
-//     len(mockedDataStore.GetCodeCalls())
-func (mock *DataStoreMock) GetCodeCalls() []struct {
-	CodeListID string
-	CodeID     string
-} {
-	var calls []struct {
-		CodeListID string
-		CodeID     string
-	}
-	lockDataStoreMockGetCode.RLock()
-	calls = mock.calls.GetCode
-	lockDataStoreMockGetCode.RUnlock()
-	return calls
 }
 
 // GetCodeList calls GetCodeListFunc.
-func (mock *DataStoreMock) GetCodeList(codeListID string) (*models.CodeList, error) {
+func (mock *DataStoreMock) GetCodeList(ctx context.Context, codeListID string) (*models.CodeList, error) {
 	if mock.GetCodeListFunc == nil {
 		panic("moq: DataStoreMock.GetCodeListFunc is nil but DataStore.GetCodeList was just called")
 	}
 	callInfo := struct {
+		Ctx        context.Context
 		CodeListID string
 	}{
+		Ctx:        ctx,
 		CodeListID: codeListID,
 	}
 	lockDataStoreMockGetCodeList.Lock()
 	mock.calls.GetCodeList = append(mock.calls.GetCodeList, callInfo)
 	lockDataStoreMockGetCodeList.Unlock()
-	return mock.GetCodeListFunc(codeListID)
+	return mock.GetCodeListFunc(ctx, codeListID)
 }
 
 // GetCodeListCalls gets all the calls that were made to GetCodeList.
 // Check the length with:
 //     len(mockedDataStore.GetCodeListCalls())
 func (mock *DataStoreMock) GetCodeListCalls() []struct {
+	Ctx        context.Context
 	CodeListID string
 } {
 	var calls []struct {
+		Ctx        context.Context
 		CodeListID string
 	}
 	lockDataStoreMockGetCodeList.RLock()
@@ -144,58 +92,32 @@ func (mock *DataStoreMock) GetCodeListCalls() []struct {
 }
 
 // GetCodeLists calls GetCodeListsFunc.
-func (mock *DataStoreMock) GetCodeLists() (*models.CodeListResults, error) {
+func (mock *DataStoreMock) GetCodeLists(ctx context.Context) (*models.CodeListResults, error) {
 	if mock.GetCodeListsFunc == nil {
 		panic("moq: DataStoreMock.GetCodeListsFunc is nil but DataStore.GetCodeLists was just called")
 	}
 	callInfo := struct {
-	}{}
+		Ctx context.Context
+	}{
+		Ctx: ctx,
+	}
 	lockDataStoreMockGetCodeLists.Lock()
 	mock.calls.GetCodeLists = append(mock.calls.GetCodeLists, callInfo)
 	lockDataStoreMockGetCodeLists.Unlock()
-	return mock.GetCodeListsFunc()
+	return mock.GetCodeListsFunc(ctx)
 }
 
 // GetCodeListsCalls gets all the calls that were made to GetCodeLists.
 // Check the length with:
 //     len(mockedDataStore.GetCodeListsCalls())
 func (mock *DataStoreMock) GetCodeListsCalls() []struct {
+	Ctx context.Context
 } {
 	var calls []struct {
+		Ctx context.Context
 	}
 	lockDataStoreMockGetCodeLists.RLock()
 	calls = mock.calls.GetCodeLists
 	lockDataStoreMockGetCodeLists.RUnlock()
-	return calls
-}
-
-// GetCodes calls GetCodesFunc.
-func (mock *DataStoreMock) GetCodes(codeListID string) (*models.CodeResults, error) {
-	if mock.GetCodesFunc == nil {
-		panic("moq: DataStoreMock.GetCodesFunc is nil but DataStore.GetCodes was just called")
-	}
-	callInfo := struct {
-		CodeListID string
-	}{
-		CodeListID: codeListID,
-	}
-	lockDataStoreMockGetCodes.Lock()
-	mock.calls.GetCodes = append(mock.calls.GetCodes, callInfo)
-	lockDataStoreMockGetCodes.Unlock()
-	return mock.GetCodesFunc(codeListID)
-}
-
-// GetCodesCalls gets all the calls that were made to GetCodes.
-// Check the length with:
-//     len(mockedDataStore.GetCodesCalls())
-func (mock *DataStoreMock) GetCodesCalls() []struct {
-	CodeListID string
-} {
-	var calls []struct {
-		CodeListID string
-	}
-	lockDataStoreMockGetCodes.RLock()
-	calls = mock.calls.GetCodes
-	lockDataStoreMockGetCodes.RUnlock()
 	return calls
 }

@@ -16,15 +16,25 @@ const (
 	getCodeListQuery  = `MATCH (i:_code_list {code:"%s"}) RETURN i`
 )
 
+// NeoDataStore represents the necessary information to access
+// neo4j
 type NeoDataStore struct {
 	pool DBPool
 }
 
+// DBPool contains the methods to control access to the Neo4J
+// database pool
 type DBPool interface {
 	OpenPool() (bolt.Conn, error)
 	Close() error
 }
 
+// Close is a wrapper for the neo pool close
+func (n NeoDataStore) Close() error {
+	return n.pool.Close()
+}
+
+// CreateNeoDataStore allows the creation of a NeoDataStore
 func CreateNeoDataStore(addr string, conns int) (n NeoDataStore, err error) {
 	store, err := bolt.NewClosableDriverPool(addr, conns)
 	if err != nil {
@@ -38,6 +48,7 @@ func CreateNeoDataStore(addr string, conns int) (n NeoDataStore, err error) {
 	return
 }
 
+// GetCodeLists returns a list of code lists
 func (n NeoDataStore) GetCodeLists(ctx context.Context) (*models.CodeListResults, error) {
 	conn, err := n.pool.OpenPool()
 	if err != nil {
@@ -59,6 +70,9 @@ func (n NeoDataStore) GetCodeLists(ctx context.Context) (*models.CodeListResults
 
 	codeLists := &models.CodeListResults{}
 	for row, _, err = rows.NextNeo(); err == nil; row, _, err = rows.NextNeo() {
+		if len(row) < 2 {
+			return nil, errors.Errorf("expected at least two rows, got %d", len(row))
+		}
 		props := row[1].(graph.Node).Properties
 
 		code := props["code"].(string)
@@ -74,6 +88,7 @@ func (n NeoDataStore) GetCodeLists(ctx context.Context) (*models.CodeListResults
 	return codeLists, nil
 }
 
+// GetCodeList returns an individual code list for a given code
 func (n NeoDataStore) GetCodeList(ctx context.Context, code string) (*models.CodeList, error) {
 	conn, err := n.pool.OpenPool()
 	if err != nil {

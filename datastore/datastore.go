@@ -1,8 +1,10 @@
 package datastore
 
 import (
-	"github.com/ONSdigital/dp-code-list-api/models"
+	"context"
 	"errors"
+
+	"github.com/ONSdigital/dp-code-list-api/models"
 )
 
 var NOT_FOUND = errors.New("resource not found")
@@ -11,8 +13,6 @@ var NOT_FOUND = errors.New("resource not found")
 
 // DataStore used to get resources by the API
 type DataStore interface {
-	GetCodes(codeListID string) (*models.CodeResults, error)
-	GetCode(codeListID, codeID string) (*models.Code, error)
-	GetCodeLists() (*models.CodeListResults, error)
-	GetCodeList(codeListID string) (*models.CodeList, error)
+	GetCodeLists(ctx context.Context) (*models.CodeListResults, error)
+	GetCodeList(ctx context.Context, codeListID string) (*models.CodeList, error)
 }

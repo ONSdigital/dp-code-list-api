@@ -14,7 +14,6 @@ import (
 	"github.com/ONSdigital/dp-code-list-api/config"
 	"github.com/ONSdigital/dp-code-list-api/store"
 	"github.com/ONSdigital/go-ns/log"
-	"github.com/ONSdigital/go-ns/mongo"
 	"github.com/ONSdigital/go-ns/server"
 	"github.com/gorilla/mux"
 )
@@ -30,19 +29,14 @@ func main() {
 		log.Error(err, nil)
 		os.Exit(1)
 	}
-	mongoDatastore, err := store.CreateMongoDataStore(cfg.MongoConfig)
-	if err != nil {
-		log.Error(err, nil)
-		os.Exit(1)
-	}
-	neoDatastore, err := store.CreateNeoDataStore("bolt://localhost:7687", 5)
+	neoDatastore, err := store.CreateNeoDataStore(cfg.Neo4jDatabaseAddress, cfg.Neo4jPoolSize)
 	if err != nil {
 		log.Error(err, nil)
 		os.Exit(1)
 	}
 	router := mux.NewRouter()
 	httpErrChannel := make(chan error)
-	_ = api.CreateCodeListAPI(router, mongoDatastore, neoDatastore)
+	_ = api.CreateCodeListAPI(router, neoDatastore)
 	httpServer := server.New(cfg.BindAddr, router)
 	httpServer.HandleOSSignals = false
 
@@ -57,8 +51,7 @@ func main() {
 			}
 		}
 
-		///mongo.Close() may use all remaining time in the context - do this last!
-		if err = mongo.Close(ctx, mongoDatastore.Session); err != nil {
+		if err = neoDatastore.Close(); err != nil {
 			log.Error(err, nil)
 		}
 

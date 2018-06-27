@@ -13,10 +13,8 @@ func TestGetRetrunsDefaultValues(t *testing.T) {
 		configuration, error := Get()
 		So(error, ShouldBeNil)
 		So(configuration.BindAddr, ShouldEqual, ":22400")
-		So(configuration.MongoConfig.BindAddr, ShouldEqual, "localhost:27017")
-		So(configuration.MongoConfig.Database, ShouldEqual, "codelists")
-		So(configuration.MongoConfig.CodelistsCollection, ShouldEqual, "codelists")
-		So(configuration.MongoConfig.CodesCollection, ShouldEqual, "codes")
 		So(configuration.GracefulShutdownTimeout, ShouldEqual, time.Second*5)
+		So(configuration.Neo4jDatabaseAddress, ShouldEqual, "bolt://localhost:7687")
+		So(configuration.Neo4jPoolSize, ShouldEqual, 30)
 	})
 }

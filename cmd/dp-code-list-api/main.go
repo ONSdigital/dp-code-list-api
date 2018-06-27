@@ -35,9 +35,14 @@ func main() {
 		log.Error(err, nil)
 		os.Exit(1)
 	}
+	neoDatastore, err := store.CreateNeoDataStore("bolt://localhost:7687", 5)
+	if err != nil {
+		log.Error(err, nil)
+		os.Exit(1)
+	}
 	router := mux.NewRouter()
 	httpErrChannel := make(chan error)
-	_ = api.CreateCodeListAPI(router, mongoDatastore)
+	_ = api.CreateCodeListAPI(router, mongoDatastore, neoDatastore)
 	httpServer := server.New(cfg.BindAddr, router)
 	httpServer.HandleOSSignals = false
 

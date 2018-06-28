@@ -36,5 +36,7 @@ func writeBody(w http.ResponseWriter, bytes []byte) {
 	if _, err := w.Write(bytes); err != nil {
 		log.Error(err, nil)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
+	w.WriteHeader(http.StatusOK)
 }

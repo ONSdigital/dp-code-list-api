@@ -38,5 +38,4 @@ func writeBody(w http.ResponseWriter, bytes []byte) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	w.WriteHeader(http.StatusOK)
 }

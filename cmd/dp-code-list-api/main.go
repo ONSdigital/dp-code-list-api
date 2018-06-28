@@ -29,7 +29,7 @@ func main() {
 		log.Error(err, nil)
 		os.Exit(1)
 	}
-	neoDatastore, err := store.CreateNeoDataStore(cfg.Neo4jDatabaseAddress, cfg.Neo4jPoolSize)
+	neoDatastore, err := store.CreateNeoDataStore(cfg.Neo4jDatabaseAddress, cfg.Neo4jCodeListLabel, cfg.Neo4jPoolSize)
 	if err != nil {
 		log.Error(err, nil)
 		os.Exit(1)
@@ -62,7 +62,7 @@ func main() {
 	}
 
 	go func() {
-		log.Info("code list API listening .....", log.Data{"BIND_ADDR": cfg.BindAddr})
+		log.Info("code list api starting.....", log.Data{"bind_addr": cfg.BindAddr})
 		if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Error(err, nil)
 			httpErrChannel <- err

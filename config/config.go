@@ -11,6 +11,7 @@ type Configuration struct {
 	GracefulShutdownTimeout time.Duration `envconfig:"GRACEFUL_SHUTDOWN_TIMEOUT"`
 	Neo4jDatabaseAddress    string        `envconfig:"NEO4J_ADDR"`
 	Neo4jPoolSize           int           `envconfig:"NEO4J_POOL_SIZE"`
+	Neo4jCodeListLabel      string        `envconfig:"NEO4J_CODE_LIST_LABEL"`
 }
 
 var cfg *Configuration
@@ -26,6 +27,7 @@ func Get() (*Configuration, error) {
 		GracefulShutdownTimeout: time.Second * 5,
 		Neo4jDatabaseAddress:    "bolt://localhost:7687",
 		Neo4jPoolSize:           30,
+		Neo4jCodeListLabel:      "code_list",
 	}
 
 	return cfg, envconfig.Process("", cfg)

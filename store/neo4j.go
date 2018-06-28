@@ -12,14 +12,15 @@ import (
 )
 
 const (
-	getCodeListsQuery = "MATCH (i) where i:_code_list RETURN distinct labels(i) as labels, i"
-	getCodeListQuery  = `MATCH (i:_code_list {code:"%s"}) RETURN i`
+	getCodeListsQuery = "MATCH (i) where i:_%s%s RETURN distinct labels(i) as labels, i"
+	getCodeListQuery  = `MATCH (i:_%s {code:"%s"}) RETURN i`
 )
 
 // NeoDataStore represents the necessary information to access
 // neo4j
 type NeoDataStore struct {
-	pool DBPool
+	pool          DBPool
+	codeListLabel string
 }
 
 // DBPool contains the methods to control access to the Neo4J
@@ -35,21 +36,24 @@ func (n NeoDataStore) Close() error {
 }
 
 // CreateNeoDataStore allows the creation of a NeoDataStore
-func CreateNeoDataStore(addr string, conns int) (n NeoDataStore, err error) {
+func CreateNeoDataStore(addr, codelistLabel string, conns int) (n NeoDataStore, err error) {
 	store, err := bolt.NewClosableDriverPool(addr, conns)
 	if err != nil {
 		return
 	}
 
 	n = NeoDataStore{
-		pool: store,
+		pool:          store,
+		codeListLabel: codelistLabel,
 	}
 
 	return
 }
 
 // GetCodeLists returns a list of code lists
-func (n NeoDataStore) GetCodeLists(ctx context.Context) (*models.CodeListResults, error) {
+func (n NeoDataStore) GetCodeLists(ctx context.Context, filterBy string) (*models.CodeListResults, error) {
+	log.InfoCtx(ctx, "about to query neo4j for all code lists", nil)
+
 	conn, err := n.pool.OpenPool()
 	if err != nil {
 		return nil, errors.WithMessage(err, "could not retrieve connection from pool")
@@ -61,7 +65,13 @@ func (n NeoDataStore) GetCodeLists(ctx context.Context) (*models.CodeListResults
 		}
 	}()
 
-	rows, err := conn.QueryNeo(getCodeListsQuery, nil)
+	if len(filterBy) > 0 {
+		filterBy = ":_" + filterBy
+	}
+
+	query := fmt.Sprintf(getCodeListsQuery, n.codeListLabel, filterBy)
+
+	rows, err := conn.QueryNeo(query, nil)
 	if err != nil {
 		return nil, errors.WithMessage(err, "could not run neo4j query")
 	}
@@ -90,6 +100,8 @@ func (n NeoDataStore) GetCodeLists(ctx context.Context) (*models.CodeListResults
 
 // GetCodeList returns an individual code list for a given code
 func (n NeoDataStore) GetCodeList(ctx context.Context, code string) (*models.CodeList, error) {
+	log.InfoCtx(ctx, "about to query neo4j for code list", log.Data{"code_list_id": code})
+
 	conn, err := n.pool.OpenPool()
 	if err != nil {
 		return nil, errors.WithMessage(err, "could not retrieve connection from pool")
@@ -101,7 +113,7 @@ func (n NeoDataStore) GetCodeList(ctx context.Context, code string) (*models.Cod
 		}
 	}()
 
-	query := fmt.Sprintf(getCodeListQuery, code)
+	query := fmt.Sprintf(getCodeListQuery, n.codeListLabel, code)
 
 	rows, err := conn.QueryNeo(query, nil)
 	if err != nil {

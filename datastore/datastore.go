@@ -13,6 +13,6 @@ var NOT_FOUND = errors.New("resource not found")
 
 // DataStore used to get resources by the API
 type DataStore interface {
-	GetCodeLists(ctx context.Context) (*models.CodeListResults, error)
+	GetCodeLists(ctx context.Context, filterBy string) (*models.CodeListResults, error)
 	GetCodeList(ctx context.Context, codeListID string) (*models.CodeList, error)
 }

@@ -23,7 +23,7 @@ func TestGetCodeLists(t *testing.T) {
 		w := httptest.NewRecorder()
 
 		mockDatastore := &storetest.DataStoreMock{
-			GetCodeListsFunc: func(ctx context.Context) (*models.CodeListResults, error) {
+			GetCodeListsFunc: func(ctx context.Context, f string) (*models.CodeListResults, error) {
 				return &models.CodeListResults{}, nil
 			},
 		}
@@ -37,7 +37,7 @@ func TestGetCodeLists(t *testing.T) {
 		w := httptest.NewRecorder()
 
 		mockDatastore := &storetest.DataStoreMock{
-			GetCodeListsFunc: func(ctx context.Context) (*models.CodeListResults, error) {
+			GetCodeListsFunc: func(ctx context.Context, f string) (*models.CodeListResults, error) {
 				return nil, INTERNAL_ERROR
 			},
 		}

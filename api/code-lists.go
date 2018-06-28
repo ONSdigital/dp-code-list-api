@@ -9,8 +9,9 @@ import (
 )
 
 func (c *CodeListAPI) getCodeLists(w http.ResponseWriter, r *http.Request) {
+	filterBy := r.URL.Query().Get("type")
 
-	codeLists, err := c.store.GetCodeLists(r.Context())
+	codeLists, err := c.store.GetCodeLists(r.Context(), filterBy)
 	if err != nil {
 		handleError(w, err)
 		return
@@ -48,5 +49,5 @@ func (c *CodeListAPI) getCodeList(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeBody(w, b)
-	log.Debug("retrieved codelist", log.Data{"code": id})
+	log.InfoCtx(r.Context(), "retrieved codelist", log.Data{"code_list_id": id})
 }

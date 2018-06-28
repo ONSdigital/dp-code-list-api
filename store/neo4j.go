@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/ONSdigital/dp-code-list-api/datastore"
 	"github.com/ONSdigital/dp-code-list-api/models"
 	"github.com/ONSdigital/go-ns/log"
 	bolt "github.com/johnnadratowski/golang-neo4j-bolt-driver"
@@ -139,11 +140,18 @@ func (n NeoDataStore) GetCodeList(ctx context.Context, code string) (*models.Cod
 		props := row[0].(graph.Node).Properties
 
 		edition := props["year"].(int64)
-		codeList.Name = props["label"].(string)
+		name := props["label"].(string)
+
+		codeList.Name = name
 
 		if edition > latest {
 			latest = edition
 		}
+	}
+
+	// If the latest value is still 0, then there is no value for this code
+	if latest == 0 {
+		return nil, datastore.NOT_FOUND
 	}
 
 	codeList.Links.Latest = models.Link{

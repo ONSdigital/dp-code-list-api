@@ -93,3 +93,93 @@ func TestGetCodeList(t *testing.T) {
 		So(w.Code, ShouldEqual, http.StatusInternalServerError)
 	})
 }
+
+func TestGetEditions(t *testing.T) {
+	Convey("Get code list editions returns a status of http ok", t, func() {
+		r := httptest.NewRequest("GET", "http://localhost:8080/code-lists/12345/editions", nil)
+		w := httptest.NewRecorder()
+
+		mockDatastore := &storetest.DataStoreMock{
+			GetEditionsFunc: func(ctx context.Context, f string) (*models.Editions, error) {
+				return &models.Editions{}, nil
+			},
+		}
+
+		api := CreateCodeListAPI(mux.NewRouter(), mockDatastore)
+		api.router.ServeHTTP(w, r)
+		So(w.Code, ShouldEqual, http.StatusOK)
+	})
+	Convey("Get code list editions returns a status of http not found if code list doesn't exist", t, func() {
+		r := httptest.NewRequest("GET", "http://localhost:8080/code-lists/12345/editions", nil)
+		w := httptest.NewRecorder()
+
+		mockDatastore := &storetest.DataStoreMock{
+			GetEditionsFunc: func(ctx context.Context, f string) (*models.Editions, error) {
+				return &models.Editions{}, datastore.NOT_FOUND
+			},
+		}
+
+		api := CreateCodeListAPI(mux.NewRouter(), mockDatastore)
+		api.router.ServeHTTP(w, r)
+		So(w.Code, ShouldEqual, http.StatusNotFound)
+	})
+	Convey("Get code list editions returns a status internal server error if store returns any other error", t, func() {
+		r := httptest.NewRequest("GET", "http://localhost:8080/code-lists/12345/editions", nil)
+		w := httptest.NewRecorder()
+
+		mockDatastore := &storetest.DataStoreMock{
+			GetEditionsFunc: func(ctx context.Context, f string) (*models.Editions, error) {
+				return &models.Editions{}, INTERNAL_ERROR
+			},
+		}
+
+		api := CreateCodeListAPI(mux.NewRouter(), mockDatastore)
+		api.router.ServeHTTP(w, r)
+		So(w.Code, ShouldEqual, http.StatusInternalServerError)
+	})
+}
+
+func TestGetEdition(t *testing.T) {
+	Convey("Get code list edition returns a status of http ok", t, func() {
+		r := httptest.NewRequest("GET", "http://localhost:8080/code-lists/12345/editions/2016", nil)
+		w := httptest.NewRecorder()
+
+		mockDatastore := &storetest.DataStoreMock{
+			GetEditionFunc: func(ctx context.Context, f, e string) (*models.Edition, error) {
+				return &models.Edition{}, nil
+			},
+		}
+
+		api := CreateCodeListAPI(mux.NewRouter(), mockDatastore)
+		api.router.ServeHTTP(w, r)
+		So(w.Code, ShouldEqual, http.StatusOK)
+	})
+	Convey("Get code list edition returns a status of http not found if code list doesn't exist", t, func() {
+		r := httptest.NewRequest("GET", "http://localhost:8080/code-lists/12345/editions/2016", nil)
+		w := httptest.NewRecorder()
+
+		mockDatastore := &storetest.DataStoreMock{
+			GetEditionFunc: func(ctx context.Context, f, e string) (*models.Edition, error) {
+				return &models.Edition{}, datastore.NOT_FOUND
+			},
+		}
+
+		api := CreateCodeListAPI(mux.NewRouter(), mockDatastore)
+		api.router.ServeHTTP(w, r)
+		So(w.Code, ShouldEqual, http.StatusNotFound)
+	})
+	Convey("Get code list edition returns a status internal server error if store returns any other error", t, func() {
+		r := httptest.NewRequest("GET", "http://localhost:8080/code-lists/12345/editions/2016", nil)
+		w := httptest.NewRecorder()
+
+		mockDatastore := &storetest.DataStoreMock{
+			GetEditionFunc: func(ctx context.Context, f, e string) (*models.Edition, error) {
+				return &models.Edition{}, INTERNAL_ERROR
+			},
+		}
+
+		api := CreateCodeListAPI(mux.NewRouter(), mockDatastore)
+		api.router.ServeHTTP(w, r)
+		So(w.Code, ShouldEqual, http.StatusInternalServerError)
+	})
+}

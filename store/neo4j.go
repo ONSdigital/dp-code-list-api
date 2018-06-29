@@ -215,6 +215,10 @@ func (n NeoDataStore) GetEditions(ctx context.Context, codeListID string) (*mode
 		editions.Items = append(editions.Items, editionModel)
 	}
 
+	if len(editions.Items) == 0 {
+		return nil, datastore.NOT_FOUND
+	}
+
 	editions.NumberOfResults = len(editions.Items)
 
 	return editions, nil
@@ -274,6 +278,10 @@ func (n NeoDataStore) GetEdition(ctx context.Context, codeListID, edition string
 				},
 			},
 		}
+	}
+
+	if count == 0 {
+		return nil, datastore.NOT_FOUND
 	}
 
 	return editionModel, nil

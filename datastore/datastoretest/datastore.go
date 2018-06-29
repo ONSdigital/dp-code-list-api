@@ -12,6 +12,8 @@ import (
 var (
 	lockDataStoreMockGetCodeList  sync.RWMutex
 	lockDataStoreMockGetCodeLists sync.RWMutex
+	lockDataStoreMockGetEdition   sync.RWMutex
+	lockDataStoreMockGetEditions  sync.RWMutex
 )
 
 // DataStoreMock is a mock implementation of DataStore.
@@ -26,6 +28,12 @@ var (
 //             GetCodeListsFunc: func(ctx context.Context, filterBy string) (*models.CodeListResults, error) {
 // 	               panic("TODO: mock out the GetCodeLists method")
 //             },
+//             GetEditionFunc: func(ctx context.Context, codeListID string, edition string) (*models.Edition, error) {
+// 	               panic("TODO: mock out the GetEdition method")
+//             },
+//             GetEditionsFunc: func(ctx context.Context, codeListID string) (*models.Editions, error) {
+// 	               panic("TODO: mock out the GetEditions method")
+//             },
 //         }
 //
 //         // TODO: use mockedDataStore in code that requires DataStore
@@ -38,6 +46,12 @@ type DataStoreMock struct {
 
 	// GetCodeListsFunc mocks the GetCodeLists method.
 	GetCodeListsFunc func(ctx context.Context, filterBy string) (*models.CodeListResults, error)
+
+	// GetEditionFunc mocks the GetEdition method.
+	GetEditionFunc func(ctx context.Context, codeListID string, edition string) (*models.Edition, error)
+
+	// GetEditionsFunc mocks the GetEditions method.
+	GetEditionsFunc func(ctx context.Context, codeListID string) (*models.Editions, error)
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -54,6 +68,22 @@ type DataStoreMock struct {
 			Ctx context.Context
 			// FilterBy is the filterBy argument value.
 			FilterBy string
+		}
+		// GetEdition holds details about calls to the GetEdition method.
+		GetEdition []struct {
+			// Ctx is the ctx argument value.
+			Ctx context.Context
+			// CodeListID is the codeListID argument value.
+			CodeListID string
+			// Edition is the edition argument value.
+			Edition string
+		}
+		// GetEditions holds details about calls to the GetEditions method.
+		GetEditions []struct {
+			// Ctx is the ctx argument value.
+			Ctx context.Context
+			// CodeListID is the codeListID argument value.
+			CodeListID string
 		}
 	}
 }
@@ -125,5 +155,79 @@ func (mock *DataStoreMock) GetCodeListsCalls() []struct {
 	lockDataStoreMockGetCodeLists.RLock()
 	calls = mock.calls.GetCodeLists
 	lockDataStoreMockGetCodeLists.RUnlock()
+	return calls
+}
+
+// GetEdition calls GetEditionFunc.
+func (mock *DataStoreMock) GetEdition(ctx context.Context, codeListID string, edition string) (*models.Edition, error) {
+	if mock.GetEditionFunc == nil {
+		panic("moq: DataStoreMock.GetEditionFunc is nil but DataStore.GetEdition was just called")
+	}
+	callInfo := struct {
+		Ctx        context.Context
+		CodeListID string
+		Edition    string
+	}{
+		Ctx:        ctx,
+		CodeListID: codeListID,
+		Edition:    edition,
+	}
+	lockDataStoreMockGetEdition.Lock()
+	mock.calls.GetEdition = append(mock.calls.GetEdition, callInfo)
+	lockDataStoreMockGetEdition.Unlock()
+	return mock.GetEditionFunc(ctx, codeListID, edition)
+}
+
+// GetEditionCalls gets all the calls that were made to GetEdition.
+// Check the length with:
+//     len(mockedDataStore.GetEditionCalls())
+func (mock *DataStoreMock) GetEditionCalls() []struct {
+	Ctx        context.Context
+	CodeListID string
+	Edition    string
+} {
+	var calls []struct {
+		Ctx        context.Context
+		CodeListID string
+		Edition    string
+	}
+	lockDataStoreMockGetEdition.RLock()
+	calls = mock.calls.GetEdition
+	lockDataStoreMockGetEdition.RUnlock()
+	return calls
+}
+
+// GetEditions calls GetEditionsFunc.
+func (mock *DataStoreMock) GetEditions(ctx context.Context, codeListID string) (*models.Editions, error) {
+	if mock.GetEditionsFunc == nil {
+		panic("moq: DataStoreMock.GetEditionsFunc is nil but DataStore.GetEditions was just called")
+	}
+	callInfo := struct {
+		Ctx        context.Context
+		CodeListID string
+	}{
+		Ctx:        ctx,
+		CodeListID: codeListID,
+	}
+	lockDataStoreMockGetEditions.Lock()
+	mock.calls.GetEditions = append(mock.calls.GetEditions, callInfo)
+	lockDataStoreMockGetEditions.Unlock()
+	return mock.GetEditionsFunc(ctx, codeListID)
+}
+
+// GetEditionsCalls gets all the calls that were made to GetEditions.
+// Check the length with:
+//     len(mockedDataStore.GetEditionsCalls())
+func (mock *DataStoreMock) GetEditionsCalls() []struct {
+	Ctx        context.Context
+	CodeListID string
+} {
+	var calls []struct {
+		Ctx        context.Context
+		CodeListID string
+	}
+	lockDataStoreMockGetEditions.RLock()
+	calls = mock.calls.GetEditions
+	lockDataStoreMockGetEditions.RUnlock()
 	return calls
 }

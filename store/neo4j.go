@@ -13,8 +13,9 @@ import (
 )
 
 const (
-	getCodeListsQuery = "MATCH (i) where i:_%s%s RETURN distinct labels(i) as labels, i"
-	getCodeListQuery  = `MATCH (i:_%s {code:"%s"}) RETURN i`
+	getCodeListsQuery       = "MATCH (i) where i:_%s%s RETURN distinct labels(i) as labels, i"
+	getCodeListQuery        = `MATCH (i:_%s {code:"%s"}) RETURN i`
+	getCodeListEditionQuery = `MATCH (i:_%s {code:"%s",year:%s}) RETURN i`
 )
 
 // NeoDataStore represents the necessary information to access
@@ -160,4 +161,120 @@ func (n NeoDataStore) GetCodeList(ctx context.Context, code string) (*models.Cod
 	}
 
 	return codeList, nil
+}
+
+func (n NeoDataStore) GetEditions(ctx context.Context, codeListID string) (*models.Editions, error) {
+	log.InfoCtx(ctx, "about to query neo4j for code list editions", log.Data{"code_list_id": codeListID})
+
+	conn, err := n.pool.OpenPool()
+	if err != nil {
+		return nil, errors.WithMessage(err, "could not retrieve connection from pool")
+	}
+
+	defer func() {
+		if err := conn.Close(); err != nil {
+			log.ErrorCtx(ctx, errors.WithMessage(err, "could not close neo4j connection"), nil)
+		}
+	}()
+
+	query := fmt.Sprintf(getCodeListQuery, n.codeListLabel, codeListID)
+
+	rows, err := conn.QueryNeo(query, nil)
+	if err != nil {
+		return nil, errors.WithMessage(err, "could not run neo4j query")
+	}
+
+	var row []interface{}
+
+	editions := &models.Editions{}
+	for row, _, err = rows.NextNeo(); err == nil; row, _, err = rows.NextNeo() {
+		props := row[0].(graph.Node).Properties
+
+		edition := fmt.Sprintf("%d", props["year"].(int64))
+		code := props["code"].(string)
+
+		editionModel := models.Edition{
+			ID:          code,
+			Edition:     edition,
+			Label:       props["label"].(string),
+			ReleaseDate: props["last_updated"].(string),
+			Links: models.EditionLinks{
+				Self: models.Link{
+					Href: fmt.Sprintf("/code-lists/%s/editions/%s", code, edition),
+					ID:   edition,
+				},
+				Editions: models.Link{
+					Href: fmt.Sprintf("/code-lists/%s/editions", code),
+				},
+				Codes: models.Link{
+					Href: fmt.Sprintf("/code-lists/%s/editions/%s/codes", code, edition),
+				},
+			},
+		}
+
+		editions.Items = append(editions.Items, editionModel)
+	}
+
+	editions.NumberOfResults = len(editions.Items)
+
+	return editions, nil
+}
+
+func (n NeoDataStore) GetEdition(ctx context.Context, codeListID, edition string) (*models.Edition, error) {
+	log.InfoCtx(ctx, "about to query neo4j for code list edition", log.Data{"code_list_id": codeListID, "edition": edition})
+
+	conn, err := n.pool.OpenPool()
+	if err != nil {
+		return nil, errors.WithMessage(err, "could not retrieve connection from pool")
+	}
+
+	defer func() {
+		if err := conn.Close(); err != nil {
+			log.ErrorCtx(ctx, errors.WithMessage(err, "could not close neo4j connection"), nil)
+		}
+	}()
+
+	query := fmt.Sprintf(getCodeListEditionQuery, n.codeListLabel, codeListID, edition)
+
+	rows, err := conn.QueryNeo(query, nil)
+	if err != nil {
+		return nil, errors.WithMessage(err, "could not run neo4j query")
+	}
+
+	var row []interface{}
+
+	count := 0
+	editionModel := &models.Edition{}
+	for row, _, err = rows.NextNeo(); err == nil; row, _, err = rows.NextNeo() {
+		count++
+		if count > 1 {
+			return nil, errors.Errorf("more than one unique edition found for codelist: %s, edition: %s", codeListID, edition)
+		}
+
+		props := row[0].(graph.Node).Properties
+
+		edition := fmt.Sprintf("%d", props["year"].(int64))
+		code := props["code"].(string)
+
+		editionModel = &models.Edition{
+			ID:          code,
+			Edition:     edition,
+			Label:       props["label"].(string),
+			ReleaseDate: props["last_updated"].(string),
+			Links: models.EditionLinks{
+				Self: models.Link{
+					Href: fmt.Sprintf("/code-lists/%s/editions/%s", code, edition),
+					ID:   edition,
+				},
+				Editions: models.Link{
+					Href: fmt.Sprintf("/code-lists/%s/editions", code),
+				},
+				Codes: models.Link{
+					Href: fmt.Sprintf("/code-lists/%s/editions/%s/codes", code, edition),
+				},
+			},
+		}
+	}
+
+	return editionModel, nil
 }

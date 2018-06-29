@@ -19,6 +19,8 @@ func CreateCodeListAPI(route *mux.Router, store datastore.DataStore) *CodeListAP
 	api := CodeListAPI{router: route, store: store}
 	api.router.HandleFunc("/code-lists", api.getCodeLists).Methods("GET")
 	api.router.HandleFunc("/code-lists/{id}", api.getCodeList).Methods("GET")
+	api.router.HandleFunc("/code-lists/{id}/editions", api.getEditions).Methods("GET")
+	api.router.HandleFunc("/code-lists/{id}/editions/{edition}", api.getEdition).Methods("GET")
 	return &api
 }
 

@@ -2,7 +2,7 @@ package models
 
 // Editions represents the editions response model
 type Editions struct {
-	Items           []Edition `json:"editions"`
+	Items           []Edition `json:"items"`
 	NumberOfResults int       `json:"number_of_results"`
 }
 

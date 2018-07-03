@@ -15,10 +15,10 @@ version: integer
 
 Also add published flag
 
-published_flag : true
+is_published : true
 
 ### codelists.html
 
-Calulates the codelists and codes needed and writes the script tho import these and add the relationships between them.
+Calulates the codelists and codes needed and writes the script to import these and add the relationships between them.
 
 Note: If run more than once will create duplicate entries

@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/ONSdigital/dp-code-list-api/datastore"
 	"github.com/ONSdigital/dp-code-list-api/models"
 	"github.com/ONSdigital/go-ns/log"
 	bolt "github.com/johnnadratowski/golang-neo4j-bolt-driver"
@@ -178,9 +179,9 @@ func (n *NeoDataStore) GetCodeList(ctx context.Context, code string) (*models.Co
 		codeList.Name = name
 	}
 
-	/*if count == 0 {
+	if count == 0 {
 		return nil, datastore.NOT_FOUND
-	}*/
+	}
 
 	codeList.Links.Latest = &models.Link{
 		Href: fmt.Sprintf("/code-lists/%s/editions/%s", code, latestEdition),

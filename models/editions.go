@@ -11,7 +11,7 @@ type Edition struct {
 	ID          string       `json:"id"`
 	Edition     string       `json:"edition"`
 	Label       string       `json:"label"`
-	ReleaseDate string       `json:"release_date"`
+	ReleaseDate string       `json:"release_date,omitempty"`
 	Links       EditionLinks `json:"links"`
 }
 

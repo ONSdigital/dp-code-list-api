@@ -3,6 +3,8 @@ package store
 import (
 	"context"
 	"fmt"
+	"strconv"
+	"strings"
 
 	"github.com/ONSdigital/dp-code-list-api/datastore"
 	"github.com/ONSdigital/dp-code-list-api/models"
@@ -13,9 +15,9 @@ import (
 )
 
 const (
-	getCodeListsQuery       = "MATCH (i) where i:_%s%s RETURN distinct labels(i) as labels, i"
-	getCodeListQuery        = `MATCH (i:_%s {code:"%s"}) RETURN i`
-	getCodeListEditionQuery = `MATCH (i:_%s {code:"%s",year:%s}) RETURN i`
+	getCodeListsQuery       = "MATCH (i) WHERE i:_%s%s RETURN distinct labels(i) as labels, i"
+	getCodeListQuery        = "MATCH (i:_%s:`_name_%s`) RETURN i"
+	getCodeListEditionQuery = "MATCH (i:_%s:`_name_%s` {edition:" + `"%s"` + "}) RETURN i"
 )
 
 // NeoDataStore represents the necessary information to access
@@ -33,18 +35,18 @@ type DBPool interface {
 }
 
 // Close is a wrapper for the neo pool close
-func (n NeoDataStore) Close() error {
+func (n *NeoDataStore) Close() error {
 	return n.pool.Close()
 }
 
 // CreateNeoDataStore allows the creation of a NeoDataStore
-func CreateNeoDataStore(addr, codelistLabel string, conns int) (n NeoDataStore, err error) {
+func CreateNeoDataStore(addr, codelistLabel string, conns int) (n *NeoDataStore, err error) {
 	store, err := bolt.NewClosableDriverPool(addr, conns)
 	if err != nil {
 		return
 	}
 
-	n = NeoDataStore{
+	n = &NeoDataStore{
 		pool:          store,
 		codeListLabel: codelistLabel,
 	}
@@ -53,8 +55,12 @@ func CreateNeoDataStore(addr, codelistLabel string, conns int) (n NeoDataStore, 
 }
 
 // GetCodeLists returns a list of code lists
-func (n NeoDataStore) GetCodeLists(ctx context.Context, filterBy string) (*models.CodeListResults, error) {
-	log.InfoCtx(ctx, "about to query neo4j for all code lists", nil)
+func (n *NeoDataStore) GetCodeLists(ctx context.Context, filterBy string) (*models.CodeListResults, error) {
+	logData := log.Data{}
+	if len(filterBy) > 0 {
+		logData = log.Data{"filter_by": filterBy}
+	}
+	log.InfoCtx(ctx, "about to query neo4j for code lists", logData)
 
 	conn, err := n.pool.OpenPool()
 	if err != nil {
@@ -86,12 +92,22 @@ func (n NeoDataStore) GetCodeLists(ctx context.Context, filterBy string) (*model
 			return nil, errors.Errorf("expected at least two rows, got %d", len(row))
 		}
 		props := row[1].(graph.Node).Properties
+		labels := row[1].(graph.Node).Labels
 
-		code := props["code"].(string)
+		name := props["label"].(string)
+		neoLabel := strings.Replace(labels[1], `_name_`, "", -1)
 
-		codeList, err := n.GetCodeList(ctx, code)
-		if err != nil {
-			return nil, err
+		codeList := &models.CodeList{
+			Links: models.CodeListLink{
+				Self: &models.Link{
+					Href: fmt.Sprintf("/code-lists/%s", neoLabel),
+					ID:   neoLabel,
+				},
+				Codes: &models.Link{
+					Href: fmt.Sprintf("/code-lists/%s/editions", neoLabel),
+				},
+			},
+			Name: name,
 		}
 
 		codeLists.Items = append(codeLists.Items, *codeList)
@@ -101,7 +117,7 @@ func (n NeoDataStore) GetCodeLists(ctx context.Context, filterBy string) (*model
 }
 
 // GetCodeList returns an individual code list for a given code
-func (n NeoDataStore) GetCodeList(ctx context.Context, code string) (*models.CodeList, error) {
+func (n *NeoDataStore) GetCodeList(ctx context.Context, code string) (*models.CodeList, error) {
 	log.InfoCtx(ctx, "about to query neo4j for code list", log.Data{"code_list_id": code})
 
 	conn, err := n.pool.OpenPool()
@@ -122,48 +138,61 @@ func (n NeoDataStore) GetCodeList(ctx context.Context, code string) (*models.Cod
 		return nil, errors.WithMessage(err, "could not run neo4j query")
 	}
 
+	var hasMultipleEditions bool
+
 	var row []interface{}
 
 	codeList := &models.CodeList{
 		Links: models.CodeListLink{
-			Self: models.Link{
+			Self: &models.Link{
 				Href: fmt.Sprintf("/code-lists/%s", code),
 				ID:   code,
 			},
-			Codes: models.Link{
+			Codes: &models.Link{
 				Href: fmt.Sprintf("/code-lists/%s/editions", code),
 			},
 		},
 	}
 
-	latest := int64(0)
+	latest := 0
+	count := 0
+	var latestEdition string
 	for row, _, err = rows.NextNeo(); err == nil; row, _, err = rows.NextNeo() {
-		props := row[0].(graph.Node).Properties
+		count++
+		if count > 1 {
+			hasMultipleEditions = true
+		}
 
-		edition := props["year"].(int64)
+		props := row[0].(graph.Node).Properties
+		edition := props["edition"].(string)
+
+		if !hasMultipleEditions {
+			latestEdition = edition
+		} else {
+			editionInt, err := strconv.Atoi(edition)
+			if err != nil || editionInt > latest {
+				latestEdition = edition
+			}
+		}
+
 		name := props["label"].(string)
 
 		codeList.Name = name
-
-		if edition > latest {
-			latest = edition
-		}
 	}
 
-	// If the latest value is still 0, then there is no value for this code
-	if latest == 0 {
+	if count == 0 {
 		return nil, datastore.NOT_FOUND
 	}
 
-	codeList.Links.Latest = models.Link{
-		Href: fmt.Sprintf("/code-lists/%s/editions/%d", code, latest),
-		ID:   fmt.Sprintf("%d", latest),
+	codeList.Links.Latest = &models.Link{
+		Href: fmt.Sprintf("/code-lists/%s/editions/%s", code, latestEdition),
+		ID:   latestEdition,
 	}
 
 	return codeList, nil
 }
 
-func (n NeoDataStore) GetEditions(ctx context.Context, codeListID string) (*models.Editions, error) {
+func (n *NeoDataStore) GetEditions(ctx context.Context, codeListID string) (*models.Editions, error) {
 	log.InfoCtx(ctx, "about to query neo4j for code list editions", log.Data{"code_list_id": codeListID})
 
 	conn, err := n.pool.OpenPool()
@@ -190,24 +219,22 @@ func (n NeoDataStore) GetEditions(ctx context.Context, codeListID string) (*mode
 	for row, _, err = rows.NextNeo(); err == nil; row, _, err = rows.NextNeo() {
 		props := row[0].(graph.Node).Properties
 
-		edition := fmt.Sprintf("%d", props["year"].(int64))
-		code := props["code"].(string)
+		edition := props["edition"].(string)
 
 		editionModel := models.Edition{
-			ID:          code,
-			Edition:     edition,
-			Label:       props["label"].(string),
-			ReleaseDate: props["last_updated"].(string),
+			ID:      codeListID,
+			Edition: edition,
+			Label:   props["label"].(string),
 			Links: models.EditionLinks{
 				Self: models.Link{
-					Href: fmt.Sprintf("/code-lists/%s/editions/%s", code, edition),
+					Href: fmt.Sprintf("/code-lists/%s/editions/%s", codeListID, edition),
 					ID:   edition,
 				},
 				Editions: models.Link{
-					Href: fmt.Sprintf("/code-lists/%s/editions", code),
+					Href: fmt.Sprintf("/code-lists/%s/editions", codeListID),
 				},
 				Codes: models.Link{
-					Href: fmt.Sprintf("/code-lists/%s/editions/%s/codes", code, edition),
+					Href: fmt.Sprintf("/code-lists/%s/editions/%s/codes", codeListID, edition),
 				},
 			},
 		}
@@ -224,7 +251,7 @@ func (n NeoDataStore) GetEditions(ctx context.Context, codeListID string) (*mode
 	return editions, nil
 }
 
-func (n NeoDataStore) GetEdition(ctx context.Context, codeListID, edition string) (*models.Edition, error) {
+func (n *NeoDataStore) GetEdition(ctx context.Context, codeListID, edition string) (*models.Edition, error) {
 	log.InfoCtx(ctx, "about to query neo4j for code list edition", log.Data{"code_list_id": codeListID, "edition": edition})
 
 	conn, err := n.pool.OpenPool()
@@ -257,24 +284,20 @@ func (n NeoDataStore) GetEdition(ctx context.Context, codeListID, edition string
 
 		props := row[0].(graph.Node).Properties
 
-		edition := fmt.Sprintf("%d", props["year"].(int64))
-		code := props["code"].(string)
-
 		editionModel = &models.Edition{
-			ID:          code,
-			Edition:     edition,
-			Label:       props["label"].(string),
-			ReleaseDate: props["last_updated"].(string),
+			ID:      codeListID,
+			Edition: edition,
+			Label:   props["label"].(string),
 			Links: models.EditionLinks{
 				Self: models.Link{
-					Href: fmt.Sprintf("/code-lists/%s/editions/%s", code, edition),
+					Href: fmt.Sprintf("/code-lists/%s/editions/%s", codeListID, edition),
 					ID:   edition,
 				},
 				Editions: models.Link{
-					Href: fmt.Sprintf("/code-lists/%s/editions", code),
+					Href: fmt.Sprintf("/code-lists/%s/editions", codeListID),
 				},
 				Codes: models.Link{
-					Href: fmt.Sprintf("/code-lists/%s/editions/%s/codes", code, edition),
+					Href: fmt.Sprintf("/code-lists/%s/editions/%s/codes", codeListID, edition),
 				},
 			},
 		}

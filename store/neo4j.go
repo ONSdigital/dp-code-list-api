@@ -95,7 +95,16 @@ func (n *NeoDataStore) GetCodeLists(ctx context.Context, filterBy string) (*mode
 		labels := row[1].(graph.Node).Labels
 
 		name := props["label"].(string)
-		neoLabel := strings.Replace(labels[1], `_name_`, "", -1)
+
+		var label string
+		for _, l := range labels {
+			if strings.Contains(l, "_name_") {
+				label = l
+				break
+			}
+		}
+
+		neoLabel := strings.Replace(label, `_name_`, "", -1)
 
 		codeList := &models.CodeList{
 			Links: models.CodeListLink{

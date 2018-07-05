@@ -22,3 +22,8 @@ is_published : true
 Calulates the codelists and codes needed and writes the script to import these and add the relationships between them.
 
 Note: If run more than once will create duplicate entries
+
+
+### linkinstancetocodes.html
+
+Script to build relationships between codes and published instances.

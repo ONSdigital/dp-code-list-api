@@ -9,11 +9,12 @@ import (
 )
 
 func (c *CodeListAPI) getCodeLists(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
 	filterBy := r.URL.Query().Get("type")
 
 	codeLists, err := c.store.GetCodeLists(r.Context(), filterBy)
 	if err != nil {
-		handleError(w, err)
+		handleError(ctx, w, err, nil)
 		return
 	}
 
@@ -25,29 +26,30 @@ func (c *CodeListAPI) getCodeLists(w http.ResponseWriter, r *http.Request) {
 
 	b, err := json.Marshal(codeLists)
 	if err != nil {
-		handleError(w, err)
+		handleError(ctx, w, err, nil)
 		return
 	}
 
-	writeBody(w, b)
+	writeBody(ctx, w, b)
 	log.InfoCtx(r.Context(), "retrieved all codelists", nil)
 }
 
 func (c *CodeListAPI) getCodeList(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
 	vars := mux.Vars(r)
 	id := vars["id"]
 	codeList, err := c.store.GetCodeList(r.Context(), id)
 	if err != nil {
-		handleError(w, err)
+		handleError(ctx, w, err, nil)
 		return
 	}
 
 	b, err := json.Marshal(codeList)
 	if err != nil {
-		handleError(w, err)
+		handleError(ctx, w, err, nil)
 		return
 	}
 
-	writeBody(w, b)
+	writeBody(ctx, w, b)
 	log.InfoCtx(r.Context(), "retrieved codelist", log.Data{"code_list_id": id})
 }

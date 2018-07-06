@@ -12,12 +12,22 @@ import (
 	bolt "github.com/johnnadratowski/golang-neo4j-bolt-driver"
 	"github.com/johnnadratowski/golang-neo4j-bolt-driver/structures/graph"
 	"github.com/pkg/errors"
+	"io"
 )
 
 const (
 	getCodeListsQuery       = "MATCH (i) WHERE i:_%s%s RETURN distinct labels(i) as labels, i"
 	getCodeListQuery        = "MATCH (i:_%s:`_name_%s`) RETURN i"
 	getCodeListEditionQuery = "MATCH (i:_%s:`_name_%s` {edition:" + `"%s"` + "}) RETURN i"
+	countEditions           = "MATCH (cl:_code_list:`_name_%s`) WHERE cl.edition = %q RETURN count(*)"
+
+	getCodesQuery = "MATCH (c:_code) -[r:usedBy]->(cl:_code_list: `_name_%s`) WHERE cl.edition = %q RETURN c, r"
+
+	getCodeQuery = "MATCH (c:_code) -[r:usedBy]->(cl:_code_list: `_name_%s`) WHERE cl.edition = %q AND c.value = %q RETURN c, r"
+)
+
+var (
+	errEditionNotFound = errors.New("edition does not exist")
 )
 
 // NeoDataStore represents the necessary information to access
@@ -317,4 +327,178 @@ func (n *NeoDataStore) GetEdition(ctx context.Context, codeListID, edition strin
 	}
 
 	return editionModel, nil
+}
+
+func (n *NeoDataStore) GetCodes(ctx context.Context, codeListID, edition string) (*models.CodeResults, error) {
+	editionExists, err := n.editionExists(ctx, codeListID, edition)
+	if err != nil {
+		return nil, err
+	}
+	if !editionExists {
+		return nil, datastore.ErrEditionNotFound
+	}
+
+	conn, err := n.pool.OpenPool()
+	if err != nil {
+		return nil, errors.WithMessage(err, "getCodes: error opening neo4j connection")
+	}
+
+	defer conn.Close()
+
+	query := fmt.Sprintf(getCodesQuery, codeListID, edition)
+
+	rows, err := conn.QueryNeo(query, nil)
+	if err != nil {
+		log.ErrorCtx(ctx, errors.WithMessage(err, "getCodes: conn.QueryNeo returned an error"), nil)
+	}
+	defer rows.Close()
+
+	codes := make([]models.Code, 0)
+	extractRowResults(ctx, rows, func(row []interface{}, rowIndex int) error {
+		node := row[0].(graph.Node)
+		relationShip := row[1].(graph.Relationship)
+		codeValue := node.Properties["value"].(string)
+		codes = append(codes, models.Code{
+			ID:    strconv.FormatInt(node.NodeIdentity, 10),
+			Code:  codeValue,
+			Label: relationShip.Properties["label"].(string),
+			Links: models.CodeLinks{
+				Self: models.Link{
+					Href: fmt.Sprintf("/code-lists/%s/editions/%s/codes/%s", codeListID, edition, codeValue),
+				},
+				CodeList: models.Link{
+					Href: fmt.Sprintf("/code-lists/%s", codeListID),
+				},
+			},
+		})
+		return nil
+	})
+
+	return &models.CodeResults{
+		Items: codes,
+		Count: len(codes),
+	}, nil
+}
+
+func (n *NeoDataStore) GetCode(ctx context.Context, codeListID, edition string, code string) (*models.Code, error) {
+	editionExists, err := n.editionExists(ctx, codeListID, edition)
+	if err != nil {
+		return nil, err
+	}
+	if !editionExists {
+		return nil, datastore.ErrEditionNotFound
+	}
+
+	conn, err := n.pool.OpenPool()
+	if err != nil {
+		return nil, errors.WithMessage(err, "getCode: error while opening neo4j error")
+	}
+
+	defer conn.Close()
+
+	query := fmt.Sprintf(getCodeQuery, codeListID, edition, code)
+
+	rows, err := conn.QueryNeo(query, nil)
+	if err != nil {
+		return nil, errors.WithMessage(err, "getCode: conn.QueryNeo returned an error")
+	}
+	defer rows.Close()
+
+	var codeModel *models.Code
+
+	err = extractRowResults(ctx, rows, func(row []interface{}, rowIndex int) error {
+		if rowIndex > 1 {
+			return errors.New("getCode: more than 1 result found, expected unique result")
+		}
+
+		node := row[0].(graph.Node)
+		relationShip := row[1].(graph.Relationship)
+		codeValue := node.Properties["value"].(string)
+		codeModel = &models.Code{
+			ID:    strconv.FormatInt(node.NodeIdentity, 10),
+			Code:  codeValue,
+			Label: relationShip.Properties["label"].(string),
+			Links: models.CodeLinks{
+				Self: models.Link{
+					Href: fmt.Sprintf("/code-lists/%s/editions/%s/codes/%s", codeListID, edition, codeValue),
+				},
+				CodeList: models.Link{
+					Href: fmt.Sprintf("/code-lists/%s", codeListID),
+				},
+			},
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, errors.WithMessage(err, "getCode: unexpected error extracting code from neo4j results")
+	}
+
+	if codeModel == nil {
+		return nil, datastore.ErrCodeNotFound
+	}
+
+	return codeModel, nil
+}
+
+func (n *NeoDataStore) editionExists(ctx context.Context, codeListID string, edition string) (bool, error) {
+	data := log.Data{"codelist_id": codeListID, "edition": edition}
+	log.InfoCtx(ctx, "checking edition exists", data)
+
+	conn, err := n.pool.OpenPool()
+	if err != nil {
+		return false, errors.WithMessage(err, "error while attempting to open neo4j connection")
+	}
+	defer conn.Close()
+
+	query := fmt.Sprintf(countEditions, codeListID, edition)
+
+	rows, err := conn.QueryNeo(query, nil)
+	if err != nil {
+		return false, errors.WithMessage(err, "error executing neo4j query")
+	}
+	defer rows.Close()
+
+	var count int64
+	err = extractRowResults(ctx, rows, func(row []interface{}, rowIndex int) error {
+		if rowIndex != 1 {
+			return errors.New("extract row result error: expected single result but was not")
+		}
+		var ok bool
+		count, ok = row[0].(int64)
+		if !ok {
+			return errors.New("extract row result error: failed to cast result to int64 ")
+		}
+		return nil
+	})
+
+	if err != nil {
+		return false, err
+	}
+
+	// 0 or 1 is a valid response - more than 1... we have bigger issues.
+	if count > 1 {
+		return false, errors.New("editionExists: multiple editions found")
+	}
+	return count == 1, nil
+}
+
+func extractRowResults(ctx context.Context, rows bolt.Rows, extractRowData func(data []interface{}, rowIndex int) error) error {
+	index := 0
+	for {
+		row, _, err := rows.NextNeo()
+		if err != nil {
+			if err == io.EOF {
+				log.InfoCtx(ctx, "extractRowResults: reached end of result rows", nil)
+				return nil
+			} else {
+				log.ErrorCtx(ctx, errors.WithMessage(err, "row error, breaking loop"), nil)
+				return err
+			}
+		}
+		index++
+		if err := extractRowData(row, index); err != nil {
+			return err
+		}
+	}
+	return nil
 }

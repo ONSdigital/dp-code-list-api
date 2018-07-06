@@ -259,7 +259,6 @@ func (n *NeoDataStore) GetEditions(ctx context.Context, codeListID string) (*mod
 		edition := props["edition"].(string)
 
 		editionModel := models.Edition{
-			ID:      codeListID,
 			Edition: edition,
 			Label:   props["label"].(string),
 			Links: models.EditionLinks{
@@ -322,7 +321,6 @@ func (n *NeoDataStore) GetEdition(ctx context.Context, codeListID, edition strin
 		props := row[0].(graph.Node).Properties
 
 		editionModel = &models.Edition{
-			ID:      codeListID,
 			Edition: edition,
 			Label:   props["label"].(string),
 			Links: models.EditionLinks{

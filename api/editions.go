@@ -46,5 +46,5 @@ func (c *CodeListAPI) getEdition(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeBody(w, b)
-	log.InfoCtx(r.Context(), "retrieved codelist edition", log.Data{"code_list_id": id, edition: edition})
+	log.InfoCtx(r.Context(), "retrieved codelist edition", log.Data{"code_list_id": id, "edition": edition})
 }

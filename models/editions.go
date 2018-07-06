@@ -8,7 +8,6 @@ type Editions struct {
 
 // Edition represents a single edition response model
 type Edition struct {
-	ID          string       `json:"id"`
 	Edition     string       `json:"edition"`
 	Label       string       `json:"label"`
 	ReleaseDate string       `json:"release_date,omitempty"`

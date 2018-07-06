@@ -18,7 +18,7 @@ type CodeList struct {
 
 // CodeListLink contains links for a code list resource
 type CodeListLink struct {
-	Self   *Link `json:"self"`
-	Codes  *Link `json:"editions"`
-	Latest *Link `json:"latest,omitempty"`
+	Self     *Link `json:"self"`
+	Editions *Link `json:"editions"`
+	Latest   *Link `json:"latest,omitempty"`
 }

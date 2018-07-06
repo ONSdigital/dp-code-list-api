@@ -29,14 +29,14 @@ func main() {
 		log.Error(err, nil)
 		os.Exit(1)
 	}
-	neoDatastore, err := store.CreateNeoDataStore(cfg.Neo4jDatabaseAddress, cfg.Neo4jCodeListLabel, cfg.Neo4jPoolSize)
+	datastore, err := store.CreateNeoDataStore(cfg.Neo4jDatabaseAddress, cfg.Neo4jCodeListLabel, cfg.Neo4jPoolSize)
 	if err != nil {
 		log.Error(err, nil)
 		os.Exit(1)
 	}
 	router := mux.NewRouter()
 	httpErrChannel := make(chan error)
-	_ = api.CreateCodeListAPI(router, neoDatastore)
+	_ = api.CreateCodeListAPI(router, datastore)
 	httpServer := server.New(cfg.BindAddr, router)
 	httpServer.HandleOSSignals = false
 
@@ -51,7 +51,7 @@ func main() {
 			}
 		}
 
-		if err = neoDatastore.Close(); err != nil {
+		if err = datastore.Close(); err != nil {
 			log.Error(err, nil)
 		}
 

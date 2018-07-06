@@ -1,49 +1,70 @@
 <html>
-    <head>
-        <p>CREATE CONSTRAINT ON (n:`_code`) ASSERT n.code IS UNIQUE;</p>
-        <script src = "https://cdn.ons.gov.uk/vendor/d3/4.13.0/d3.min.js" ></script>
-    </head>
-    <body>
-        <div id = "cypher"></div>
-    </body>
+
+<head>
+    <script src="d3.min.js"></script>
+</head>
+
+<body>
+    <div id="constraint"></div>
+    <div id="cypher"></div>
+</body>
 
 <script>
     let root = "codelist.csv"
 
     document.addEventListener("DOMContentLoaded", function () {
-        // fetch(root, {
-        //         mode: 'cors'
-        //     })
-        //     .then(data => data.json())
-        //     .then(function (data) {
-        //         console.log(data)
-        //         codelist = data["0"].links.code_list.id
-        //         data.map(function (data) {
-        //             writeCypher (data)
-        //             })
-        //     })
-        d3.csv(root, function(data) {
+
+        d3.csv(root, function (data) {
             headerRow = Object.keys(data[0])
             codelist = headerRow["0"]
             label = headerRow["1"]
-            let node = document.createElement("p");                 // Create a <h1> node
-            let textnode = document.createTextNode("CREATE (node:`_code_list`:`_name_"+codelist+"` { label:'"+ label+ "', edition:'one-off' });");     // Create a text node
-            node.appendChild(textnode);                              // Append the text to <h1>
-            document.getElementById("cypher").appendChild(node);
+            let edition = prompt("Please enter edition (normally a year")
 
-
-            data.map(function (data) {
-                    writeCypher (data)
+            let node = document.createElement("p");
+            let textnode = document.createTextNode("CREATE CONSTRAINT ON (n:`_code_" + codelist +
+                "`) ASSERT n.value IS UNIQUE;");
+            node.appendChild(textnode);
+            document.getElementById("constraint").appendChild(node);
+            let node2 = document.createElement("p");
+            let text = document.createTextNode("CREATE (node:`_code_list`:`_code_list_" + codelist +
+                "` { label:'" +
+                label + "', edition:'"+ edition +"' });");
+            node2.appendChild(text);
+            document.getElementById("cypher").appendChild(node2);
+            if (label === "geography") {
+                let unique = confirm(
+                    "Are you loading geogrphy codes? This script will not create code-list specific nodes. Ensure all codes are globally unique"
+                );
+             if (unique == true) {
+                    data.map(function (data) {
+                        codeLabel = "geography"
+                        createCodes(data, codeLabel)
                     })
+                } else {
+                    alert("Cancelled");
+                }
+            } else {
+                data.map(function (data) {
+                    codeLabel = codelist
+                    createCodes(data, codeLabel)
+                })
+            }
         });
-        })
-
-    function writeCypher (data){
-        let node = document.createElement("p");                 // Create a <h1> node
-        let textnode = document.createTextNode("MATCH (parent:`_code_list`:`_name_" + codelist + "`) WITH parent CREATE (node:`_code` { value:'" + data[codelist] + "' })-[:usedBy { label:\""+ data[label] + "\"}]->(parent);");     // Create a text node
-        node.appendChild(textnode);                              // Append the text to <h1>
+    })
+    function createCodes(data) {
+        let node = document.createElement("p");
+        let textnode = document.createTextNode("MERGE (node:`_code`:`_code_" + codeLabel.trim() + "` { value:'" +
+            data[
+                codelist].trim() + "' });");
+        node.appendChild(textnode);
         document.getElementById("cypher").appendChild(node);
+        let node2 = document.createElement("p");
+        let text = document.createTextNode("MATCH (parent:`_code_list`:`_code_list_" + codelist.trim() +
+            "`),(node:`_code`:`_code_" + codelist.trim() + "` { value:'" + data[codelist].trim() +
+            "' }) MERGE (node)-[:usedBy { label:\"" + data[
+                label].trim() + "\"}]->(parent);");
+        node2.appendChild(text);
+        document.getElementById("cypher").appendChild(node2);
     }
 </script>
-
 </html>

@@ -41,7 +41,7 @@ func (c *CodeListAPI) getCodes(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := c.writeBody(w, b); err != nil {
-		log.ErrorCtx(ctx, errors.WithMessage(err, "failed to write bytes to response"), nil)
+		log.ErrorCtx(ctx, errors.WithMessage(err, "getCodes endpoint: failed to write bytes to response"), nil)
 		return
 	}
 	log.InfoCtx(ctx, "getCodes endpoint: request successful", data)
@@ -74,6 +74,9 @@ func (c *CodeListAPI) getCode(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if err := c.writeBody(w, b); err != nil {
+		log.ErrorCtx(ctx, errors.WithMessage(err, "getCode endpoint: failed to write bytes to response"), nil)
+		return
+	}
 	log.InfoCtx(ctx, "getCode endpoint: request successful", data)
-	writeBody(w, b)
 }

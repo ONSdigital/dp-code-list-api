@@ -66,7 +66,8 @@ func CreateNeoDataStore(addr, codelistLabel string, conns int) (n *NeoDataStore,
 func (n *NeoDataStore) GetCodeLists(ctx context.Context, filterBy string) (*models.CodeListResults, error) {
 	logData := log.Data{}
 	if len(filterBy) > 0 {
-		logData = log.Data{"filter_by": filterBy}
+		logData["filter_by"] = filterBy
+		filterBy = ":_" + filterBy
 	}
 	log.InfoCtx(ctx, "about to query neo4j for code lists", logData)
 
@@ -81,10 +82,6 @@ func (n *NeoDataStore) GetCodeLists(ctx context.Context, filterBy string) (*mode
 		}
 	}()
 
-	if len(filterBy) > 0 {
-		filterBy = ":_" + filterBy
-	}
-
 	query := fmt.Sprintf(getCodeListsQuery, n.codeListLabel, filterBy)
 
 	rows, err := conn.QueryNeo(query, nil)
@@ -95,6 +92,7 @@ func (n *NeoDataStore) GetCodeLists(ctx context.Context, filterBy string) (*mode
 	var row []interface{}
 
 	codeLists := &models.CodeListResults{}
+	codeListEditionsMap := make(map[string]*models.CodeList)
 	for row, _, err = rows.NextNeo(); err == nil; row, _, err = rows.NextNeo() {
 		if len(row) < 2 {
 			return nil, errors.Errorf("expected at least two rows, got %d", len(row))
@@ -103,31 +101,61 @@ func (n *NeoDataStore) GetCodeLists(ctx context.Context, filterBy string) (*mode
 		labels := row[1].(graph.Node).Labels
 
 		name := props["label"].(string)
+		edition := props["edition"].(string)
 
 		var label string
 		for _, l := range labels {
 			if strings.Contains(l, "_name_") {
-				label = l
+				label = strings.Replace(l, `_name_`, "", -1)
 				break
 			}
 		}
 
-		neoLabel := strings.Replace(label, `_name_`, "", -1)
+		if previousEdition, ok := codeListEditionsMap[label]; !ok {
+			// If no edition for this label exists yet in the map, then create one
+			codeList := &models.CodeList{
+				Links: models.CodeListLink{
+					Self: &models.Link{
+						Href: fmt.Sprintf("/code-lists/%s", label),
+						ID:   label,
+					},
+					Editions: &models.Link{
+						Href: fmt.Sprintf("/code-lists/%s/editions", label),
+					},
+					Latest: &models.Link{
+						Href: fmt.Sprintf("/code-lists/%s/editions/%s", label, edition),
+						ID:   edition,
+					},
+				},
+				Name: name,
+			}
 
-		codeList := &models.CodeList{
-			Links: models.CodeListLink{
-				Self: &models.Link{
-					Href: fmt.Sprintf("/code-lists/%s", neoLabel),
-					ID:   neoLabel,
-				},
-				Codes: &models.Link{
-					Href: fmt.Sprintf("/code-lists/%s/editions", neoLabel),
-				},
-			},
-			Name: name,
+			codeListEditionsMap[label] = codeList
+
+		} else {
+			// If an edition already exists for this label, then check to see if this version is more recent
+			previousEditionValue, err := strconv.Atoi(previousEdition.Links.Latest.ID)
+			if err != nil {
+				continue
+			}
+
+			currentEditionValue, err := strconv.Atoi(edition)
+			if err != nil {
+				continue
+			}
+
+			if currentEditionValue > previousEditionValue {
+				previousEdition.Links.Latest = &models.Link{
+					Href: fmt.Sprintf("/code-lists/%s/editions/%s", label, edition),
+					ID:   edition,
+				}
+			}
 		}
 
-		codeLists.Items = append(codeLists.Items, *codeList)
+	}
+
+	for _, codelist := range codeListEditionsMap {
+		codeLists.Items = append(codeLists.Items, *codelist)
 	}
 
 	return codeLists, nil
@@ -165,7 +193,7 @@ func (n *NeoDataStore) GetCodeList(ctx context.Context, code string) (*models.Co
 				Href: fmt.Sprintf("/code-lists/%s", code),
 				ID:   code,
 			},
-			Codes: &models.Link{
+			Editions: &models.Link{
 				Href: fmt.Sprintf("/code-lists/%s/editions", code),
 			},
 		},
@@ -239,7 +267,6 @@ func (n *NeoDataStore) GetEditions(ctx context.Context, codeListID string) (*mod
 		edition := props["edition"].(string)
 
 		editionModel := models.Edition{
-			ID:      codeListID,
 			Edition: edition,
 			Label:   props["label"].(string),
 			Links: models.EditionLinks{
@@ -302,7 +329,6 @@ func (n *NeoDataStore) GetEdition(ctx context.Context, codeListID, edition strin
 		props := row[0].(graph.Node).Properties
 
 		editionModel = &models.Edition{
-			ID:      codeListID,
 			Edition: edition,
 			Label:   props["label"].(string),
 			Links: models.EditionLinks{

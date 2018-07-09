@@ -141,7 +141,7 @@ func createCodeList(header []string) string {
 				ID:   listID,
 				Href: "http://localhost:22400/code-lists/" + listID,
 			},
-			Codes: &models.Link{
+			Editions: &models.Link{
 				Href: "http://localhost:22400/code-lists/" + listID + "/codes",
 			},
 		},

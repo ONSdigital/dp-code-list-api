@@ -9,7 +9,7 @@ import (
 	"github.com/ONSdigital/dp-code-list-api/datastore"
 )
 
-var notFoundErrors = map[error]bool{
+var codesNotFoundErrors = map[error]bool{
 	datastore.ErrEditionNotFound: true,
 	datastore.ErrCodeNotFound:    true,
 }
@@ -21,20 +21,30 @@ func (c *CodeListAPI) getCodes(w http.ResponseWriter, r *http.Request) {
 	edition := vars["edition"]
 	data := log.Data{"codelist_id": id, "edition": edition}
 
-	log.InfoCtx(ctx, "getting edition codes", data)
+	log.InfoCtx(ctx, "getCodes endpoint: attempting to get edition codes", data)
 
 	codes, err := c.store.GetCodes(ctx, id, edition)
 	if err != nil {
 		log.ErrorCtx(ctx, errors.WithMessage(err, "getCodes endpoint: store.GetCode returned an error"), data)
-		if notFoundErrors[err] {
+		if codesNotFoundErrors[err] {
 			http.Error(w, err.Error(), http.StatusNotFound)
 		} else {
 			http.Error(w, internalServerErr, http.StatusInternalServerError)
 		}
 		return
 	}
-	b, _ := json.Marshal(codes)
-	writeBody(ctx, w, b)
+	b, err := json.Marshal(codes)
+	if err != nil {
+		log.ErrorCtx(ctx, errors.WithMessage(err, "getCodes endpoint: failed to marshal codes to json bytes"), data)
+		http.Error(w, internalServerErr, http.StatusInternalServerError)
+		return
+	}
+
+	if err := c.writeBody(w, b); err != nil {
+		log.ErrorCtx(ctx, errors.WithMessage(err, "failed to write bytes to response"), nil)
+		return
+	}
+	log.InfoCtx(ctx, "getCodes endpoint: request successful", data)
 }
 
 func (c *CodeListAPI) getCode(w http.ResponseWriter, r *http.Request) {
@@ -50,7 +60,7 @@ func (c *CodeListAPI) getCode(w http.ResponseWriter, r *http.Request) {
 	result, err := c.store.GetCode(ctx, id, edition, code)
 	if err != nil {
 		log.ErrorCtx(ctx, errors.WithMessage(err, "getCode endpoint: store.GetCode returned an error"), data)
-		if notFoundErrors[err] {
+		if codesNotFoundErrors[err] {
 			http.Error(w, err.Error(), http.StatusNotFound)
 		} else {
 			http.Error(w, internalServerErr, http.StatusInternalServerError)
@@ -65,5 +75,5 @@ func (c *CodeListAPI) getCode(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.InfoCtx(ctx, "getCode endpoint: request successful", data)
-	writeBody(ctx, w, b)
+	writeBody(w, b)
 }

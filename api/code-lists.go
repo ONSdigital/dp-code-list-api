@@ -6,6 +6,7 @@ import (
 
 	"github.com/ONSdigital/go-ns/log"
 	"github.com/gorilla/mux"
+	"github.com/pkg/errors"
 )
 
 func (c *CodeListAPI) getCodeLists(w http.ResponseWriter, r *http.Request) {
@@ -30,7 +31,10 @@ func (c *CodeListAPI) getCodeLists(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeBody(ctx, w, b)
+	if err := writeBody(w, b); err != nil {
+		log.ErrorCtx(ctx, errors.WithMessage(err, "getCodeLists endpoint: failed to write bytes to response"), nil)
+		return
+	}
 	log.InfoCtx(r.Context(), "retrieved all codelists", nil)
 }
 
@@ -50,6 +54,9 @@ func (c *CodeListAPI) getCodeList(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeBody(ctx, w, b)
+	if err := writeBody(w, b); err != nil {
+		log.ErrorCtx(ctx, errors.WithMessage(err, "getCodeList endpoint: failed to write bytes to response"), log.Data{"code_list_id": id})
+		return
+	}
 	log.InfoCtx(r.Context(), "retrieved codelist", log.Data{"code_list_id": id})
 }

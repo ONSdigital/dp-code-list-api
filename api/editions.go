@@ -6,6 +6,7 @@ import (
 
 	"github.com/ONSdigital/go-ns/log"
 	"github.com/gorilla/mux"
+	"github.com/pkg/errors"
 )
 
 func (c *CodeListAPI) getEditions(w http.ResponseWriter, r *http.Request) {
@@ -26,7 +27,10 @@ func (c *CodeListAPI) getEditions(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeBody(ctx, w, b)
+	if err := writeBody(w, b); err != nil {
+		log.ErrorCtx(ctx, errors.WithMessage(err, "getEditions endpoint: failed to write bytes to response"), data)
+		return
+	}
 	log.InfoCtx(r.Context(), "retrieved codelist editions", log.Data{"code_list_id": id})
 }
 
@@ -49,6 +53,9 @@ func (c *CodeListAPI) getEdition(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeBody(ctx, w, b)
+	if err := writeBody(w, b); err != nil {
+		log.ErrorCtx(ctx, errors.WithMessage(err, "getEdition endpoint: failed to write bytes to response"), data)
+		return
+	}
 	log.InfoCtx(r.Context(), "retrieved codelist edition", log.Data{"code_list_id": id, edition: edition})
 }

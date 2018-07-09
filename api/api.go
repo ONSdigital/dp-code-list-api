@@ -7,20 +7,36 @@ import (
 	"github.com/ONSdigital/go-ns/log"
 	"github.com/gorilla/mux"
 	"context"
-	"github.com/pkg/errors"
 )
 
-const internalServerErr = "internal server error"
+const (
+	internalServerErr = "internal server error"
+	contentTypeHeader = "Content-Type"
+	contentTypeJSON   = "application/json"
+)
 
 // CodeListAPI holds all endpoints which are used to access the code list resources
 type CodeListAPI struct {
-	router *mux.Router
-	store  datastore.DataStore
+	router    *mux.Router
+	store     datastore.DataStore
+	writeBody func(w http.ResponseWriter, bytes []byte) error
 }
 
 // CreateCodeListAPI returns a constructed code list api
 func CreateCodeListAPI(route *mux.Router, store datastore.DataStore) *CodeListAPI {
-	api := CodeListAPI{router: route, store: store}
+	api := CodeListAPI{
+		router: route,
+		store:  store,
+		writeBody: func(w http.ResponseWriter, bytes []byte) error {
+			w.Header().Set(contentTypeHeader, contentTypeJSON)
+			if _, err := w.Write(bytes); err != nil {
+				http.Error(w, internalServerErr, http.StatusInternalServerError)
+				return err
+			}
+			return nil
+		},
+	}
+
 	api.router.HandleFunc("/code-lists", api.getCodeLists).Methods("GET")
 	api.router.HandleFunc("/code-lists/{id}", api.getCodeList).Methods("GET")
 	api.router.HandleFunc("/code-lists/{id}/editions", api.getEditions).Methods("GET")
@@ -39,11 +55,11 @@ func handleError(ctx context.Context, w http.ResponseWriter, err error, data log
 	}
 }
 
-func writeBody(ctx context.Context, w http.ResponseWriter, bytes []byte) {
-	w.Header().Set("Content-Type", "application/json")
+func writeBody(w http.ResponseWriter, bytes []byte) error {
+	w.Header().Set(contentTypeHeader, contentTypeJSON)
 	if _, err := w.Write(bytes); err != nil {
-		log.ErrorCtx(ctx, errors.WithMessage(err, "failed to write bytes to response"), nil)
 		http.Error(w, internalServerErr, http.StatusInternalServerError)
-		return
+		return err
 	}
+	return nil
 }

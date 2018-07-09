@@ -15,6 +15,8 @@ import (
 	"io"
 )
 
+//go:generate moq -out mock/neo4j.go -pkg mock . DBPool Conn Rows
+
 const (
 	getCodeListsQuery       = "MATCH (i) WHERE i:_%s%s RETURN distinct labels(i) as labels, i"
 	getCodeListQuery        = "MATCH (i:_%s:`_name_%s`) RETURN i"
@@ -27,6 +29,9 @@ const (
 var (
 	errEditionNotFound = errors.New("edition does not exist")
 )
+
+type Conn bolt.Conn
+type Rows bolt.Rows
 
 // NeoDataStore represents the necessary information to access
 // neo4j
@@ -354,7 +359,7 @@ func (n *NeoDataStore) GetEdition(ctx context.Context, codeListID, edition strin
 }
 
 func (n *NeoDataStore) GetCodes(ctx context.Context, codeListID, edition string) (*models.CodeResults, error) {
-	editionExists, err := n.editionExists(ctx, codeListID, edition)
+	editionExists, err := n.EditionExists(ctx, codeListID, edition)
 	if err != nil {
 		return nil, err
 	}
@@ -405,7 +410,7 @@ func (n *NeoDataStore) GetCodes(ctx context.Context, codeListID, edition string)
 }
 
 func (n *NeoDataStore) GetCode(ctx context.Context, codeListID, edition string, code string) (*models.Code, error) {
-	editionExists, err := n.editionExists(ctx, codeListID, edition)
+	editionExists, err := n.EditionExists(ctx, codeListID, edition)
 	if err != nil {
 		return nil, err
 	}
@@ -464,7 +469,7 @@ func (n *NeoDataStore) GetCode(ctx context.Context, codeListID, edition string, 
 	return codeModel, nil
 }
 
-func (n *NeoDataStore) editionExists(ctx context.Context, codeListID string, edition string) (bool, error) {
+func (n *NeoDataStore) EditionExists(ctx context.Context, codeListID string, edition string) (bool, error) {
 	data := log.Data{"codelist_id": codeListID, "edition": edition}
 	log.InfoCtx(ctx, "checking edition exists", data)
 

@@ -495,7 +495,7 @@ func (n *NeoDataStore) EditionExists(ctx context.Context, codeListID string, edi
 		var ok bool
 		count, ok = row[0].(int64)
 		if !ok {
-			return errors.New("extract row result error: failed to cast result to int64 ")
+			return errors.New("extract row result error: failed to cast result to int64")
 		}
 		return nil
 	})

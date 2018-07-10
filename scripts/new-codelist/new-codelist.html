@@ -11,15 +11,17 @@
 
 <script>
     let root = "codelist.csv"
-
     document.addEventListener("DOMContentLoaded", function () {
-
+        //get data
         d3.csv(root, function (data) {
             headerRow = Object.keys(data[0])
+            //codelist ID will be the first cell in column A
             codelist = headerRow["0"]
+            //codelist label will will be the first cell in column B
             label = headerRow["1"]
+            //Need to get an edition from user, not in file so ask for it
             let edition = prompt("Please enter edition (normally a year")
-
+            //create cypher query to create the node for the codelist
             let node = document.createElement("p");
             let textnode = document.createTextNode("CREATE CONSTRAINT ON (n:`_code_" + codelist +
                 "`) ASSERT n.value IS UNIQUE;");
@@ -31,12 +33,14 @@
                 label + "', edition:'"+ edition +"' });");
             node2.appendChild(text);
             document.getElementById("cypher").appendChild(node2);
+            //the codes themselves need to be treated differnetly if Geo codes so check if this is
             if (label === "geography") {
                 let unique = confirm(
-                    "Are you loading geogrphy codes? This script will not create code-list specific nodes. Ensure all codes are globally unique"
+                    "Are you loading geography codes? This script will not create code-list specific nodes. Ensure all codes are globally unique"
                 );
              if (unique == true) {
                     data.map(function (data) {
+                        //this stops us from creating multiple versions of the same code for geography, there is a constraint on this codelabel when we use later
                         codeLabel = "geography"
                         createCodes(data, codeLabel)
                     })

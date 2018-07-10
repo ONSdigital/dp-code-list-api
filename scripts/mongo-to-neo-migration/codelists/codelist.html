@@ -15,34 +15,29 @@
             })
             .then(data => data.json())
             .then(function (data) {
-                // console.log (data)
                 
                 data.items.map(function (data) {
 
                     if (data.name === "geography"){
-                        // console.log("CREATE CONSTRAINT ON (n:`_"+ data.name +"`) ASSERT n.code IS UNIQUE;")
-                        let constraint = document.createTextNode("CREATE CONSTRAINT ON (n:`_code_"+ data.name +"`) ASSERT n.value IS UNIQUE;");     // Create a text node
+                        let constraint = document.createTextNode("CREATE CONSTRAINT ON (n:`_code_"+ data.name +"`) ASSERT n.value IS UNIQUE;");
                         codelist = data.links.codes.href
                         getCodes(codelist)
                         let node = document.createElement("p"); 
-                        let node2 = document.createElement("p");           // Create a <h1> node
-                        let textnode = document.createTextNode("CREATE (node:`_code_list`:`_code_list_"+data.id+"` { label:'"+ data.name+ "', edition:'one-off' });");     // Create a text node
+                        let node2 = document.createElement("p"); 
+                        let textnode = document.createTextNode("CREATE (node:`_code_list`:`_code_list_"+data.id+"` { label:'"+ data.name+ "', edition:'one-off' });");
                         node.appendChild(textnode); 
-                        node2.appendChild(constraint);                                                      // Append the text to <h1>
+                        node2.appendChild(constraint);
                         document.getElementById("cypher").appendChild(node);
                         document.getElementById("cypher").appendChild(node2);
-
                     } else {
-
-                        // console.log("CREATE CONSTRAINT ON (n:`_"+ data.id +"`) ASSERT n.code IS UNIQUE;")
                         let constraint = document.createTextNode("CREATE CONSTRAINT ON (n:`_code_"+ data.id +"`) ASSERT n.value IS UNIQUE;");     // Create a text node
                         codelist = data.links.codes.href
                         getCodes(codelist)
                         let node = document.createElement("p"); 
-                        let node2 = document.createElement("p");             // Create a <h1> node
+                        let node2 = document.createElement("p"); 
                         let textnode = document.createTextNode("CREATE (node:`_code_list`:`_code_list_"+data.id+"` { label:'"+ data.name+ "', edition:'one-off' });");     // Create a text node
                         node.appendChild(textnode); 
-                        node2.appendChild(constraint);                                                      // Append the text to <h1>
+                        node2.appendChild(constraint);
                         document.getElementById("cypher").appendChild(node);
                         document.getElementById("cypher").appendChild(node2);
                     }

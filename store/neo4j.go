@@ -5,14 +5,14 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
-
 	"github.com/ONSdigital/dp-code-list-api/datastore"
 	"github.com/ONSdigital/dp-code-list-api/models"
 	"github.com/ONSdigital/go-ns/log"
 	bolt "github.com/johnnadratowski/golang-neo4j-bolt-driver"
-	"github.com/johnnadratowski/golang-neo4j-bolt-driver/structures/graph"
 	"github.com/pkg/errors"
 	"io"
+	"github.com/johnnadratowski/golang-neo4j-bolt-driver/structures/graph"
+	dpbolt "github.com/ONSdigital/dp-bolt/bolt"
 )
 
 //go:generate moq -out mock/neo4j.go -pkg mock . DBPool Conn Rows
@@ -33,11 +33,17 @@ var (
 type Conn bolt.Conn
 type Rows bolt.Rows
 
+type BoltDB interface {
+	QueryForResult(query string, params map[string]interface{}, extractor dpbolt.ResultExtractor) error
+	Close() error
+}
+
 // NeoDataStore represents the necessary information to access
 // neo4j
 type NeoDataStore struct {
 	pool          DBPool
 	codeListLabel string
+	db            BoltDB
 }
 
 // DBPool contains the methods to control access to the Neo4J
@@ -49,6 +55,7 @@ type DBPool interface {
 
 // Close is a wrapper for the neo pool close
 func (n *NeoDataStore) Close() error {
+	n.db.Close()
 	return n.pool.Close()
 }
 
@@ -59,9 +66,12 @@ func CreateNeoDataStore(addr, codelistLabel string, conns int) (n *NeoDataStore,
 		return
 	}
 
+	boltDB := dpbolt.New(store)
+
 	n = &NeoDataStore{
 		pool:          store,
 		codeListLabel: codelistLabel,
+		db:            boltDB,
 	}
 
 	return
@@ -418,30 +428,10 @@ func (n *NeoDataStore) GetCode(ctx context.Context, codeListID, edition string, 
 		return nil, datastore.ErrEditionNotFound
 	}
 
-	conn, err := n.pool.OpenPool()
-	if err != nil {
-		return nil, errors.WithMessage(err, "getCode: error while opening neo4j error")
-	}
-
-	defer conn.Close()
-
-	query := fmt.Sprintf(getCodeQuery, codeListID, edition, code)
-
-	rows, err := conn.QueryNeo(query, nil)
-	if err != nil {
-		return nil, errors.WithMessage(err, "getCode: conn.QueryNeo returned an error")
-	}
-	defer rows.Close()
-
 	var codeModel *models.Code
-
-	err = extractRowResults(ctx, rows, func(row []interface{}, rowIndex int) error {
-		if rowIndex > 1 {
-			return errors.New("getCode: more than 1 result found, expected unique result")
-		}
-
-		node := row[0].(graph.Node)
-		relationShip := row[1].(graph.Relationship)
+	err = n.db.QueryForResult(fmt.Sprintf(getCodeQuery, codeListID, edition, code), nil, func(r *dpbolt.Result) error {
+		node := r.Data[0].(graph.Node)
+		relationShip := r.Data[1].(graph.Relationship)
 		codeValue := node.Properties["value"].(string)
 		codeModel = &models.Code{
 			ID:    strconv.FormatInt(node.NodeIdentity, 10),
@@ -458,6 +448,7 @@ func (n *NeoDataStore) GetCode(ctx context.Context, codeListID, edition string, 
 		}
 		return nil
 	})
+
 	if err != nil {
 		return nil, errors.WithMessage(err, "getCode: unexpected error extracting code from neo4j results")
 	}
@@ -473,27 +464,12 @@ func (n *NeoDataStore) EditionExists(ctx context.Context, codeListID string, edi
 	data := log.Data{"codelist_id": codeListID, "edition": edition}
 	log.InfoCtx(ctx, "checking edition exists", data)
 
-	conn, err := n.pool.OpenPool()
-	if err != nil {
-		return false, errors.WithMessage(err, "error while attempting to open neo4j connection")
-	}
-	defer conn.Close()
-
 	query := fmt.Sprintf(countEditions, codeListID, edition)
 
-	rows, err := conn.QueryNeo(query, nil)
-	if err != nil {
-		return false, errors.WithMessage(err, "error executing neo4j query")
-	}
-	defer rows.Close()
-
 	var count int64
-	err = extractRowResults(ctx, rows, func(row []interface{}, rowIndex int) error {
-		if rowIndex != 1 {
-			return errors.New("extract row result error: expected single result but was not")
-		}
+	err := n.db.QueryForResult(query, nil, func(r *dpbolt.Result) error {
 		var ok bool
-		count, ok = row[0].(int64)
+		count, ok = r.Data[0].(int64)
 		if !ok {
 			return errors.New("extract row result error: failed to cast result to int64")
 		}

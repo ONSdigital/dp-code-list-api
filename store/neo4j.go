@@ -517,16 +517,14 @@ func extractRowResults(ctx context.Context, rows bolt.Rows, extractRowData func(
 		row, _, err := rows.NextNeo()
 		if err != nil {
 			if err == io.EOF {
-				log.InfoCtx(ctx, "extractRowResults: reached end of result rows", nil)
 				return nil
 			} else {
-				log.ErrorCtx(ctx, errors.WithMessage(err, "row error, breaking loop"), nil)
-				return err
+				return errors.WithMessage(err, "extractRowResults: rows.NextNeo return an error")
 			}
 		}
 		index++
 		if err := extractRowData(row, index); err != nil {
-			return err
+			return errors.WithMessage(err, "extractRowData returned an error")
 		}
 	}
 	return nil

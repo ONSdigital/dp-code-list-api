@@ -11,6 +11,13 @@ job "dp-code-list-api" {
       value     = "web"
     }
 
+    restart {
+      attempts = 3
+      delay    = "15s"
+      interval = "1m"
+      mode     = "delay"
+    }
+
     task "dp-code-list-api" {
       driver = "exec"
 
@@ -61,6 +68,13 @@ job "dp-code-list-api" {
     constraint {
       attribute = "${node.class}"
       value     = "publishing"
+    }
+
+    restart {
+      attempts = 3
+      delay    = "15s"
+      interval = "1m"
+      mode     = "delay"
     }
 
     task "dp-code-list-api" {

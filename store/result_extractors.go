@@ -10,6 +10,9 @@ import (
 	"github.com/johnnadratowski/golang-neo4j-bolt-driver/structures/graph"
 )
 
+var errCodeNotFound = errors.New("code not found")
+
+
 func countEditionExtractor() (*int64, dpbolt.ResultExtractor) {
 	var count int64
 	extractor := func(r *dpbolt.Result) error {
@@ -23,10 +26,11 @@ func countEditionExtractor() (*int64, dpbolt.ResultExtractor) {
 	return &count, extractor
 }
 
-func codeResultExtractor(codeListID string, edition string) (*models.Code, dpbolt.ResultExtractor) {
-	codeModel := &models.Code{}
+func codeResultExtractor(codeModel *models.Code, codeListID string, edition string) dpbolt.ResultExtractor {
 	extractor := func(r *dpbolt.Result) error {
-		var ok bool
+		if len(r.Data) == 0 {
+			return errCodeNotFound
+		}
 
 		node, ok := r.Data[0].(graph.Node)
 		if !ok {
@@ -65,5 +69,5 @@ func codeResultExtractor(codeListID string, edition string) (*models.Code, dpbol
 		}
 		return nil
 	}
-	return codeModel, extractor
+	return extractor
 }

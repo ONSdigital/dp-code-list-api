@@ -9,6 +9,9 @@ import (
 	"fmt"
 	dpbolt "github.com/ONSdigital/dp-bolt/bolt"
 	"github.com/ONSdigital/dp-code-list-api/datastore"
+	"github.com/johnnadratowski/golang-neo4j-bolt-driver/structures/graph"
+	"github.com/ONSdigital/dp-code-list-api/models"
+	"strconv"
 )
 
 var (
@@ -173,6 +176,105 @@ func TestNeoDataStore_GetCodeErrors(t *testing.T) {
 			So(db.QueryForResultCalls[1].Query, ShouldEqual, fmt.Sprintf(getCodeQuery, testCodeListID, testEdition, testCode))
 			So(db.QueryForResultCalls[1].Params, ShouldBeNil)
 		})
+	})
+}
 
+func TestNeoDataStore_GetCodeNotFound(t *testing.T) {
+	Convey("given no code is found", t, func() {
+		db := &boltmock.DB{
+			QueryForResultFuncs: []boltmock.QueryForResultFunc{
+				func(query string, params map[string]interface{}, resultExtractor dpbolt.ResultExtractor) error {
+					return resultExtractor(
+						&dpbolt.Result{
+							Data:  []interface{}{int64(1)},
+							Meta:  nil,
+							Index: 0,
+						})
+				},
+				func(query string, params map[string]interface{}, resultExtractor dpbolt.ResultExtractor) error {
+					return resultExtractor(
+						&dpbolt.Result{
+							Data: []interface{}{},
+						})
+				},
+			},
+		}
+
+		neoStore := NeoDataStore{db: db}
+		code, err := neoStore.GetCode(context.Background(), testCodeListID, testEdition, testCode)
+
+		Convey("then the expected error is returned", func() {
+			So(code, ShouldBeNil)
+			So(err.Error(), ShouldEqual, datastore.ErrCodeNotFound.Error())
+
+		})
+
+		Convey("and db.QueryForResult is called the expected number of times", func() {
+			So(db.QueryForResultCalls, ShouldHaveLength, 2)
+			So(db.QueryForResultCalls[0].Query, ShouldEqual, fmt.Sprintf(countEditions, testCodeListID, testEdition))
+			So(db.QueryForResultCalls[0].Params, ShouldBeNil)
+			So(db.QueryForResultCalls[1].Query, ShouldEqual, fmt.Sprintf(getCodeQuery, testCodeListID, testEdition, testCode))
+			So(db.QueryForResultCalls[1].Params, ShouldBeNil)
+		})
+	})
+}
+
+func TestNeoDataStore_GetCodeSuccess(t *testing.T) {
+	node := graph.Node{
+		NodeIdentity: testNodeIdentity,
+		Properties:   map[string]interface{}{"value": testNodeValue},
+	}
+
+	rel := graph.Relationship{
+		Properties: map[string]interface{}{"label": testRelationshipLabel},
+	}
+	Convey("given getCode is successful", t, func() {
+		db := &boltmock.DB{
+			QueryForResultFuncs: []boltmock.QueryForResultFunc{
+				func(query string, params map[string]interface{}, resultExtractor dpbolt.ResultExtractor) error {
+					return resultExtractor(
+						&dpbolt.Result{
+							Data:  []interface{}{int64(1)},
+							Meta:  nil,
+							Index: 0,
+						})
+				},
+				func(query string, params map[string]interface{}, resultExtractor dpbolt.ResultExtractor) error {
+					return resultExtractor(&dpbolt.Result{
+						Data: []interface{}{node, rel},
+					})
+				},
+			},
+		}
+
+		neoStore := NeoDataStore{db: db}
+		code, err := neoStore.GetCode(context.Background(), testCodeListID, testEdition, testCode)
+
+		Convey("then the expected code is return and error is nil", func() {
+			So(err, ShouldBeNil)
+			expected := &models.Code{
+				ID:    strconv.FormatInt(testNodeIdentity, 10),
+				Code:  testNodeValue,
+				Label: testRelationshipLabel,
+				Links: models.CodeLinks{
+					Self: models.Link{
+						Href: fmt.Sprintf("/code-lists/%s/editions/%s/codes/%s", testCodeListID, testEdition, testNodeValue),
+					},
+					CodeList: models.Link{
+						Href: fmt.Sprintf("/code-lists/%s", testCodeListID),
+					},
+				},
+			}
+			So(code, ShouldResemble, expected)
+
+		})
+
+		Convey("and db.QueryForResult is called the expected number of times", func() {
+			So(db.QueryForResultCalls, ShouldHaveLength, 2)
+			So(db.QueryForResultCalls[0].Query, ShouldEqual, fmt.Sprintf(countEditions, testCodeListID, testEdition))
+			So(db.QueryForResultCalls[0].Params, ShouldBeNil)
+			So(db.QueryForResultCalls[1].Query, ShouldEqual, fmt.Sprintf(getCodeQuery, testCodeListID, testEdition, testCode))
+			So(db.QueryForResultCalls[1].Params, ShouldBeNil)
+		})
 	})
 }

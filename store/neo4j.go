@@ -428,14 +428,17 @@ func (n *NeoDataStore) GetCode(ctx context.Context, codeListID, edition string, 
 		return nil, datastore.ErrEditionNotFound
 	}
 
-	codeModel, extractor := codeResultExtractor(codeListID, edition)
+	codeModel := &models.Code{}
+	extractor := codeResultExtractor(codeModel, codeListID, edition)
 
-	if err = n.db.QueryForResult(fmt.Sprintf(getCodeQuery, codeListID, edition, code), nil, extractor); err != nil {
-		return nil, errors.WithMessage(err, "extract result returned an error")
+	err = n.db.QueryForResult(fmt.Sprintf(getCodeQuery, codeListID, edition, code), nil, extractor)
+
+	if err != nil && err == errCodeNotFound {
+		return nil, err
 	}
 
-	if codeModel == nil {
-		return nil, datastore.ErrCodeNotFound
+	if err != nil {
+		return nil, errors.WithMessage(err, "extract result returned an error")
 	}
 	return codeModel, nil
 }

@@ -35,6 +35,7 @@ type Rows bolt.Rows
 
 type BoltDB interface {
 	QueryForResult(query string, params map[string]interface{}, extractResult dpbolt.ResultExtractor) error
+	QueryForResults(query string, params map[string]interface{}, extractResult dpbolt.ResultExtractor) error
 	Close() error
 }
 

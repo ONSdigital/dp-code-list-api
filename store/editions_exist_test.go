@@ -12,7 +12,7 @@ import (
 func TestNeoDataStore_EditionExistsSuccess(t *testing.T) {
 	Convey("given db.QueryForResult return count 1 for edition", t, func() {
 		db := &boltmock.DB{
-			QueryForResultFuncs: []boltmock.QueryForResultFunc{
+			QueryForResultFuncs: []boltmock.QueryFunc{
 				func(query string, params map[string]interface{}, resultExtractor dpbolt.ResultExtractor) error {
 					return resultExtractor(
 						&dpbolt.Result{
@@ -38,7 +38,7 @@ func TestNeoDataStore_EditionExistsSuccess(t *testing.T) {
 func TestNeoDataStore_EditionExistsMoreThanOneResult(t *testing.T) {
 	Convey("given db.QueryForResult return count > 1 for edition", t, func() {
 		db := &boltmock.DB{
-			QueryForResultFuncs: []boltmock.QueryForResultFunc{
+			QueryForResultFuncs: []boltmock.QueryFunc{
 				func(query string, params map[string]interface{}, resultExtractor dpbolt.ResultExtractor) error {
 					return resultExtractor(
 						&dpbolt.Result{
@@ -64,7 +64,7 @@ func TestNeoDataStore_EditionExistsMoreThanOneResult(t *testing.T) {
 func TestNeoDataStore_EditionExistsQueryForResultError(t *testing.T) {
 	Convey("given db.QueryForResult returns an error", t, func() {
 		db := &boltmock.DB{
-			QueryForResultFuncs: []boltmock.QueryForResultFunc{
+			QueryForResultFuncs: []boltmock.QueryFunc{
 				func(query string, params map[string]interface{}, resultExtractor dpbolt.ResultExtractor) error {
 					return errTest
 				},

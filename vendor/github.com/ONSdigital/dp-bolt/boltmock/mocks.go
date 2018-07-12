@@ -7,12 +7,14 @@ type QueryParams struct {
 	Params map[string]interface{}
 }
 
-type QueryForResultFunc func(query string, params map[string]interface{}, resultExtractor bolt.ResultExtractor) error
+type QueryFunc func(query string, params map[string]interface{}, resultExtractor bolt.ResultExtractor) error
 
 type DB struct {
 	QueryForResultCalls  []QueryParams
-	QueryForResultFuncs  []QueryForResultFunc
+	QueryForResultFuncs  []QueryFunc
 	CloseFunc            func() error
+	QueryForResultsCalls  []QueryParams
+	QueryForResultsFuncs  []QueryFunc
 }
 
 func (m *DB) QueryForResult(query string, params map[string]interface{}, resultExtractor bolt.ResultExtractor) error {
@@ -23,6 +25,16 @@ func (m *DB) QueryForResult(query string, params map[string]interface{}, resultE
 	index := len(m.QueryForResultCalls)
 	m.QueryForResultCalls = append(m.QueryForResultCalls, newQueryParams(query, params))
 	return m.QueryForResultFuncs[index](query, params, resultExtractor)
+}
+
+func (m *DB) QueryForResults(query string, params map[string]interface{}, resultExtractor bolt.ResultExtractor) error {
+	if m.QueryForResultsCalls == nil {
+		m.QueryForResultsCalls = []QueryParams{}
+	}
+
+	index := len(m.QueryForResultsCalls)
+	m.QueryForResultsCalls = append(m.QueryForResultsCalls, newQueryParams(query, params))
+	return m.QueryForResultsFuncs[index](query, params, resultExtractor)
 }
 
 func (m *DB) Close() error {

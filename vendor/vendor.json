@@ -3,10 +3,22 @@
 	"ignore": "test",
 	"package": [
 		{
-			"checksumSHA1": "vzZr/t+4jxq0yLW/atwCByZqLKI=",
-			"path": "github.com/ONSdigital/dp-bolt/bolt",
+			"checksumSHA1": "4qY6/7BWqggHkEI9og6As2aZRE0=",
+			"path": "github.com/ONSdigital/dp-bolt",
 			"revision": "e6f3419169351b46a12d37087b4978f493f26a9f",
 			"revisionTime": "2018-07-11T08:29:42Z"
+		},
+		{
+			"checksumSHA1": "FanfcQcb0ai5lVouhiGS8eFti9M=",
+			"path": "github.com/ONSdigital/dp-bolt/bolt",
+			"revision": "a2224b84fd7d6e607a8f11c609d322fc2ad35d50",
+			"revisionTime": "2018-07-12T11:13:29Z"
+		},
+		{
+			"checksumSHA1": "6fpCX3wU0O+TXjIVmLFJ7eGeUWQ=",
+			"path": "github.com/ONSdigital/dp-bolt/boltmock",
+			"revision": "a2224b84fd7d6e607a8f11c609d322fc2ad35d50",
+			"revisionTime": "2018-07-12T11:13:29Z"
 		},
 		{
 			"checksumSHA1": "8GX4z3tt4e6rXHJtJv8q8YZrFwk=",

@@ -34,7 +34,7 @@ type Conn bolt.Conn
 type Rows bolt.Rows
 
 type BoltDB interface {
-	QueryForResult(query string, params map[string]interface{}, extractor dpbolt.ResultExtractor) error
+	QueryForResult(query string, params map[string]interface{}, extractResult dpbolt.ResultExtractor) error
 	Close() error
 }
 
@@ -428,35 +428,15 @@ func (n *NeoDataStore) GetCode(ctx context.Context, codeListID, edition string, 
 		return nil, datastore.ErrEditionNotFound
 	}
 
-	var codeModel *models.Code
-	err = n.db.QueryForResult(fmt.Sprintf(getCodeQuery, codeListID, edition, code), nil, func(r *dpbolt.Result) error {
-		node := r.Data[0].(graph.Node)
-		relationShip := r.Data[1].(graph.Relationship)
-		codeValue := node.Properties["value"].(string)
-		codeModel = &models.Code{
-			ID:    strconv.FormatInt(node.NodeIdentity, 10),
-			Code:  codeValue,
-			Label: relationShip.Properties["label"].(string),
-			Links: models.CodeLinks{
-				Self: models.Link{
-					Href: fmt.Sprintf("/code-lists/%s/editions/%s/codes/%s", codeListID, edition, codeValue),
-				},
-				CodeList: models.Link{
-					Href: fmt.Sprintf("/code-lists/%s", codeListID),
-				},
-			},
-		}
-		return nil
-	})
+	codeModel, extractor := codeResultExtractor(codeListID, edition)
 
-	if err != nil {
-		return nil, errors.WithMessage(err, "getCode: unexpected error extracting code from neo4j results")
+	if err = n.db.QueryForResult(fmt.Sprintf(getCodeQuery, codeListID, edition, code), nil, extractor); err != nil {
+		return nil, errors.WithMessage(err, "extract result returned an error")
 	}
 
 	if codeModel == nil {
 		return nil, datastore.ErrCodeNotFound
 	}
-
 	return codeModel, nil
 }
 
@@ -466,25 +446,18 @@ func (n *NeoDataStore) EditionExists(ctx context.Context, codeListID string, edi
 
 	query := fmt.Sprintf(countEditions, codeListID, edition)
 
-	var count int64
-	err := n.db.QueryForResult(query, nil, func(r *dpbolt.Result) error {
-		var ok bool
-		count, ok = r.Data[0].(int64)
-		if !ok {
-			return errors.New("extract row result error: failed to cast result to int64")
-		}
-		return nil
-	})
+	count, extractor := countEditionExtractor()
+	err := n.db.QueryForResult(query, nil, extractor)
 
 	if err != nil {
 		return false, err
 	}
 
 	// 0 or 1 is a valid response - more than 1... we have bigger issues.
-	if count > 1 {
+	if *count > 1 {
 		return false, errors.New("editionExists: multiple editions found")
 	}
-	return count == 1, nil
+	return *count == 1, nil
 }
 
 func extractRowResults(ctx context.Context, rows bolt.Rows, extractRowData func(data []interface{}, rowIndex int) error) error {

@@ -33,7 +33,7 @@ type DB struct {
 }
 
 //New create a new bolt.DB struct.
-func New(pool neo4j.ClosableDriverPool) *DB {
+func New(pool DBPool) *DB {
 	return &DB{pool: pool}
 }
 

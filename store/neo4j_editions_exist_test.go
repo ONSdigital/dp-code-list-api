@@ -10,7 +10,7 @@ import (
 )
 
 func TestNeoDataStore_EditionExistsSuccess(t *testing.T) {
-	Convey("given db.QueryForResult return count 1 for edition", t, func() {
+	Convey("given bolt.QueryForResult return count 1 for edition", t, func() {
 		db := &boltmock.DB{
 			QueryForResultFuncs: []boltmock.QueryFunc{
 				func(query string, params map[string]interface{}, mapResult dpbolt.ResultMapper) (int, error) {
@@ -22,7 +22,7 @@ func TestNeoDataStore_EditionExistsSuccess(t *testing.T) {
 			},
 		}
 
-		store := &NeoDataStore{db: db}
+		store := &NeoDataStore{bolt: db}
 
 		Convey("then EditionExists should return exists true and no error", func() {
 			exists, err := store.EditionExists(context.Background(), testCodeListID, testEdition)
@@ -36,7 +36,7 @@ func TestNeoDataStore_EditionExistsSuccess(t *testing.T) {
 }
 
 func TestNeoDataStore_EditionExistsMoreThanOneResult(t *testing.T) {
-	Convey("given db.QueryForResult return count > 1 for edition", t, func() {
+	Convey("given bolt.QueryForResult return count > 1 for edition", t, func() {
 		db := &boltmock.DB{
 			QueryForResultFuncs: []boltmock.QueryFunc{
 				func(query string, params map[string]interface{}, mapResult dpbolt.ResultMapper) (int, error) {
@@ -48,7 +48,7 @@ func TestNeoDataStore_EditionExistsMoreThanOneResult(t *testing.T) {
 			},
 		}
 
-		store := &NeoDataStore{db: db}
+		store := &NeoDataStore{bolt: db}
 
 		Convey("then EditionExists should return exists true and no error", func() {
 			exists, err := store.EditionExists(context.Background(), testCodeListID, testEdition)
@@ -62,7 +62,7 @@ func TestNeoDataStore_EditionExistsMoreThanOneResult(t *testing.T) {
 }
 
 func TestNeoDataStore_EditionExistsQueryForResultError(t *testing.T) {
-	Convey("given db.QueryForResult returns an error", t, func() {
+	Convey("given bolt.QueryForResult returns an error", t, func() {
 		db := &boltmock.DB{
 			QueryForResultFuncs: []boltmock.QueryFunc{
 				func(query string, params map[string]interface{}, mapResult dpbolt.ResultMapper) (int, error) {
@@ -71,7 +71,7 @@ func TestNeoDataStore_EditionExistsQueryForResultError(t *testing.T) {
 			},
 		}
 
-		store := &NeoDataStore{db: db}
+		store := &NeoDataStore{bolt: db}
 
 		Convey("then EditionExists should return exists false and the expected error", func() {
 			exists, err := store.EditionExists(context.Background(), testCodeListID, testEdition)

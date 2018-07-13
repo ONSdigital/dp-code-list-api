@@ -82,7 +82,7 @@ func TestNeoDataStore_GetCodesSuccess(t *testing.T) {
 				},
 			},
 		}
-		store := NeoDataStore{db: db}
+		store := NeoDataStore{bolt: db}
 
 		result, err := store.GetCodes(context.Background(), testCodeListID, testEdition)
 
@@ -110,7 +110,7 @@ func TestNeoDataStore_GetCodesEditionExitsError(t *testing.T) {
 				boltmock.NewQueryFunc(0, errTest),
 			},
 		}
-		store := NeoDataStore{db: db}
+		store := NeoDataStore{bolt: db}
 
 		result, err := store.GetCodes(context.Background(), testCodeListID, testEdition)
 
@@ -140,7 +140,7 @@ func TestNeoDataStore_GetCodesEditionExitsFalse(t *testing.T) {
 				},
 			},
 		}
-		store := NeoDataStore{db: db}
+		store := NeoDataStore{bolt: db}
 
 		result, err := store.GetCodes(context.Background(), testCodeListID, testEdition)
 
@@ -173,7 +173,7 @@ func TestNeoDataStore_GetCodesResultMapperError(t *testing.T) {
 				boltmock.NewQueryFunc(0, errTest),
 			},
 		}
-		store := NeoDataStore{db: db}
+		store := NeoDataStore{bolt: db}
 
 		result, err := store.GetCodes(context.Background(), testCodeListID, testEdition)
 
@@ -208,7 +208,7 @@ func TestNeoDataStore_GetCodesNoResults(t *testing.T) {
 				boltmock.NewQueryFunc(0, nil),
 			},
 		}
-		store := NeoDataStore{db: db}
+		store := NeoDataStore{bolt: db}
 
 		result, err := store.GetCodes(context.Background(), testCodeListID, testEdition)
 

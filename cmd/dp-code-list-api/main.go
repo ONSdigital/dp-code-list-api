@@ -16,6 +16,8 @@ import (
 	"github.com/ONSdigital/go-ns/log"
 	"github.com/ONSdigital/go-ns/server"
 	"github.com/gorilla/mux"
+	bolt "github.com/johnnadratowski/golang-neo4j-bolt-driver"
+	dpbolt "github.com/ONSdigital/dp-bolt/bolt"
 )
 
 func main() {
@@ -29,7 +31,16 @@ func main() {
 		log.Error(err, nil)
 		os.Exit(1)
 	}
-	datastore, err := store.CreateNeoDataStore(cfg.Neo4jDatabaseAddress, cfg.Neo4jCodeListLabel, cfg.Neo4jPoolSize)
+
+	pool, err := bolt.NewClosableDriverPool(cfg.Neo4jDatabaseAddress, cfg.Neo4jPoolSize)
+	if err != nil {
+		log.Error(err, nil)
+		os.Exit(1)
+	}
+
+	boltDB := dpbolt.New(pool)
+
+	datastore, err := store.CreateNeoDataStore(boltDB, cfg.Neo4jCodeListLabel)
 	if err != nil {
 		log.Error(err, nil)
 		os.Exit(1)

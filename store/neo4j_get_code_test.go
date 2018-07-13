@@ -19,6 +19,9 @@ var (
 	testEdition    = "2018"
 	testCode       = "99"
 	errTest        = errors.New("error happened yo")
+	testNodeIdentity      = int64(666) // the number of the best \m/
+	testNodeValue         = "node value"
+	testRelationshipLabel = "relationship label"
 )
 
 func TestNeoDataStore_GetCodeEditionExistsErrors(t *testing.T) {
@@ -29,7 +32,7 @@ func TestNeoDataStore_GetCodeEditionExistsErrors(t *testing.T) {
 			},
 		}
 
-		neoStore := NeoDataStore{db: db}
+		neoStore := NeoDataStore{bolt: db}
 		code, err := neoStore.GetCode(context.Background(), testCodeListID, testEdition, testCode)
 
 		Convey("then the expected error is returned", func() {
@@ -38,7 +41,7 @@ func TestNeoDataStore_GetCodeEditionExistsErrors(t *testing.T) {
 
 		})
 
-		Convey("and db.QueryForResult is called the expected number of times", func() {
+		Convey("and bolt.QueryForResult is called the expected number of times", func() {
 			So(db.QueryForResultCalls, ShouldHaveLength, 1)
 			So(db.QueryForResultCalls[0].Query, ShouldEqual, fmt.Sprintf(countEditions, testCodeListID, testEdition))
 			So(db.QueryForResultCalls[0].Params, ShouldBeNil)
@@ -62,7 +65,7 @@ func TestNeoDataStore_GetCodeEditionExistsErrors(t *testing.T) {
 			},
 		}
 
-		neoStore := NeoDataStore{db: db}
+		neoStore := NeoDataStore{bolt: db}
 
 		code, err := neoStore.GetCode(context.Background(), testCodeListID, testEdition, testCode)
 
@@ -71,7 +74,7 @@ func TestNeoDataStore_GetCodeEditionExistsErrors(t *testing.T) {
 			So(err.Error(), ShouldEqual, "extract row result error: failed to cast result to int64")
 		})
 
-		Convey("and db.QueryForResult is called the expected number of times", func() {
+		Convey("and bolt.QueryForResult is called the expected number of times", func() {
 			So(db.QueryForResultCalls, ShouldHaveLength, 1)
 			So(db.QueryForResultCalls[0].Query, ShouldEqual, fmt.Sprintf(countEditions, testCodeListID, testEdition))
 			So(db.QueryForResultCalls[0].Params, ShouldBeNil)
@@ -93,7 +96,7 @@ func TestNeoDataStore_GetCodeEditionExistsErrors(t *testing.T) {
 			},
 		}
 
-		neoStore := NeoDataStore{db: db}
+		neoStore := NeoDataStore{bolt: db}
 
 		code, err := neoStore.GetCode(context.Background(), testCodeListID, testEdition, testCode)
 
@@ -102,7 +105,7 @@ func TestNeoDataStore_GetCodeEditionExistsErrors(t *testing.T) {
 			So(err, ShouldEqual, datastore.ErrEditionNotFound)
 		})
 
-		Convey("and db.QueryForResult is called the expected number of times", func() {
+		Convey("and bolt.QueryForResult is called the expected number of times", func() {
 			So(db.QueryForResultCalls, ShouldHaveLength, 1)
 			So(db.QueryForResultCalls[0].Query, ShouldEqual, fmt.Sprintf(countEditions, testCodeListID, testEdition))
 			So(db.QueryForResultCalls[0].Params, ShouldBeNil)
@@ -124,7 +127,7 @@ func TestNeoDataStore_GetCodeEditionExistsErrors(t *testing.T) {
 			},
 		}
 
-		neoStore := NeoDataStore{db: db}
+		neoStore := NeoDataStore{bolt: db}
 
 		code, err := neoStore.GetCode(context.Background(), testCodeListID, testEdition, testCode)
 
@@ -133,7 +136,7 @@ func TestNeoDataStore_GetCodeEditionExistsErrors(t *testing.T) {
 			So(err.Error(), ShouldResemble, "editionExists: multiple editions found")
 		})
 
-		Convey("and db.QueryForResult is called the expected number of times", func() {
+		Convey("and bolt.QueryForResult is called the expected number of times", func() {
 			So(db.QueryForResultCalls, ShouldHaveLength, 1)
 			So(db.QueryForResultCalls[0].Query, ShouldEqual, fmt.Sprintf(countEditions, testCodeListID, testEdition))
 			So(db.QueryForResultCalls[0].Params, ShouldBeNil)
@@ -157,7 +160,7 @@ func TestNeoDataStore_GetCodeErrors(t *testing.T) {
 			},
 		}
 
-		neoStore := NeoDataStore{db: db}
+		neoStore := NeoDataStore{bolt: db}
 		code, err := neoStore.GetCode(context.Background(), testCodeListID, testEdition, testCode)
 
 		Convey("then the expected error is returned", func() {
@@ -166,7 +169,7 @@ func TestNeoDataStore_GetCodeErrors(t *testing.T) {
 
 		})
 
-		Convey("and db.QueryForResult is called the expected number of times", func() {
+		Convey("and bolt.QueryForResult is called the expected number of times", func() {
 			So(db.QueryForResultCalls, ShouldHaveLength, 2)
 			So(db.QueryForResultCalls[0].Query, ShouldEqual, fmt.Sprintf(countEditions, testCodeListID, testEdition))
 			So(db.QueryForResultCalls[0].Params, ShouldBeNil)
@@ -192,7 +195,7 @@ func TestNeoDataStore_GetCodeNotFound(t *testing.T) {
 			},
 		}
 
-		neoStore := NeoDataStore{db: db}
+		neoStore := NeoDataStore{bolt: db}
 		code, err := neoStore.GetCode(context.Background(), testCodeListID, testEdition, testCode)
 
 		Convey("then the expected error is returned", func() {
@@ -201,7 +204,7 @@ func TestNeoDataStore_GetCodeNotFound(t *testing.T) {
 
 		})
 
-		Convey("and db.QueryForResult is called the expected number of times", func() {
+		Convey("and bolt.QueryForResult is called the expected number of times", func() {
 			So(db.QueryForResultCalls, ShouldHaveLength, 2)
 			So(db.QueryForResultCalls[0].Query, ShouldEqual, fmt.Sprintf(countEditions, testCodeListID, testEdition))
 			So(db.QueryForResultCalls[0].Params, ShouldBeNil)
@@ -240,7 +243,7 @@ func TestNeoDataStore_GetCodeSuccess(t *testing.T) {
 			},
 		}
 
-		neoStore := NeoDataStore{db: db}
+		neoStore := NeoDataStore{bolt: db}
 		code, err := neoStore.GetCode(context.Background(), testCodeListID, testEdition, testCode)
 
 		Convey("then the expected code is return and error is nil", func() {
@@ -262,7 +265,7 @@ func TestNeoDataStore_GetCodeSuccess(t *testing.T) {
 
 		})
 
-		Convey("and db.QueryForResult is called the expected number of times", func() {
+		Convey("and bolt.QueryForResult is called the expected number of times", func() {
 			So(db.QueryForResultCalls, ShouldHaveLength, 2)
 			So(db.QueryForResultCalls[0].Query, ShouldEqual, fmt.Sprintf(countEditions, testCodeListID, testEdition))
 			So(db.QueryForResultCalls[0].Params, ShouldBeNil)

@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"strconv"
-	"strings"
 	"github.com/ONSdigital/dp-code-list-api/datastore"
 	"github.com/ONSdigital/dp-code-list-api/models"
 	"github.com/ONSdigital/go-ns/log"
@@ -77,8 +76,32 @@ func CreateNeoDataStore(addr, codelistLabel string, conns int) (n *NeoDataStore,
 	return
 }
 
-// GetCodeLists returns a list of code lists
 func (n *NeoDataStore) GetCodeLists(ctx context.Context, filterBy string) (*models.CodeListResults, error) {
+	logData := log.Data{}
+	if len(filterBy) > 0 {
+		logData["filter_by"] = filterBy
+		filterBy = ":_" + filterBy
+	}
+	log.InfoCtx(ctx, "about to query neo4j for code lists", logData)
+
+	query := fmt.Sprintf(getCodeListsQuery, n.codeListLabel, filterBy)
+	codeListEditionsMap, mapper := codeListsMapper()
+
+	err := n.db.QueryForResults(query, nil, mapper)
+	if err != nil {
+		return nil, err
+	}
+
+	codeLists := &models.CodeListResults{}
+	for _, codelist := range *codeListEditionsMap {
+		codeLists.Items = append(codeLists.Items, *codelist)
+	}
+
+	return codeLists, nil
+}
+
+// GetCodeLists returns a list of code lists
+/*func (n *NeoDataStore) GetCodeLists(ctx context.Context, filterBy string) (*models.CodeListResults, error) {
 	logData := log.Data{}
 	if len(filterBy) > 0 {
 		logData["filter_by"] = filterBy
@@ -106,7 +129,7 @@ func (n *NeoDataStore) GetCodeLists(ctx context.Context, filterBy string) (*mode
 
 	var row []interface{}
 
-	codeLists := &models.CodeListResults{}
+
 	codeListEditionsMap := make(map[string]*models.CodeList)
 	for row, _, err = rows.NextNeo(); err == nil; row, _, err = rows.NextNeo() {
 		if len(row) < 2 {
@@ -169,12 +192,13 @@ func (n *NeoDataStore) GetCodeLists(ctx context.Context, filterBy string) (*mode
 
 	}
 
+	codeLists := &models.CodeListResults{}
 	for _, codelist := range codeListEditionsMap {
 		codeLists.Items = append(codeLists.Items, *codelist)
 	}
 
 	return codeLists, nil
-}
+}*/
 
 // GetCodeList returns an individual code list for a given code
 func (n *NeoDataStore) GetCodeList(ctx context.Context, code string) (*models.CodeList, error) {

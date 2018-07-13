@@ -25,7 +25,7 @@ func TestNeoDataStore_GetCodeEditionExistsErrors(t *testing.T) {
 	Convey("given edition exists return an error", t, func() {
 		db := &boltmock.DB{
 			QueryForResultFuncs: []boltmock.QueryFunc{
-				func(query string, params map[string]interface{}, resultExtractor dpbolt.ResultExtractor) error {
+				func(query string, params map[string]interface{}, mapResult dpbolt.ResultMapper) error {
 					return errTest
 				},
 			},
@@ -51,9 +51,9 @@ func TestNeoDataStore_GetCodeEditionExistsErrors(t *testing.T) {
 	Convey("given edition exists returns an unexpected expected type", t, func() {
 		db := &boltmock.DB{
 			QueryForResultFuncs: []boltmock.QueryFunc{
-				func(query string, params map[string]interface{}, resultExtractor dpbolt.ResultExtractor) error {
-					// call the resultExtractor passing in the a Result that will cause a int64 cast error.
-					return resultExtractor(
+				func(query string, params map[string]interface{}, mapResult dpbolt.ResultMapper) error {
+					// call the mapResult passing in the a Result that will cause a int64 cast error.
+					return mapResult(
 						&dpbolt.Result{
 							Data:  []interface{}{"hello"}, // expected type is int64 return string to force cast error.
 							Meta:  nil,
@@ -82,9 +82,9 @@ func TestNeoDataStore_GetCodeEditionExistsErrors(t *testing.T) {
 	Convey("given edition exists returns false", t, func() {
 		db := &boltmock.DB{
 			QueryForResultFuncs: []boltmock.QueryFunc{
-				func(query string, params map[string]interface{}, resultExtractor dpbolt.ResultExtractor) error {
-					// call the resultExtractor passing in the a Result that will cause a int64 cast error.
-					return resultExtractor(
+				func(query string, params map[string]interface{}, mapResult dpbolt.ResultMapper) error {
+					// call the mapResult passing in the a Result that will cause a int64 cast error.
+					return mapResult(
 						&dpbolt.Result{
 							Data:  []interface{}{int64(0)},
 							Meta:  nil,
@@ -113,9 +113,9 @@ func TestNeoDataStore_GetCodeEditionExistsErrors(t *testing.T) {
 	Convey("given more than one edition exists", t, func() {
 		db := &boltmock.DB{
 			QueryForResultFuncs: []boltmock.QueryFunc{
-				func(query string, params map[string]interface{}, resultExtractor dpbolt.ResultExtractor) error {
-					// call the resultExtractor passing in the a Result that will cause a int64 cast error.
-					return resultExtractor(
+				func(query string, params map[string]interface{}, mapResult dpbolt.ResultMapper) error {
+					// call the mapResult passing in the a Result that will cause a int64 cast error.
+					return mapResult(
 						&dpbolt.Result{
 							Data:  []interface{}{int64(2)},
 							Meta:  nil,
@@ -146,15 +146,15 @@ func TestNeoDataStore_GetCodeErrors(t *testing.T) {
 	Convey("given query for code return an error", t, func() {
 		db := &boltmock.DB{
 			QueryForResultFuncs: []boltmock.QueryFunc{
-				func(query string, params map[string]interface{}, resultExtractor dpbolt.ResultExtractor) error {
-					return resultExtractor(
+				func(query string, params map[string]interface{}, mapResult dpbolt.ResultMapper) error {
+					return mapResult(
 						&dpbolt.Result{
 							Data:  []interface{}{int64(1)},
 							Meta:  nil,
 							Index: 0,
 						})
 				},
-				func(query string, params map[string]interface{}, resultExtractor dpbolt.ResultExtractor) error {
+				func(query string, params map[string]interface{}, mapResult dpbolt.ResultMapper) error {
 					return errTest
 				},
 			},
@@ -183,16 +183,16 @@ func TestNeoDataStore_GetCodeNotFound(t *testing.T) {
 	Convey("given no code is found", t, func() {
 		db := &boltmock.DB{
 			QueryForResultFuncs: []boltmock.QueryFunc{
-				func(query string, params map[string]interface{}, resultExtractor dpbolt.ResultExtractor) error {
-					return resultExtractor(
+				func(query string, params map[string]interface{}, mapResult dpbolt.ResultMapper) error {
+					return mapResult(
 						&dpbolt.Result{
 							Data:  []interface{}{int64(1)},
 							Meta:  nil,
 							Index: 0,
 						})
 				},
-				func(query string, params map[string]interface{}, resultExtractor dpbolt.ResultExtractor) error {
-					return resultExtractor(
+				func(query string, params map[string]interface{}, mapResult dpbolt.ResultMapper) error {
+					return mapResult(
 						&dpbolt.Result{
 							Data: []interface{}{},
 						})
@@ -231,16 +231,16 @@ func TestNeoDataStore_GetCodeSuccess(t *testing.T) {
 	Convey("given getCode is successful", t, func() {
 		db := &boltmock.DB{
 			QueryForResultFuncs: []boltmock.QueryFunc{
-				func(query string, params map[string]interface{}, resultExtractor dpbolt.ResultExtractor) error {
-					return resultExtractor(
+				func(query string, params map[string]interface{}, mapResult dpbolt.ResultMapper) error {
+					return mapResult(
 						&dpbolt.Result{
 							Data:  []interface{}{int64(1)},
 							Meta:  nil,
 							Index: 0,
 						})
 				},
-				func(query string, params map[string]interface{}, resultExtractor dpbolt.ResultExtractor) error {
-					return resultExtractor(&dpbolt.Result{
+				func(query string, params map[string]interface{}, mapResult dpbolt.ResultMapper) error {
+					return mapResult(&dpbolt.Result{
 						Data: []interface{}{node, rel},
 					})
 				},

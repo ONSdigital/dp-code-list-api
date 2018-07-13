@@ -33,8 +33,8 @@ type Conn bolt.Conn
 type Rows bolt.Rows
 
 type BoltDB interface {
-	QueryForResult(query string, params map[string]interface{}, extractResult dpbolt.ResultExtractor) error
-	QueryForResults(query string, params map[string]interface{}, extractResult dpbolt.ResultExtractor) error
+	QueryForResult(query string, params map[string]interface{}, extractResult dpbolt.ResultMapper) error
+	QueryForResults(query string, params map[string]interface{}, extractResult dpbolt.ResultMapper) error
 	Close() error
 }
 
@@ -377,7 +377,7 @@ func (n *NeoDataStore) GetCodes(ctx context.Context, codeListID, edition string)
 		return nil, datastore.ErrEditionNotFound
 	}
 
-	results, rowMapper := codesResultExtractor(codeListID, edition)
+	results, rowMapper := codesResultMapper(codeListID, edition)
 	err = n.db.QueryForResults(fmt.Sprintf(getCodesQuery, codeListID, edition), nil, rowMapper)
 	if err != nil {
 		return nil, err
@@ -399,7 +399,7 @@ func (n *NeoDataStore) GetCode(ctx context.Context, codeListID, edition string, 
 	}
 
 	codeModel := &models.Code{}
-	extractor := codeResultExtractor(codeModel, codeListID, edition)
+	extractor := codeResultMapper(codeModel, codeListID, edition)
 
 	err = n.db.QueryForResult(fmt.Sprintf(getCodeQuery, codeListID, edition, code), nil, extractor)
 
@@ -419,7 +419,7 @@ func (n *NeoDataStore) EditionExists(ctx context.Context, codeListID string, edi
 
 	query := fmt.Sprintf(countEditions, codeListID, edition)
 
-	count, extractor := countEditionExtractor()
+	count, extractor := countEditionMapper()
 	err := n.db.QueryForResult(query, nil, extractor)
 
 	if err != nil {

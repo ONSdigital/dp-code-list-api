@@ -12,7 +12,8 @@ import (
 
 var errCodeNotFound = errors.New("code not found")
 
-func countEditionExtractor() (*int64, dpbolt.ResultExtractor) {
+// countEditionMapper is a result mapper for gett
+func countEditionMapper() (*int64, dpbolt.ResultMapper) {
 	var count int64
 	return &count, func(r *dpbolt.Result) error {
 		var ok bool
@@ -24,7 +25,7 @@ func countEditionExtractor() (*int64, dpbolt.ResultExtractor) {
 	}
 }
 
-func codesResultExtractor(codeListID string, edition string) (*[]models.Code, dpbolt.ResultExtractor) {
+func codesResultMapper(codeListID string, edition string) (*[]models.Code, dpbolt.ResultMapper) {
 	var results []models.Code
 	return &results, func(r *dpbolt.Result) error {
 		codeVal, codeLabel, id, err := getCodeData(r.Data)
@@ -49,7 +50,7 @@ func codesResultExtractor(codeListID string, edition string) (*[]models.Code, dp
 	}
 }
 
-func codeResultExtractor(codeModel *models.Code, codeListID string, edition string) dpbolt.ResultExtractor {
+func codeResultMapper(codeModel *models.Code, codeListID string, edition string) dpbolt.ResultMapper {
 	extractor := func(r *dpbolt.Result) error {
 		codeVal, codeLabel, id, err := getCodeData(r.Data)
 		if err != nil {

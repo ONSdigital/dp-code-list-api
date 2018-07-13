@@ -28,7 +28,7 @@ func TestCodeResultExtractor_Success(t *testing.T) {
 		}
 
 		actual := &models.Code{}
-		extractor := codeResultExtractor(actual, testCodeListID, testEdition)
+		extractor := codeResultMapper(actual, testCodeListID, testEdition)
 
 		Convey("when extractor is called", func() {
 			err := extractor(
@@ -70,7 +70,7 @@ func TestCodeResultExtractor_BadTypes(t *testing.T) {
 
 	Convey("given data.0 is not type graph.Node", t, func() {
 		actual := &models.Code{}
-		extractor := codeResultExtractor(actual, testCodeListID, testEdition)
+		extractor := codeResultMapper(actual, testCodeListID, testEdition)
 
 		Convey("when extractor is called", func() {
 			err := extractor(
@@ -93,7 +93,7 @@ func TestCodeResultExtractor_BadTypes(t *testing.T) {
 
 	Convey("given node.Properties.value is not type string", t, func() {
 		actual := &models.Code{}
-		extractor := codeResultExtractor(actual, testCodeListID, testEdition)
+		extractor := codeResultMapper(actual, testCodeListID, testEdition)
 
 		Convey("when extractor is called", func() {
 			err := extractor(
@@ -116,7 +116,7 @@ func TestCodeResultExtractor_BadTypes(t *testing.T) {
 
 	Convey("given data.1 is not type graph.Relationship", t, func() {
 		actual := &models.Code{}
-		extractor := codeResultExtractor(actual, testCodeListID, testEdition)
+		extractor := codeResultMapper(actual, testCodeListID, testEdition)
 
 		Convey("when extractor is called", func() {
 			err := extractor(
@@ -139,7 +139,7 @@ func TestCodeResultExtractor_BadTypes(t *testing.T) {
 
 	Convey("given relationship.Properties.label is not type string", t, func() {
 		actual := &models.Code{}
-		extractor := codeResultExtractor(actual, testCodeListID, testEdition)
+		extractor := codeResultMapper(actual, testCodeListID, testEdition)
 
 		Convey("when extractor is called", func() {
 			err := extractor(

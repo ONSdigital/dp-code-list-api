@@ -16,7 +16,7 @@ type Result struct {
 	Index int
 }
 
-type ResultExtractor func(r *Result) error
+type ResultMapper func(r *Result) error
 
 type NeoConn neo4j.Conn
 type NeoRows neo4j.Rows
@@ -43,16 +43,16 @@ func (d *DB) Close() error {
 }
 
 //QueryForResults executes the provided query to return 1 or more results.
-func (d *DB) QueryForResults(query string, params map[string]interface{}, resultExtractor ResultExtractor) error {
-	return d.query(query, params, resultExtractor, false)
+func (d *DB) QueryForResults(query string, params map[string]interface{}, mapResult ResultMapper) error {
+	return d.query(query, params, mapResult, false)
 }
 
 //QueryForResults executes the provided query to return a single result.
-func (d *DB) QueryForResult(query string, params map[string]interface{}, resultExtractor ResultExtractor) error {
-	return d.query(query, params, resultExtractor, true)
+func (d *DB) QueryForResult(query string, params map[string]interface{}, mapResult ResultMapper) error {
+	return d.query(query, params, mapResult, true)
 }
 
-func (d *DB) query(cypherQuery string, params map[string]interface{}, extractResult ResultExtractor, singleResult bool) error {
+func (d *DB) query(cypherQuery string, params map[string]interface{}, mapResult ResultMapper, singleResult bool) error {
 	conn, err := d.pool.OpenPool()
 	if err != nil {
 		return errors.WithMessage(err, "error opening neo4j connection")
@@ -78,8 +78,8 @@ func (d *DB) query(cypherQuery string, params map[string]interface{}, extractRes
 		if singleResult && index > 0 {
 			return NonUniqueResult
 		}
-		if err := extractResult(&Result{Data: data, Meta: meta, Index: index}); err != nil {
-			return errors.WithMessage(err, "extractResults: extractResult returned an error")
+		if err := mapResult(&Result{Data: data, Meta: meta, Index: index}); err != nil {
+			return errors.WithMessage(err, "mapResult returned an error")
 		}
 		index++
 	}

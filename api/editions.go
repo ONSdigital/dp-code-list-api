@@ -27,7 +27,7 @@ func (c *CodeListAPI) getEditions(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := writeBody(w, b); err != nil {
+	if err := c.writeBody(w, b); err != nil {
 		log.ErrorCtx(ctx, errors.WithMessage(err, "getEditions endpoint: failed to write bytes to response"), data)
 		return
 	}
@@ -53,7 +53,7 @@ func (c *CodeListAPI) getEdition(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := writeBody(w, b); err != nil {
+	if err := c.writeBody(w, b); err != nil {
 		log.ErrorCtx(ctx, errors.WithMessage(err, "getEdition endpoint: failed to write bytes to response"), data)
 		return
 	}

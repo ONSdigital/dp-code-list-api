@@ -54,12 +54,3 @@ func handleError(ctx context.Context, w http.ResponseWriter, err error, data log
 		http.Error(w, internalServerErr, http.StatusInternalServerError)
 	}
 }
-
-func writeBody(w http.ResponseWriter, bytes []byte) error {
-	w.Header().Set(contentTypeHeader, contentTypeJSON)
-	if _, err := w.Write(bytes); err != nil {
-		http.Error(w, internalServerErr, http.StatusInternalServerError)
-		return err
-	}
-	return nil
-}

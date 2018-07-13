@@ -31,7 +31,7 @@ func (c *CodeListAPI) getCodeLists(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := writeBody(w, b); err != nil {
+	if err := c.writeBody(w, b); err != nil {
 		log.ErrorCtx(ctx, errors.WithMessage(err, "getCodeLists endpoint: failed to write bytes to response"), nil)
 		return
 	}
@@ -54,7 +54,7 @@ func (c *CodeListAPI) getCodeList(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := writeBody(w, b); err != nil {
+	if err := c.writeBody(w, b); err != nil {
 		log.ErrorCtx(ctx, errors.WithMessage(err, "getCodeList endpoint: failed to write bytes to response"), log.Data{"code_list_id": id})
 		return
 	}

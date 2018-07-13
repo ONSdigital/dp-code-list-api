@@ -3,7 +3,6 @@ package store
 import (
 	"context"
 	"fmt"
-	"strconv"
 	"github.com/ONSdigital/dp-code-list-api/datastore"
 	"github.com/ONSdigital/dp-code-list-api/models"
 	"github.com/ONSdigital/go-ns/log"
@@ -32,8 +31,8 @@ type Conn bolt.Conn
 type Rows bolt.Rows
 
 type BoltDB interface {
-	QueryForResult(query string, params map[string]interface{}, extractResult dpbolt.ResultMapper) error
-	QueryForResults(query string, params map[string]interface{}, extractResult dpbolt.ResultMapper) error
+	QueryForResult(query string, params map[string]interface{}, extractResult dpbolt.ResultMapper) (int, error)
+	QueryForResults(query string, params map[string]interface{}, extractResult dpbolt.ResultMapper) (int, error)
 	Close() error
 }
 
@@ -76,6 +75,7 @@ func CreateNeoDataStore(addr, codelistLabel string, conns int) (n *NeoDataStore,
 	return
 }
 
+// GetCodeLists returns a list of code lists
 func (n *NeoDataStore) GetCodeLists(ctx context.Context, filterBy string) (*models.CodeListResults, error) {
 	logData := log.Data{}
 	if len(filterBy) > 0 {
@@ -87,7 +87,7 @@ func (n *NeoDataStore) GetCodeLists(ctx context.Context, filterBy string) (*mode
 	query := fmt.Sprintf(getCodeListsQuery, n.codeListLabel, filterBy)
 	codeListEditionsMap, mapper := codeListsMapper()
 
-	err := n.db.QueryForResults(query, nil, mapper)
+	_, err := n.db.QueryForResults(query, nil, mapper)
 	if err != nil {
 		return nil, err
 	}
@@ -100,177 +100,19 @@ func (n *NeoDataStore) GetCodeLists(ctx context.Context, filterBy string) (*mode
 	return codeLists, nil
 }
 
-// GetCodeLists returns a list of code lists
-/*func (n *NeoDataStore) GetCodeLists(ctx context.Context, filterBy string) (*models.CodeListResults, error) {
-	logData := log.Data{}
-	if len(filterBy) > 0 {
-		logData["filter_by"] = filterBy
-		filterBy = ":_" + filterBy
-	}
-	log.InfoCtx(ctx, "about to query neo4j for code lists", logData)
-
-	conn, err := n.pool.OpenPool()
-	if err != nil {
-		return nil, errors.WithMessage(err, "could not retrieve connection from pool")
-	}
-
-	defer func() {
-		if err := conn.Close(); err != nil {
-			log.ErrorCtx(ctx, errors.WithMessage(err, "could not close neo4j connection"), nil)
-		}
-	}()
-
-	query := fmt.Sprintf(getCodeListsQuery, n.codeListLabel, filterBy)
-
-	rows, err := conn.QueryNeo(query, nil)
-	if err != nil {
-		return nil, errors.WithMessage(err, "could not run neo4j query")
-	}
-
-	var row []interface{}
-
-
-	codeListEditionsMap := make(map[string]*models.CodeList)
-	for row, _, err = rows.NextNeo(); err == nil; row, _, err = rows.NextNeo() {
-		if len(row) < 2 {
-			return nil, errors.Errorf("expected at least two rows, got %d", len(row))
-		}
-		props := row[1].(graph.Node).Properties
-		labels := row[1].(graph.Node).Labels
-
-		name := props["label"].(string)
-		edition := props["edition"].(string)
-
-		var label string
-		for _, l := range labels {
-			if strings.Contains(l, "_name_") {
-				label = strings.Replace(l, `_name_`, "", -1)
-				break
-			}
-		}
-
-		if previousEdition, ok := codeListEditionsMap[label]; !ok {
-			// If no edition for this label exists yet in the map, then create one
-			codeList := &models.CodeList{
-				Links: models.CodeListLink{
-					Self: &models.Link{
-						Href: fmt.Sprintf("/code-lists/%s", label),
-						ID:   label,
-					},
-					Editions: &models.Link{
-						Href: fmt.Sprintf("/code-lists/%s/editions", label),
-					},
-					Latest: &models.Link{
-						Href: fmt.Sprintf("/code-lists/%s/editions/%s", label, edition),
-						ID:   edition,
-					},
-				},
-				Name: name,
-			}
-
-			codeListEditionsMap[label] = codeList
-
-		} else {
-			// If an edition already exists for this label, then check to see if this version is more recent
-			previousEditionValue, err := strconv.Atoi(previousEdition.Links.Latest.ID)
-			if err != nil {
-				continue
-			}
-
-			currentEditionValue, err := strconv.Atoi(edition)
-			if err != nil {
-				continue
-			}
-
-			if currentEditionValue > previousEditionValue {
-				previousEdition.Links.Latest = &models.Link{
-					Href: fmt.Sprintf("/code-lists/%s/editions/%s", label, edition),
-					ID:   edition,
-				}
-			}
-		}
-
-	}
-
-	codeLists := &models.CodeListResults{}
-	for _, codelist := range codeListEditionsMap {
-		codeLists.Items = append(codeLists.Items, *codelist)
-	}
-
-	return codeLists, nil
-}*/
-
-// GetCodeList returns an individual code list for a given code
 func (n *NeoDataStore) GetCodeList(ctx context.Context, code string) (*models.CodeList, error) {
 	log.InfoCtx(ctx, "about to query neo4j for code list", log.Data{"code_list_id": code})
 
-	conn, err := n.pool.OpenPool()
-	if err != nil {
-		return nil, errors.WithMessage(err, "could not retrieve connection from pool")
-	}
-
-	defer func() {
-		if err := conn.Close(); err != nil {
-			log.ErrorCtx(ctx, errors.WithMessage(err, "could not close neo4j connection"), nil)
-		}
-	}()
-
 	query := fmt.Sprintf(getCodeListQuery, n.codeListLabel, code)
+	codeList := &models.CodeList{}
+	mapper := codeListMapper(codeList, code)
 
-	rows, err := conn.QueryNeo(query, nil)
+	count, err := n.db.QueryForResult(query, nil, mapper)
 	if err != nil {
-		return nil, errors.WithMessage(err, "could not run neo4j query")
+		return nil, err
 	}
-
-	var hasMultipleEditions bool
-
-	var row []interface{}
-
-	codeList := &models.CodeList{
-		Links: models.CodeListLink{
-			Self: &models.Link{
-				Href: fmt.Sprintf("/code-lists/%s", code),
-				ID:   code,
-			},
-			Editions: &models.Link{
-				Href: fmt.Sprintf("/code-lists/%s/editions", code),
-			},
-		},
-	}
-
-	latest := 0
-	count := 0
-	var latestEdition string
-	for row, _, err = rows.NextNeo(); err == nil; row, _, err = rows.NextNeo() {
-		count++
-		if count > 1 {
-			hasMultipleEditions = true
-		}
-
-		props := row[0].(graph.Node).Properties
-		edition := props["edition"].(string)
-
-		if !hasMultipleEditions {
-			latestEdition = edition
-		} else {
-			editionInt, err := strconv.Atoi(edition)
-			if err != nil || editionInt > latest {
-				latestEdition = edition
-			}
-		}
-
-		name := props["label"].(string)
-
-		codeList.Name = name
-	}
-
 	if count == 0 {
 		return nil, datastore.NOT_FOUND
-	}
-
-	codeList.Links.Latest = &models.Link{
-		Href: fmt.Sprintf("/code-lists/%s/editions/%s", code, latestEdition),
-		ID:   latestEdition,
 	}
 
 	return codeList, nil
@@ -401,10 +243,16 @@ func (n *NeoDataStore) GetCodes(ctx context.Context, codeListID, edition string)
 		return nil, datastore.ErrEditionNotFound
 	}
 
+	var count int
 	results, rowMapper := codesResultMapper(codeListID, edition)
-	err = n.db.QueryForResults(fmt.Sprintf(getCodesQuery, codeListID, edition), nil, rowMapper)
+
+	count, err = n.db.QueryForResults(fmt.Sprintf(getCodesQuery, codeListID, edition), nil, rowMapper)
 	if err != nil {
 		return nil, err
+	}
+
+	if count == 0 {
+		return nil, datastore.NOT_FOUND
 	}
 
 	return &models.CodeResults{
@@ -422,18 +270,19 @@ func (n *NeoDataStore) GetCode(ctx context.Context, codeListID, edition string, 
 		return nil, datastore.ErrEditionNotFound
 	}
 
+	var count int
 	codeModel := &models.Code{}
 	extractor := codeResultMapper(codeModel, codeListID, edition)
 
-	err = n.db.QueryForResult(fmt.Sprintf(getCodeQuery, codeListID, edition, code), nil, extractor)
-
-	if err != nil && err == errCodeNotFound {
+	count, err = n.db.QueryForResult(fmt.Sprintf(getCodeQuery, codeListID, edition, code), nil, extractor)
+	if err != nil {
 		return nil, err
 	}
 
-	if err != nil {
-		return nil, errors.WithMessage(err, "extract result returned an error")
+	if count == 0 {
+		return nil, datastore.ErrCodeNotFound
 	}
+
 	return codeModel, nil
 }
 
@@ -444,8 +293,7 @@ func (n *NeoDataStore) EditionExists(ctx context.Context, codeListID string, edi
 	query := fmt.Sprintf(countEditions, codeListID, edition)
 
 	count, extractor := countEditionMapper()
-	err := n.db.QueryForResult(query, nil, extractor)
-
+	_, err := n.db.QueryForResult(query, nil, extractor)
 	if err != nil {
 		return false, err
 	}

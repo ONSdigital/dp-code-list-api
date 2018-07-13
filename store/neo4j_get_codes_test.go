@@ -68,17 +68,17 @@ func TestNeoDataStore_GetCodesSuccess(t *testing.T) {
 	Convey("given get codes is successful", t, func() {
 		db := &boltmock.DB{
 			QueryForResultFuncs: []boltmock.QueryFunc{
-				func(query string, params map[string]interface{}, mapResult dpbolt.ResultMapper) error {
-					return mapResult(
+				func(query string, params map[string]interface{}, mapResult dpbolt.ResultMapper) (int, error) {
+					return 1, mapResult(
 						&dpbolt.Result{Data: []interface{}{int64(1)}},
 					)
 				},
 			},
 			QueryForResultsFuncs: []boltmock.QueryFunc{
-				func(query string, params map[string]interface{}, mapResult dpbolt.ResultMapper) error {
+				func(query string, params map[string]interface{}, mapResult dpbolt.ResultMapper) (int, error) {
 					mapResult(&dpbolt.Result{Data: row1})
 					mapResult(&dpbolt.Result{Data: row2})
-					return nil
+					return 2, nil
 				},
 			},
 		}
@@ -107,9 +107,7 @@ func TestNeoDataStore_GetCodesEditionExitsError(t *testing.T) {
 	Convey("given edition exits returns an error", t, func() {
 		db := &boltmock.DB{
 			QueryForResultFuncs: []boltmock.QueryFunc{
-				func(query string, params map[string]interface{}, mapResult dpbolt.ResultMapper) error {
-					return errTest
-				},
+				boltmock.NewQueryFunc(0, errTest),
 			},
 		}
 		store := NeoDataStore{db: db}
@@ -135,8 +133,8 @@ func TestNeoDataStore_GetCodesEditionExitsFalse(t *testing.T) {
 	Convey("given edition exits returns false", t, func() {
 		db := &boltmock.DB{
 			QueryForResultFuncs: []boltmock.QueryFunc{
-				func(query string, params map[string]interface{}, mapResult dpbolt.ResultMapper) error {
-					return mapResult(
+				func(query string, params map[string]interface{}, mapResult dpbolt.ResultMapper) (int, error) {
+					return 1, mapResult(
 						&dpbolt.Result{Data: []interface{}{int64(0)}},
 					)
 				},
@@ -165,16 +163,14 @@ func TestNeoDataStore_GetCodesResultMapperError(t *testing.T) {
 	Convey("given getCodes result mapper returns an error", t, func() {
 		db := &boltmock.DB{
 			QueryForResultFuncs: []boltmock.QueryFunc{
-				func(query string, params map[string]interface{}, mapResult dpbolt.ResultMapper) error {
-					return mapResult(
+				func(query string, params map[string]interface{}, mapResult dpbolt.ResultMapper) (int, error) {
+					return 1, mapResult(
 						&dpbolt.Result{Data: []interface{}{int64(1)}},
 					)
 				},
 			},
 			QueryForResultsFuncs: []boltmock.QueryFunc{
-				func(query string, params map[string]interface{}, mapResult dpbolt.ResultMapper) error {
-					return errTest
-				},
+				boltmock.NewQueryFunc(0, errTest),
 			},
 		}
 		store := NeoDataStore{db: db}
@@ -183,6 +179,41 @@ func TestNeoDataStore_GetCodesResultMapperError(t *testing.T) {
 
 		Convey("then codeResult is nil and the expected error is returned", func() {
 			So(err, ShouldResemble, errTest)
+			So(result, ShouldBeNil)
+		})
+
+		Convey("and the expected calls are made", func() {
+			So(db.QueryForResultCalls, ShouldHaveLength, 1)
+			So(db.QueryForResultCalls[0].Query, ShouldEqual, fmt.Sprintf(countEditions, testCodeListID, testEdition))
+			So(db.QueryForResultCalls[0].Params, ShouldBeNil)
+
+			So(db.QueryForResultsCalls, ShouldHaveLength, 1)
+			So(db.QueryForResultsCalls[0].Query, ShouldEqual, fmt.Sprintf(getCodesQuery, testCodeListID, testEdition))
+			So(db.QueryForResultsCalls[0].Params, ShouldBeNil)
+		})
+	})
+}
+
+func TestNeoDataStore_GetCodesNoResults(t *testing.T) {
+	Convey("given no codes are found", t, func() {
+		db := &boltmock.DB{
+			QueryForResultFuncs: []boltmock.QueryFunc{
+				func(query string, params map[string]interface{}, mapResult dpbolt.ResultMapper) (int, error) {
+					return 1, mapResult(
+						&dpbolt.Result{Data: []interface{}{int64(1)}},
+					)
+				},
+			},
+			QueryForResultsFuncs: []boltmock.QueryFunc{
+				boltmock.NewQueryFunc(0, nil),
+			},
+		}
+		store := NeoDataStore{db: db}
+
+		result, err := store.GetCodes(context.Background(), testCodeListID, testEdition)
+
+		Convey("then codeResult is nil and the expected error is returned", func() {
+			So(err, ShouldResemble, datastore.NOT_FOUND)
 			So(result, ShouldBeNil)
 		})
 

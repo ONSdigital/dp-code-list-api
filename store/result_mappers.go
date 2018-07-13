@@ -9,10 +9,10 @@ import (
 	"fmt"
 	"github.com/johnnadratowski/golang-neo4j-bolt-driver/structures/graph"
 	"strings"
+	"github.com/ONSdigital/dp-code-list-api/datastore"
 )
 
 var errCodeNotFound = errors.New("code not found")
-
 
 func codeListsMapper() (*map[string]*models.CodeList, dpbolt.ResultMapper) {
 	codeListEditionsMap := map[string]*models.CodeList{}
@@ -80,6 +80,28 @@ func codeListsMapper() (*map[string]*models.CodeList, dpbolt.ResultMapper) {
 	return nil, nil
 }
 
+func codeListMapper(codeList *models.CodeList, id string) dpbolt.ResultMapper {
+	return func(r *dpbolt.Result) error {
+		if len(r.Data) == 0 {
+			return datastore.NOT_FOUND
+		}
+
+		props := r.Data[0].(graph.Node).Properties
+		name := props["label"].(string)
+
+		codeList.Name = name
+		codeList.Links = models.CodeListLink{
+			Self: &models.Link{
+				Href: fmt.Sprintf("/code-lists/%s", id),
+				ID:   id,
+			},
+			Editions: &models.Link{
+				Href: fmt.Sprintf("/code-lists/%s/editions", id),
+			},
+		}
+		return nil
+	}
+}
 
 // countEditionMapper is a result mapper for gett
 func countEditionMapper() (*int64, dpbolt.ResultMapper) {
@@ -120,7 +142,7 @@ func codesResultMapper(codeListID string, edition string) (*[]models.Code, dpbol
 }
 
 func codeResultMapper(codeModel *models.Code, codeListID string, edition string) dpbolt.ResultMapper {
-	extractor := func(r *dpbolt.Result) error {
+	return func(r *dpbolt.Result) error {
 		codeVal, codeLabel, id, err := getCodeData(r.Data)
 		if err != nil {
 			return err
@@ -139,7 +161,6 @@ func codeResultMapper(codeModel *models.Code, codeListID string, edition string)
 		}
 		return nil
 	}
-	return extractor
 }
 
 func getCodeData(data []interface{}) (codeVal string, codeLabel string, id int64, err error) {

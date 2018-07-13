@@ -7,17 +7,23 @@ type QueryParams struct {
 	Params map[string]interface{}
 }
 
-type QueryFunc func(query string, params map[string]interface{}, mapResult bolt.ResultMapper) error
+type QueryFunc func(query string, params map[string]interface{}, mapResult bolt.ResultMapper) (int, error)
+
+func NewQueryFunc(i int, err error) QueryFunc {
+	return func(query string, params map[string]interface{}, mapResult bolt.ResultMapper) (int, error) {
+		return i, err
+	}
+}
 
 type DB struct {
 	QueryForResultCalls  []QueryParams
 	QueryForResultFuncs  []QueryFunc
 	CloseFunc            func() error
-	QueryForResultsCalls  []QueryParams
-	QueryForResultsFuncs  []QueryFunc
+	QueryForResultsCalls []QueryParams
+	QueryForResultsFuncs []QueryFunc
 }
 
-func (m *DB) QueryForResult(query string, params map[string]interface{}, mapResult bolt.ResultMapper) error {
+func (m *DB) QueryForResult(query string, params map[string]interface{}, mapResult bolt.ResultMapper) (int, error) {
 	if m.QueryForResultCalls == nil {
 		m.QueryForResultCalls = []QueryParams{}
 	}
@@ -27,7 +33,7 @@ func (m *DB) QueryForResult(query string, params map[string]interface{}, mapResu
 	return m.QueryForResultFuncs[index](query, params, mapResult)
 }
 
-func (m *DB) QueryForResults(query string, params map[string]interface{}, mapResult bolt.ResultMapper) error {
+func (m *DB) QueryForResults(query string, params map[string]interface{}, mapResult bolt.ResultMapper) (int, error) {
 	if m.QueryForResultsCalls == nil {
 		m.QueryForResultsCalls = []QueryParams{}
 	}

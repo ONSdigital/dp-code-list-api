@@ -12,10 +12,9 @@ import (
 
 var errCodeNotFound = errors.New("code not found")
 
-
 func countEditionExtractor() (*int64, dpbolt.ResultExtractor) {
 	var count int64
-	extractor := func(r *dpbolt.Result) error {
+	return &count, func(r *dpbolt.Result) error {
 		var ok bool
 		count, ok = r.Data[0].(int64)
 		if !ok {
@@ -23,42 +22,43 @@ func countEditionExtractor() (*int64, dpbolt.ResultExtractor) {
 		}
 		return nil
 	}
-	return &count, extractor
+}
+
+func codesResultExtractor(codeListID string, edition string) (*[]models.Code, dpbolt.ResultExtractor) {
+	var results []models.Code
+	return &results, func(r *dpbolt.Result) error {
+		codeVal, codeLabel, id, err := getCodeData(r.Data)
+		if err != nil {
+			return err
+		}
+
+		results = append(results, models.Code{
+			ID:    strconv.FormatInt(id, 10),
+			Code:  codeVal,
+			Label: codeLabel,
+			Links: models.CodeLinks{
+				Self: models.Link{
+					Href: fmt.Sprintf("/code-lists/%s/editions/%s/codes/%s", codeListID, edition, codeVal),
+				},
+				CodeList: models.Link{
+					Href: fmt.Sprintf("/code-lists/%s", codeListID),
+				},
+			},
+		})
+		return nil
+	}
 }
 
 func codeResultExtractor(codeModel *models.Code, codeListID string, edition string) dpbolt.ResultExtractor {
 	extractor := func(r *dpbolt.Result) error {
-		if len(r.Data) == 0 {
-			return errCodeNotFound
+		codeVal, codeLabel, id, err := getCodeData(r.Data)
+		if err != nil {
+			return err
 		}
 
-		node, ok := r.Data[0].(graph.Node)
-		if !ok {
-			t := reflect.TypeOf(r.Data[0]).String()
-			return errors.Errorf("row.Data[0] incorrect type - expected \"graph.Node\", actual %q", t)
-		}
-
-		codeVal, ok := node.Properties["value"].(string)
-		if !ok {
-			t := reflect.TypeOf(node.Properties["value"]).String()
-			return errors.Errorf("node.Properties[\"value\"] incorrect type - expected \"string\", actual %q", t)
-		}
-
-		rel, ok := r.Data[1].(graph.Relationship)
-		if !ok {
-			t := reflect.TypeOf(r.Data[1]).String()
-			return errors.Errorf("row.Data[1] incorrect type - expected \"graph.Relationship\", actual %q", t)
-		}
-
-		label, ok := rel.Properties["label"].(string)
-		if !ok {
-			t := reflect.TypeOf(rel.Properties["label"]).String()
-			return errors.Errorf("rel.Properties[\"label\"] incorrect type - expected \"string\", actual %q", t)
-		}
-
-		codeModel.ID = strconv.FormatInt(node.NodeIdentity, 10)
+		codeModel.ID = strconv.FormatInt(id, 10)
 		codeModel.Code = codeVal
-		codeModel.Label = label
+		codeModel.Label = codeLabel
 		codeModel.Links = models.CodeLinks{
 			Self: models.Link{
 				Href: fmt.Sprintf("/code-lists/%s/editions/%s/codes/%s", codeListID, edition, codeVal),
@@ -70,4 +70,43 @@ func codeResultExtractor(codeModel *models.Code, codeListID string, edition stri
 		return nil
 	}
 	return extractor
+}
+
+func getCodeData(data []interface{}) (codeVal string, codeLabel string, id int64, err error) {
+	var ok bool
+
+	if len(data) == 0 {
+		err = errCodeNotFound
+		return
+	}
+
+	node, ok := data[0].(graph.Node)
+	if !ok {
+		t := reflect.TypeOf(data[0]).String()
+		err = errors.Errorf("row.Data[0] incorrect type - expected \"graph.Node\", actual %q", t)
+		return
+	}
+	id = node.NodeIdentity
+
+	codeVal, ok = node.Properties["value"].(string)
+	if !ok {
+		t := reflect.TypeOf(node.Properties["value"]).String()
+		err = errors.Errorf("node.Properties[\"value\"] incorrect type - expected \"string\", actual %q", t)
+		return
+	}
+
+	rel, ok := data[1].(graph.Relationship)
+	if !ok {
+		t := reflect.TypeOf(data[1]).String()
+		err = errors.Errorf("row.Data[1] incorrect type - expected \"graph.Relationship\", actual %q", t)
+		return
+	}
+
+	codeLabel, ok = rel.Properties["label"].(string)
+	if !ok {
+		t := reflect.TypeOf(rel.Properties["label"]).String()
+		err = errors.Errorf("rel.Properties[\"label\"] incorrect type - expected \"string\", actual %q", t)
+		return
+	}
+	return
 }

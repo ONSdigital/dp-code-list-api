@@ -10,7 +10,6 @@ import (
 	"github.com/ONSdigital/go-ns/log"
 	bolt "github.com/johnnadratowski/golang-neo4j-bolt-driver"
 	"github.com/pkg/errors"
-	"io"
 	"github.com/johnnadratowski/golang-neo4j-bolt-driver/structures/graph"
 	dpbolt "github.com/ONSdigital/dp-bolt/bolt"
 )
@@ -378,45 +377,15 @@ func (n *NeoDataStore) GetCodes(ctx context.Context, codeListID, edition string)
 		return nil, datastore.ErrEditionNotFound
 	}
 
-	conn, err := n.pool.OpenPool()
+	results, rowMapper := codesResultExtractor(codeListID, edition)
+	err = n.db.QueryForResults(fmt.Sprintf(getCodesQuery, codeListID, edition), nil, rowMapper)
 	if err != nil {
-		return nil, errors.WithMessage(err, "getCodes: error opening neo4j connection")
+		return nil, err
 	}
-
-	defer conn.Close()
-
-	query := fmt.Sprintf(getCodesQuery, codeListID, edition)
-
-	rows, err := conn.QueryNeo(query, nil)
-	if err != nil {
-		log.ErrorCtx(ctx, errors.WithMessage(err, "getCodes: conn.QueryNeo returned an error"), nil)
-	}
-	defer rows.Close()
-
-	codes := make([]models.Code, 0)
-	extractRowResults(ctx, rows, func(row []interface{}, rowIndex int) error {
-		node := row[0].(graph.Node)
-		relationShip := row[1].(graph.Relationship)
-		codeValue := node.Properties["value"].(string)
-		codes = append(codes, models.Code{
-			ID:    strconv.FormatInt(node.NodeIdentity, 10),
-			Code:  codeValue,
-			Label: relationShip.Properties["label"].(string),
-			Links: models.CodeLinks{
-				Self: models.Link{
-					Href: fmt.Sprintf("/code-lists/%s/editions/%s/codes/%s", codeListID, edition, codeValue),
-				},
-				CodeList: models.Link{
-					Href: fmt.Sprintf("/code-lists/%s", codeListID),
-				},
-			},
-		})
-		return nil
-	})
 
 	return &models.CodeResults{
-		Items: codes,
-		Count: len(codes),
+		Items: *results,
+		Count: len(*results),
 	}, nil
 }
 
@@ -462,23 +431,4 @@ func (n *NeoDataStore) EditionExists(ctx context.Context, codeListID string, edi
 		return false, errors.New("editionExists: multiple editions found")
 	}
 	return *count == 1, nil
-}
-
-func extractRowResults(ctx context.Context, rows bolt.Rows, extractRowData func(data []interface{}, rowIndex int) error) error {
-	index := 0
-	for {
-		row, _, err := rows.NextNeo()
-		if err != nil {
-			if err == io.EOF {
-				return nil
-			} else {
-				return errors.WithMessage(err, "extractRowResults: rows.NextNeo return an error")
-			}
-		}
-		index++
-		if err := extractRowData(row, index); err != nil {
-			return errors.WithMessage(err, "extractRowData returned an error")
-		}
-	}
-	return nil
 }

@@ -59,12 +59,12 @@
         let node = document.createElement("p");
         let textnode = document.createTextNode("MERGE (node:`_code`:`_code_" + codeLabel.trim() + "` { value:'" +
             data[
-                codelist].trim() + "' });");
+                codelist].trim().toLowerCase() + "' });");
         node.appendChild(textnode);
         document.getElementById("cypher").appendChild(node);
         let node2 = document.createElement("p");
         let text = document.createTextNode("MATCH (parent:`_code_list`:`_code_list_" + codelist.trim() +
-            "`),(node:`_code`:`_code_" + codelist.trim() + "` { value:'" + data[codelist].trim() +
+            "`),(node:`_code`:`_code_" + codelist.trim() + "` { value:'" + data[codelist].trim().toLowerCase() +
             "' }) MERGE (node)-[:usedBy { label:\"" + data[
                 label].trim() + "\"}]->(parent);");
         node2.appendChild(text);

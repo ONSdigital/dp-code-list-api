@@ -11,21 +11,26 @@ import (
 	"github.com/johnnadratowski/golang-neo4j-bolt-driver/structures/graph"
 )
 
+const (
+	namePrefix = "_name_"
+	codeListURI = "/code-lists/%s"
+)
+
 func CodeLists(codeListEditionsMap map[string]*models.CodeList) dpbolt.ResultMapper {
 	return func(r *dpbolt.Result) error {
 		if len(r.Data) < 2 {
 			return errors.Errorf("expected at least two rows, got %d", len(r.Data))
 		}
 		props := r.Data[1].(graph.Node).Properties
-		labels := r.Data[1].(graph.Node).Labels
-
 		name := props["label"].(string)
 		edition := props["edition"].(string)
 
+		//var labels []string
 		var label string
-		for _, l := range labels {
-			if strings.Contains(l, "_name_") {
-				label = strings.Replace(l, `_name_`, "", -1)
+		for _, v := range r.Data[0].([]interface{}) {
+			s := v.(string)
+			if strings.Contains(s, namePrefix) {
+				label = strings.Replace(s, namePrefix, "", -1)
 				break
 			}
 		}
@@ -35,14 +40,14 @@ func CodeLists(codeListEditionsMap map[string]*models.CodeList) dpbolt.ResultMap
 			codeList := &models.CodeList{
 				Links: models.CodeListLink{
 					Self: &models.Link{
-						Href: fmt.Sprintf("/code-lists/%s", label),
+						Href: fmt.Sprintf(codeListURI, label),
 						ID:   label,
 					},
 					Editions: &models.Link{
-						Href: fmt.Sprintf("/code-lists/%s/editions", label),
+						Href: fmt.Sprintf(editionsURI, label),
 					},
 					Latest: &models.Link{
-						Href: fmt.Sprintf("/code-lists/%s/editions/%s", label, edition),
+						Href: fmt.Sprintf(editionURI, label, edition),
 						ID:   edition,
 					},
 				},
@@ -65,7 +70,7 @@ func CodeLists(codeListEditionsMap map[string]*models.CodeList) dpbolt.ResultMap
 
 			if currentEditionValue > previousEditionValue {
 				previousEdition.Links.Latest = &models.Link{
-					Href: fmt.Sprintf("/code-lists/%s/editions/%s", label, edition),
+					Href: fmt.Sprintf(editionURI, label, edition),
 					ID:   edition,
 				}
 			}
@@ -86,11 +91,11 @@ func CodeList(codeList *models.CodeList, id string) dpbolt.ResultMapper {
 		codeList.Name = name
 		codeList.Links = models.CodeListLink{
 			Self: &models.Link{
-				Href: fmt.Sprintf("/code-lists/%s", id),
+				Href: fmt.Sprintf(codeListURI, id),
 				ID:   id,
 			},
 			Editions: &models.Link{
-				Href: fmt.Sprintf("/code-lists/%s/editions", id),
+				Href: fmt.Sprintf(editionsURI, id),
 			},
 		}
 		return nil

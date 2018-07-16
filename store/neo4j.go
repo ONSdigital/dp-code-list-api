@@ -62,6 +62,9 @@ func (n *NeoDataStore) GetCodeLists(ctx context.Context, filterBy string) (*mode
 	codeListEditionsMap := make(map[string]*models.CodeList)
 
 	err := n.bolt.QueryForResults(query, nil, mapper.CodeLists(codeListEditionsMap))
+	if err != nil && err == dpbolt.ErrNoResults {
+		return nil, datastore.NOT_FOUND
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -165,7 +168,7 @@ func (n *NeoDataStore) GetCode(ctx context.Context, codeListID, edition string, 
 	codeModel := &models.Code{}
 	query := fmt.Sprintf(getCodeQuery, codeListID, edition, code)
 
-	err = n.bolt.QueryForResult(query, nil,  mapper.Code(codeModel, codeListID, edition))
+	err = n.bolt.QueryForResult(query, nil, mapper.Code(codeModel, codeListID, edition))
 	if err != nil && err == dpbolt.ErrNoResults {
 		return nil, datastore.ErrCodeNotFound
 	}

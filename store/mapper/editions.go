@@ -8,6 +8,11 @@ import (
 	"github.com/pkg/errors"
 )
 
+const (
+	editionsURI = "/code-lists/%s/editions"
+	editionURI = "/code-lists/%s/editions/%s"
+)
+
 func Editions(editions *models.Editions, codeListID string) dpbolt.ResultMapper {
 	return func(r *dpbolt.Result) error {
 		props := r.Data[0].(graph.Node).Properties
@@ -42,14 +47,14 @@ func Edition(editionModel *models.Edition, codeListID string, edition string) dp
 		editionModel.Label = props["label"].(string)
 		editionModel.Links = models.EditionLinks{
 			Self: models.Link{
-				Href: fmt.Sprintf("/code-lists/%s/editions/%s", codeListID, edition),
+				Href: fmt.Sprintf(editionURI, codeListID, edition),
 				ID:   edition,
 			},
 			Editions: models.Link{
-				Href: fmt.Sprintf("/code-lists/%s/editions", codeListID),
+				Href: fmt.Sprintf(editionsURI, codeListID),
 			},
 			Codes: models.Link{
-				Href: fmt.Sprintf("/code-lists/%s/editions/%s/codes", codeListID, edition),
+				Href: fmt.Sprintf(codesURI, codeListID, edition),
 			},
 		}
 		return nil

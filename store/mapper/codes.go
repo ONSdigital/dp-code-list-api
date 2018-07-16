@@ -12,6 +12,11 @@ import (
 
 var errCodeNotFound = errors.New("code not found")
 
+const (
+	codesURI = "/code-lists/%s/editions/%s/codes"
+	codeURI  = "/code-lists/%s/editions/%s/codes/%s"
+)
+
 func Codes(results *models.CodeResults, codeListID string, edition string) dpbolt.ResultMapper {
 	return func(r *dpbolt.Result) error {
 		codeVal, codeLabel, id, err := getCodeData(r.Data)
@@ -25,10 +30,10 @@ func Codes(results *models.CodeResults, codeListID string, edition string) dpbol
 			Label: codeLabel,
 			Links: models.CodeLinks{
 				Self: models.Link{
-					Href: fmt.Sprintf("/code-lists/%s/editions/%s/codes/%s", codeListID, edition, codeVal),
+					Href: fmt.Sprintf(codeURI, codeListID, edition, codeVal),
 				},
 				CodeList: models.Link{
-					Href: fmt.Sprintf("/code-lists/%s", codeListID),
+					Href: fmt.Sprintf(codeListURI, codeListID),
 				},
 			},
 		})
@@ -48,10 +53,10 @@ func Code(codeModel *models.Code, codeListID string, edition string) dpbolt.Resu
 		codeModel.Label = codeLabel
 		codeModel.Links = models.CodeLinks{
 			Self: models.Link{
-				Href: fmt.Sprintf("/code-lists/%s/editions/%s/codes/%s", codeListID, edition, codeVal),
+				Href: fmt.Sprintf(codeURI, codeListID, edition, codeVal),
 			},
 			CodeList: models.Link{
-				Href: fmt.Sprintf("/code-lists/%s", codeListID),
+				Href: fmt.Sprintf(codeListURI, codeListID),
 			},
 		}
 		return nil

@@ -68,17 +68,17 @@ func TestNeoDataStore_GetCodesSuccess(t *testing.T) {
 	Convey("given get codes is successful", t, func() {
 		db := &boltmock.DB{
 			QueryForResultFuncs: []boltmock.QueryFunc{
-				func(query string, params map[string]interface{}, mapResult dpbolt.ResultMapper) (int, error) {
-					return 1, mapResult(
+				func(query string, params map[string]interface{}, mapResult dpbolt.ResultMapper) error {
+					return mapResult(
 						&dpbolt.Result{Data: []interface{}{int64(1)}},
 					)
 				},
 			},
 			QueryForResultsFuncs: []boltmock.QueryFunc{
-				func(query string, params map[string]interface{}, mapResult dpbolt.ResultMapper) (int, error) {
+				func(query string, params map[string]interface{}, mapResult dpbolt.ResultMapper) error {
 					mapResult(&dpbolt.Result{Data: row1})
 					mapResult(&dpbolt.Result{Data: row2})
-					return 2, nil
+					return nil
 				},
 			},
 		}
@@ -107,7 +107,7 @@ func TestNeoDataStore_GetCodesEditionExitsError(t *testing.T) {
 	Convey("given edition exits returns an error", t, func() {
 		db := &boltmock.DB{
 			QueryForResultFuncs: []boltmock.QueryFunc{
-				boltmock.NewQueryFunc(0, errTest),
+				boltmock.ErrQueryFunc,
 			},
 		}
 		store := NeoDataStore{bolt: db}
@@ -115,7 +115,7 @@ func TestNeoDataStore_GetCodesEditionExitsError(t *testing.T) {
 		result, err := store.GetCodes(context.Background(), testCodeListID, testEdition)
 
 		Convey("then codeResult is nil and the expected error is returned", func() {
-			So(err, ShouldResemble, errTest)
+			So(err, ShouldResemble, boltmock.Err)
 			So(result, ShouldBeNil)
 		})
 
@@ -133,8 +133,8 @@ func TestNeoDataStore_GetCodesEditionExitsFalse(t *testing.T) {
 	Convey("given edition exits returns false", t, func() {
 		db := &boltmock.DB{
 			QueryForResultFuncs: []boltmock.QueryFunc{
-				func(query string, params map[string]interface{}, mapResult dpbolt.ResultMapper) (int, error) {
-					return 1, mapResult(
+				func(query string, params map[string]interface{}, mapResult dpbolt.ResultMapper) error {
+					return mapResult(
 						&dpbolt.Result{Data: []interface{}{int64(0)}},
 					)
 				},
@@ -163,14 +163,14 @@ func TestNeoDataStore_GetCodesResultMapperError(t *testing.T) {
 	Convey("given getCodes result mapper returns an error", t, func() {
 		db := &boltmock.DB{
 			QueryForResultFuncs: []boltmock.QueryFunc{
-				func(query string, params map[string]interface{}, mapResult dpbolt.ResultMapper) (int, error) {
-					return 1, mapResult(
+				func(query string, params map[string]interface{}, mapResult dpbolt.ResultMapper) error {
+					return mapResult(
 						&dpbolt.Result{Data: []interface{}{int64(1)}},
 					)
 				},
 			},
 			QueryForResultsFuncs: []boltmock.QueryFunc{
-				boltmock.NewQueryFunc(0, errTest),
+				boltmock.ErrQueryFunc,
 			},
 		}
 		store := NeoDataStore{bolt: db}
@@ -178,7 +178,7 @@ func TestNeoDataStore_GetCodesResultMapperError(t *testing.T) {
 		result, err := store.GetCodes(context.Background(), testCodeListID, testEdition)
 
 		Convey("then codeResult is nil and the expected error is returned", func() {
-			So(err, ShouldResemble, errTest)
+			So(err, ShouldResemble, boltmock.Err)
 			So(result, ShouldBeNil)
 		})
 
@@ -198,14 +198,14 @@ func TestNeoDataStore_GetCodesNoResults(t *testing.T) {
 	Convey("given no codes are found", t, func() {
 		db := &boltmock.DB{
 			QueryForResultFuncs: []boltmock.QueryFunc{
-				func(query string, params map[string]interface{}, mapResult dpbolt.ResultMapper) (int, error) {
-					return 1, mapResult(
+				func(query string, params map[string]interface{}, mapResult dpbolt.ResultMapper) error {
+					return mapResult(
 						&dpbolt.Result{Data: []interface{}{int64(1)}},
 					)
 				},
 			},
 			QueryForResultsFuncs: []boltmock.QueryFunc{
-				boltmock.NewQueryFunc(0, nil),
+				boltmock.NoResultFunc,
 			},
 		}
 		store := NeoDataStore{bolt: db}

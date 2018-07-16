@@ -12,6 +12,7 @@ import (
 var codesNotFoundErrors = map[error]bool{
 	datastore.ErrEditionNotFound: true,
 	datastore.ErrCodeNotFound:    true,
+	datastore.ErrCodesNotFound:   true,
 }
 
 func (c *CodeListAPI) getCodes(w http.ResponseWriter, r *http.Request) {

@@ -11,6 +11,7 @@ var (
 	NOT_FOUND          = errors.New("resource not found")
 	ErrEditionNotFound = errors.New("edition not found")
 	ErrCodeNotFound    = errors.New("code not found")
+	ErrCodesNotFound   = errors.New("codes not found")
 )
 
 //go:generate moq -out datastoretest/datastore.go -pkg storetest . DataStore

@@ -21,8 +21,8 @@ const (
 )
 
 type BoltDB interface {
-	QueryForResult(query string, params map[string]interface{}, extractResult dpbolt.ResultMapper) (int, error)
-	QueryForResults(query string, params map[string]interface{}, extractResult dpbolt.ResultMapper) (int, error)
+	QueryForResult(query string, params map[string]interface{}, extractResult dpbolt.ResultMapper) error
+	QueryForResults(query string, params map[string]interface{}, extractResult dpbolt.ResultMapper) error
 	Close() error
 }
 
@@ -61,7 +61,7 @@ func (n *NeoDataStore) GetCodeLists(ctx context.Context, filterBy string) (*mode
 	query := fmt.Sprintf(getCodeListsQuery, n.codeListLabel, filterBy)
 	codeListEditionsMap := make(map[string]*models.CodeList)
 
-	_, err := n.bolt.QueryForResults(query, nil, mapper.CodeLists(codeListEditionsMap))
+	err := n.bolt.QueryForResults(query, nil, mapper.CodeLists(codeListEditionsMap))
 	if err != nil {
 		return nil, err
 	}
@@ -79,14 +79,14 @@ func (n *NeoDataStore) GetCodeList(ctx context.Context, code string) (*models.Co
 
 	query := fmt.Sprintf(getCodeListQuery, n.codeListLabel, code)
 	codeList := &models.CodeList{}
-	resultMapper := mapper.CodeList(codeList, code)
 
-	count, err := n.bolt.QueryForResult(query, nil, resultMapper)
+	err := n.bolt.QueryForResult(query, nil, mapper.CodeList(codeList, code))
+	if err != nil && err == dpbolt.ErrNoResults {
+		return nil, datastore.NOT_FOUND
+	}
+
 	if err != nil {
 		return nil, err
-	}
-	if count == 0 {
-		return nil, datastore.NOT_FOUND
 	}
 
 	return codeList, nil
@@ -98,13 +98,12 @@ func (n *NeoDataStore) GetEditions(ctx context.Context, codeListID string) (*mod
 	query := fmt.Sprintf(getCodeListQuery, n.codeListLabel, codeListID)
 
 	editions := &models.Editions{}
-	count, err := n.bolt.QueryForResults(query, nil, mapper.Editions(editions, codeListID))
+	err := n.bolt.QueryForResults(query, nil, mapper.Editions(editions, codeListID))
+	if err != nil && err == dpbolt.ErrNoResults {
+		return nil, datastore.NOT_FOUND
+	}
 	if err != nil {
 		return nil, err
-	}
-
-	if count == 0 {
-		return nil, datastore.NOT_FOUND
 	}
 
 	editions.NumberOfResults = len(editions.Items)
@@ -117,13 +116,13 @@ func (n *NeoDataStore) GetEdition(ctx context.Context, codeListID, edition strin
 	query := fmt.Sprintf(getCodeListEditionQuery, n.codeListLabel, codeListID, edition)
 
 	editionModel := &models.Edition{}
-	count, err := n.bolt.QueryForResult(query, nil, mapper.Edition(editionModel, codeListID, edition))
-	if err != nil {
-		return nil, err
+	err := n.bolt.QueryForResult(query, nil, mapper.Edition(editionModel, codeListID, edition))
+	if err != nil && err == dpbolt.ErrNoResults {
+		return nil, datastore.NOT_FOUND
 	}
 
-	if count == 0 {
-		return nil, datastore.NOT_FOUND
+	if err != nil {
+		return nil, err
 	}
 
 	return editionModel, nil
@@ -138,20 +137,19 @@ func (n *NeoDataStore) GetCodes(ctx context.Context, codeListID, edition string)
 		return nil, datastore.ErrEditionNotFound
 	}
 
-	var count int
 	codeResults := &models.CodeResults{}
 	query := fmt.Sprintf(getCodesQuery, codeListID, edition)
 
-	count, err = n.bolt.QueryForResults(query, nil, mapper.Codes(codeResults, codeListID, edition))
+	err = n.bolt.QueryForResults(query, nil, mapper.Codes(codeResults, codeListID, edition))
+	if err != nil && err == dpbolt.ErrNoResults {
+		return nil, datastore.NOT_FOUND
+	}
+
 	if err != nil {
 		return nil, err
 	}
 
-	if count == 0 {
-		return nil, datastore.NOT_FOUND
-	}
-
-	codeResults.Count = count
+	codeResults.Count = len(codeResults.Items)
 	return codeResults, nil
 }
 
@@ -164,18 +162,16 @@ func (n *NeoDataStore) GetCode(ctx context.Context, codeListID, edition string, 
 		return nil, datastore.ErrEditionNotFound
 	}
 
-	var count int
 	codeModel := &models.Code{}
-	extractor := mapper.Code(codeModel, codeListID, edition)
 	query := fmt.Sprintf(getCodeQuery, codeListID, edition, code)
 
-	count, err = n.bolt.QueryForResult(query, nil, extractor)
-	if err != nil {
-		return nil, err
+	err = n.bolt.QueryForResult(query, nil,  mapper.Code(codeModel, codeListID, edition))
+	if err != nil && err == dpbolt.ErrNoResults {
+		return nil, datastore.ErrCodeNotFound
 	}
 
-	if count == 0 {
-		return nil, datastore.ErrCodeNotFound
+	if err != nil {
+		return nil, err
 	}
 
 	return codeModel, nil
@@ -188,7 +184,7 @@ func (n *NeoDataStore) EditionExists(ctx context.Context, codeListID string, edi
 	query := fmt.Sprintf(countEditions, codeListID, edition)
 
 	count, extractor := mapper.EditionCount()
-	_, err := n.bolt.QueryForResult(query, nil, extractor)
+	err := n.bolt.QueryForResult(query, nil, extractor)
 	if err != nil {
 		return false, err
 	}

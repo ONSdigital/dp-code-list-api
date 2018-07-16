@@ -9,16 +9,16 @@
 			"revisionTime": "2018-07-11T08:29:42Z"
 		},
 		{
-			"checksumSHA1": "7UF+bTFJR0TwPU2X4opzJwyJkj4=",
+			"checksumSHA1": "+8QgyPhCi0qxx1jUyxdktnoMyFU=",
 			"path": "github.com/ONSdigital/dp-bolt/bolt",
-			"revision": "a2224b84fd7d6e607a8f11c609d322fc2ad35d50",
-			"revisionTime": "2018-07-12T11:13:29Z"
+			"revision": "1626d4b50139c0b38c9321c9b757525e397fdf74",
+			"revisionTime": "2018-07-16T06:44:23Z"
 		},
 		{
-			"checksumSHA1": "IEEBWoACfxvFgpX9WMgXna5ibLM=",
+			"checksumSHA1": "apzY4vgubuTjRiOVevx8dYI6w/c=",
 			"path": "github.com/ONSdigital/dp-bolt/boltmock",
-			"revision": "a2224b84fd7d6e607a8f11c609d322fc2ad35d50",
-			"revisionTime": "2018-07-12T11:13:29Z"
+			"revision": "1626d4b50139c0b38c9321c9b757525e397fdf74",
+			"revisionTime": "2018-07-16T06:44:23Z"
 		},
 		{
 			"checksumSHA1": "8GX4z3tt4e6rXHJtJv8q8YZrFwk=",

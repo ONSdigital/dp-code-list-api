@@ -1,18 +1,25 @@
 package boltmock
 
-import "github.com/ONSdigital/dp-bolt/bolt"
+import (
+	"github.com/ONSdigital/dp-bolt/bolt"
+	"github.com/pkg/errors"
+)
 
 type QueryParams struct {
 	Query  string
 	Params map[string]interface{}
 }
 
-type QueryFunc func(query string, params map[string]interface{}, mapResult bolt.ResultMapper) (int, error)
+type QueryFunc func(query string, params map[string]interface{}, mapResult bolt.ResultMapper) error
 
-func NewQueryFunc(i int, err error) QueryFunc {
-	return func(query string, params map[string]interface{}, mapResult bolt.ResultMapper) (int, error) {
-		return i, err
-	}
+var Err = errors.New("queryFunc error")
+
+var ErrQueryFunc QueryFunc = func(query string, params map[string]interface{}, mapResult bolt.ResultMapper) error {
+	return Err
+}
+
+var NoResultFunc QueryFunc = func(query string, params map[string]interface{}, mapResult bolt.ResultMapper) error {
+	return bolt.ErrNoResults
 }
 
 type DB struct {
@@ -23,7 +30,7 @@ type DB struct {
 	QueryForResultsFuncs []QueryFunc
 }
 
-func (m *DB) QueryForResult(query string, params map[string]interface{}, mapResult bolt.ResultMapper) (int, error) {
+func (m *DB) QueryForResult(query string, params map[string]interface{}, mapResult bolt.ResultMapper) error {
 	if m.QueryForResultCalls == nil {
 		m.QueryForResultCalls = []QueryParams{}
 	}
@@ -33,7 +40,7 @@ func (m *DB) QueryForResult(query string, params map[string]interface{}, mapResu
 	return m.QueryForResultFuncs[index](query, params, mapResult)
 }
 
-func (m *DB) QueryForResults(query string, params map[string]interface{}, mapResult bolt.ResultMapper) (int, error) {
+func (m *DB) QueryForResults(query string, params map[string]interface{}, mapResult bolt.ResultMapper) error {
 	if m.QueryForResultsCalls == nil {
 		m.QueryForResultsCalls = []QueryParams{}
 	}

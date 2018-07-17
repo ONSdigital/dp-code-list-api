@@ -10,12 +10,13 @@ import (
 )
 
 var (
-	lockDataStoreMockGetCode      sync.RWMutex
-	lockDataStoreMockGetCodeList  sync.RWMutex
-	lockDataStoreMockGetCodeLists sync.RWMutex
-	lockDataStoreMockGetCodes     sync.RWMutex
-	lockDataStoreMockGetEdition   sync.RWMutex
-	lockDataStoreMockGetEditions  sync.RWMutex
+	lockDataStoreMockGetCode         sync.RWMutex
+	lockDataStoreMockGetCodeDatasets sync.RWMutex
+	lockDataStoreMockGetCodeList     sync.RWMutex
+	lockDataStoreMockGetCodeLists    sync.RWMutex
+	lockDataStoreMockGetCodes        sync.RWMutex
+	lockDataStoreMockGetEdition      sync.RWMutex
+	lockDataStoreMockGetEditions     sync.RWMutex
 )
 
 // DataStoreMock is a mock implementation of DataStore.
@@ -26,6 +27,9 @@ var (
 //         mockedDataStore := &DataStoreMock{
 //             GetCodeFunc: func(ctx context.Context, codeListID string, edition string, code string) (*models.Code, error) {
 // 	               panic("TODO: mock out the GetCode method")
+//             },
+//             GetCodeDatasetsFunc: func(ctx context.Context, codeListID string, edition string, code string) (*models.Datasets, error) {
+// 	               panic("TODO: mock out the GetCodeDatasets method")
 //             },
 //             GetCodeListFunc: func(ctx context.Context, codeListID string) (*models.CodeList, error) {
 // 	               panic("TODO: mock out the GetCodeList method")
@@ -52,6 +56,9 @@ type DataStoreMock struct {
 	// GetCodeFunc mocks the GetCode method.
 	GetCodeFunc func(ctx context.Context, codeListID string, edition string, code string) (*models.Code, error)
 
+	// GetCodeDatasetsFunc mocks the GetCodeDatasets method.
+	GetCodeDatasetsFunc func(ctx context.Context, codeListID string, edition string, code string) (*models.Datasets, error)
+
 	// GetCodeListFunc mocks the GetCodeList method.
 	GetCodeListFunc func(ctx context.Context, codeListID string) (*models.CodeList, error)
 
@@ -71,6 +78,17 @@ type DataStoreMock struct {
 	calls struct {
 		// GetCode holds details about calls to the GetCode method.
 		GetCode []struct {
+			// Ctx is the ctx argument value.
+			Ctx context.Context
+			// CodeListID is the codeListID argument value.
+			CodeListID string
+			// Edition is the edition argument value.
+			Edition string
+			// Code is the code argument value.
+			Code string
+		}
+		// GetCodeDatasets holds details about calls to the GetCodeDatasets method.
+		GetCodeDatasets []struct {
 			// Ctx is the ctx argument value.
 			Ctx context.Context
 			// CodeListID is the codeListID argument value.
@@ -162,6 +180,49 @@ func (mock *DataStoreMock) GetCodeCalls() []struct {
 	lockDataStoreMockGetCode.RLock()
 	calls = mock.calls.GetCode
 	lockDataStoreMockGetCode.RUnlock()
+	return calls
+}
+
+// GetCodeDatasets calls GetCodeDatasetsFunc.
+func (mock *DataStoreMock) GetCodeDatasets(ctx context.Context, codeListID string, edition string, code string) (*models.Datasets, error) {
+	if mock.GetCodeDatasetsFunc == nil {
+		panic("moq: DataStoreMock.GetCodeDatasetsFunc is nil but DataStore.GetCodeDatasets was just called")
+	}
+	callInfo := struct {
+		Ctx        context.Context
+		CodeListID string
+		Edition    string
+		Code       string
+	}{
+		Ctx:        ctx,
+		CodeListID: codeListID,
+		Edition:    edition,
+		Code:       code,
+	}
+	lockDataStoreMockGetCodeDatasets.Lock()
+	mock.calls.GetCodeDatasets = append(mock.calls.GetCodeDatasets, callInfo)
+	lockDataStoreMockGetCodeDatasets.Unlock()
+	return mock.GetCodeDatasetsFunc(ctx, codeListID, edition, code)
+}
+
+// GetCodeDatasetsCalls gets all the calls that were made to GetCodeDatasets.
+// Check the length with:
+//     len(mockedDataStore.GetCodeDatasetsCalls())
+func (mock *DataStoreMock) GetCodeDatasetsCalls() []struct {
+	Ctx        context.Context
+	CodeListID string
+	Edition    string
+	Code       string
+} {
+	var calls []struct {
+		Ctx        context.Context
+		CodeListID string
+		Edition    string
+		Code       string
+	}
+	lockDataStoreMockGetCodeDatasets.RLock()
+	calls = mock.calls.GetCodeDatasets
+	lockDataStoreMockGetCodeDatasets.RUnlock()
 	return calls
 }
 

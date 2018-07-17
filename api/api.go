@@ -3,10 +3,11 @@ package api
 import (
 	"net/http"
 
+	"context"
+
 	"github.com/ONSdigital/dp-code-list-api/datastore"
 	"github.com/ONSdigital/go-ns/log"
 	"github.com/gorilla/mux"
-	"context"
 )
 
 const (
@@ -43,6 +44,7 @@ func CreateCodeListAPI(route *mux.Router, store datastore.DataStore) *CodeListAP
 	api.router.HandleFunc("/code-lists/{id}/editions/{edition}", api.getEdition).Methods("GET")
 	api.router.HandleFunc("/code-lists/{id}/editions/{edition}/codes", api.getCodes).Methods("GET")
 	api.router.HandleFunc("/code-lists/{id}/editions/{edition}/codes/{code}", api.getCode).Methods("GET")
+	api.router.HandleFunc("/code-lists/{id}/editions/{edition}/codes/{code}/datasets", api.getCodeDatasets).Methods("GET")
 	return &api
 }
 

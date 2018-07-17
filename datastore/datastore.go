@@ -23,4 +23,5 @@ type DataStore interface {
 	GetEdition(ctx context.Context, codeListID, edition string) (*models.Edition, error)
 	GetCodes(ctx context.Context, codeListID, edition string) (*models.CodeResults, error)
 	GetCode(ctx context.Context, codeListID, edition string, code string) (*models.Code, error)
+	GetCodeDatasets(ctx context.Context, codeListID, edition string, code string) (*models.Datasets, error)
 }

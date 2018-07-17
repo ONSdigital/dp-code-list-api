@@ -6,24 +6,26 @@ import (
 	"strconv"
 	"strings"
 
+	"io"
+
 	"github.com/ONSdigital/dp-code-list-api/datastore"
 	"github.com/ONSdigital/dp-code-list-api/models"
 	"github.com/ONSdigital/go-ns/log"
 	bolt "github.com/johnnadratowski/golang-neo4j-bolt-driver"
 	"github.com/johnnadratowski/golang-neo4j-bolt-driver/structures/graph"
 	"github.com/pkg/errors"
-	"io"
 )
 
 //go:generate moq -out mock/neo4j.go -pkg mock . DBPool Conn Rows
 
 const (
 	getCodeListsQuery       = "MATCH (i) WHERE i:_%s%s RETURN distinct labels(i) as labels, i"
-	getCodeListQuery        = "MATCH (i:_%s:`_name_%s`) RETURN i"
-	getCodeListEditionQuery = "MATCH (i:_%s:`_name_%s` {edition:" + `"%s"` + "}) RETURN i"
-	countEditions           = "MATCH (cl:_code_list:`_name_%s`) WHERE cl.edition = %q RETURN count(*)"
-	getCodesQuery           = "MATCH (c:_code) -[r:usedBy]->(cl:_code_list: `_name_%s`) WHERE cl.edition = %q RETURN c, r"
-	getCodeQuery            = "MATCH (c:_code) -[r:usedBy]->(cl:_code_list: `_name_%s`) WHERE cl.edition = %q AND c.value = %q RETURN c, r"
+	getCodeListQuery        = "MATCH (i:_%s:`_code_list_%s`) RETURN i"
+	getCodeListEditionQuery = "MATCH (i:_%s:`_code_list_%s` {edition:" + `"%s"` + "}) RETURN i"
+	countEditions           = "MATCH (cl:_code_list:`_code_list_%s`) WHERE cl.edition = %q RETURN count(*)"
+	getCodesQuery           = "MATCH (c:_code) -[r:usedBy]->(cl:_code_list: `_code_list_%s`) WHERE cl.edition = %q RETURN c, r"
+	getCodeQuery            = "MATCH (c:_code) -[r:usedBy]->(cl:_code_list: `_code_list_%s`) WHERE cl.edition = %q AND c.value = %q RETURN c, r"
+	getCodeDatasets         = "MATCH (d)<-[inDataset]-(c:_code)-[r:usedBy]->(cl:_code_list:`_code_list_%s`) WHERE (cl.edition=" + `"%s"` + ") AND (c.value=" + `"%s"` + ") RETURN d,r"
 )
 
 var (
@@ -110,8 +112,8 @@ func (n *NeoDataStore) GetCodeLists(ctx context.Context, filterBy string) (*mode
 
 		var label string
 		for _, l := range labels {
-			if strings.Contains(l, "_name_") {
-				label = strings.Replace(l, `_name_`, "", -1)
+			if strings.Contains(l, "_code_list_") {
+				label = strings.Replace(l, `_code_list_`, "", -1)
 				break
 			}
 		}
@@ -469,6 +471,75 @@ func (n *NeoDataStore) GetCode(ctx context.Context, codeListID, edition string, 
 	return codeModel, nil
 }
 
+func (n *NeoDataStore) GetCodeDatasets(ctx context.Context, codeListID, edition, code string) (*models.Datasets, error) {
+	editionExists, err := n.EditionExists(ctx, codeListID, edition)
+	if err != nil {
+		return nil, err
+	}
+	if !editionExists {
+		return nil, datastore.ErrEditionNotFound
+	}
+
+	conn, err := n.pool.OpenPool()
+	if err != nil {
+		return nil, errors.WithMessage(err, "GetCodeDatasets: error opening neo4j connection")
+	}
+
+	defer conn.Close()
+
+	query := fmt.Sprintf(getCodeDatasets, codeListID, edition, code)
+
+	rows, err := conn.QueryNeo(query, nil)
+	if err != nil {
+		return nil, errors.WithMessage(err, "getCode: conn.QueryNeo returned an error")
+	}
+	defer rows.Close()
+
+	datasetsModel := &models.Datasets{}
+
+	err = extractRowResults(ctx, rows, func(row []interface{}, rowIndex int) error {
+		node := row[0].(graph.Node)
+		relationship := row[1].(graph.Relationship)
+
+		vars := node.Properties
+		relVars := relationship.Properties
+
+		isPublished := vars["is_published"].(bool)
+
+		if !isPublished {
+			return nil
+		}
+
+		datasetID := vars["dataset"].(string)
+		datasetEdition := vars["edition"].(string)
+		version := vars["version"].(int64)
+
+		datasetsModel.Items = append(datasetsModel.Items, models.Dataset{
+			ID:             datasetID,
+			Edition:        datasetEdition,
+			Version:        int(version),
+			DimensionLabel: relVars["label"].(string),
+			Links: models.DatasetLink{
+				CodeEdition: models.Link{
+					Href: fmt.Sprintf("/code-lists/%s/editions/%s", codeListID, edition),
+				},
+				DatasetVersion: models.Link{
+					Href: fmt.Sprintf("/datasets/%s/editions/%s/versions/%d", datasetID, datasetEdition, version),
+				},
+				DatasetDimension: models.Link{
+					Href: fmt.Sprintf("/datasets/%s/editions/%s/versions/%d/dimensions/%s", datasetID, datasetEdition, version, codeListID),
+				},
+			},
+		})
+
+		return nil
+	})
+
+	datasetsModel.NumberOfResults = len(datasetsModel.Items)
+
+	return datasetsModel, err
+}
+
 func (n *NeoDataStore) EditionExists(ctx context.Context, codeListID string, edition string) (bool, error) {
 	data := log.Data{"codelist_id": codeListID, "edition": edition}
 	log.InfoCtx(ctx, "checking edition exists", data)
@@ -518,14 +589,12 @@ func extractRowResults(ctx context.Context, rows bolt.Rows, extractRowData func(
 		if err != nil {
 			if err == io.EOF {
 				return nil
-			} else {
-				return errors.WithMessage(err, "extractRowResults: rows.NextNeo return an error")
 			}
+			return errors.WithMessage(err, "extractRowResults: rows.NextNeo return an error")
 		}
 		index++
 		if err := extractRowData(row, index); err != nil {
 			return errors.WithMessage(err, "extractRowData returned an error")
 		}
 	}
-	return nil
 }

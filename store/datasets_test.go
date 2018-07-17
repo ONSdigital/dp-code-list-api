@@ -5,6 +5,7 @@ import (
 	"io"
 	"testing"
 
+	"github.com/ONSdigital/dp-code-list-api/datastore"
 	"github.com/ONSdigital/dp-code-list-api/store/mock"
 	"github.com/johnnadratowski/golang-neo4j-bolt-driver"
 	"github.com/johnnadratowski/golang-neo4j-bolt-driver/structures/graph"
@@ -131,7 +132,7 @@ func TestCodeDatasets(t *testing.T) {
 			datasets, err := neo.GetCodeDatasets(context.Background(), "", "", "")
 			Convey("then an error is returned", func() {
 				So(err, ShouldNotBeNil)
-				So(err.Error(), ShouldEqual, "edition not found")
+				So(err, ShouldEqual, datastore.ErrEditionNotFound)
 				So(datasets, ShouldBeNil)
 			})
 		})
@@ -259,86 +260,4 @@ func TestCodeDatasets(t *testing.T) {
 		})
 	})
 
-	Convey("given a code with related datasets exists in neo4j but one is unpublished", t, func() {
-		index := 0
-		rows := &mock.RowsMock{
-			NextNeoFunc: func() ([]interface{}, map[string]interface{}, error) {
-				index++
-				if index == 1 {
-					return []interface{}{int64(1)}, nil, nil
-				}
-				if index == 2 {
-					return nil, nil, io.EOF
-				}
-				if index == 3 {
-					return []interface{}{
-						graph.Node{
-							Properties: map[string]interface{}{
-								"dataset_id":   "cpih01",
-								"edition":      "time-series",
-								"version":      int64(1),
-								"is_published": true,
-							},
-						},
-						graph.Relationship{
-							Properties: map[string]interface{}{
-								"label": "Overall index",
-							},
-						},
-					}, nil, nil
-				}
-				if index == 4 {
-					return []interface{}{
-						graph.Node{
-							Properties: map[string]interface{}{
-								"dataset_id":   "mid-year-pop-est",
-								"edition":      "time-series",
-								"version":      int64(2),
-								"is_published": false,
-							},
-						},
-						graph.Relationship{
-							Properties: map[string]interface{}{
-								"label": "Overall index",
-							},
-						},
-					}, nil, nil
-				}
-				return nil, nil, io.EOF
-			},
-			CloseFunc: closeNoErr,
-		}
-		conn := &mock.ConnMock{
-			CloseFunc: closeNoErr,
-			QueryNeoFunc: func(query string, params map[string]interface{}) (golangNeo4jBoltDriver.Rows, error) {
-				return rows, nil
-			},
-		}
-		pool := &mock.DBPoolMock{
-			OpenPoolFunc: func() (golangNeo4jBoltDriver.Conn, error) {
-				return conn, nil
-			},
-		}
-		neo := NeoDataStore{
-			pool:          pool,
-			codeListLabel: "",
-		}
-
-		Convey("when I request the datasets from the store", func() {
-			datasets, err := neo.GetCodeDatasets(context.Background(), "my-code-list-id", "2017", "my-code")
-			Convey("then the unpublished datasets are not returned", func() {
-				So(err, ShouldBeNil)
-				So(datasets.NumberOfResults, ShouldEqual, 1)
-
-				item1 := datasets.Items[0]
-				So(item1.DimensionLabel, ShouldEqual, "Overall index")
-				So(item1.ID, ShouldEqual, "cpih01")
-				So(item1.Edition, ShouldEqual, "time-series")
-				So(item1.Version, ShouldEqual, 1)
-				So(item1.Links.CodeEdition.Href, ShouldEqual, "/code-lists/my-code-list-id/editions/2017")
-				So(item1.Links.DatasetDimension.Href, ShouldEqual, "/datasets/cpih01/editions/time-series/versions/1/dimensions/my-code-list-id")
-				So(item1.Links.DatasetVersion.Href, ShouldEqual, "/datasets/cpih01/editions/time-series/versions/1")
-			})
-		})
-	})
 }

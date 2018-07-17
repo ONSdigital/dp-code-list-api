@@ -25,7 +25,7 @@ const (
 	countEditions           = "MATCH (cl:_code_list:`_code_list_%s`) WHERE cl.edition = %q RETURN count(*)"
 	getCodesQuery           = "MATCH (c:_code) -[r:usedBy]->(cl:_code_list: `_code_list_%s`) WHERE cl.edition = %q RETURN c, r"
 	getCodeQuery            = "MATCH (c:_code) -[r:usedBy]->(cl:_code_list: `_code_list_%s`) WHERE cl.edition = %q AND c.value = %q RETURN c, r"
-	getCodeDatasets         = "MATCH (d)<-[inDataset]-(c:_code)-[r:usedBy]->(cl:_code_list:`_code_list_%s`) WHERE (cl.edition=" + `"%s"` + ") AND (c.value=" + `"%s"` + ") RETURN d,r"
+	getCodeDatasets         = "MATCH (d)<-[inDataset]-(c:_code)-[r:usedBy]->(cl:_code_list:`_code_list_%s`) WHERE (cl.edition=" + `"%s"` + ") AND (c.value=" + `"%s"` + ") AND (d.is_published=true) RETURN d,r"
 )
 
 var (
@@ -504,10 +504,6 @@ func (n *NeoDataStore) GetCodeDatasets(ctx context.Context, codeListID, edition,
 		vars := node.Properties
 		relVars := relationship.Properties
 
-		if isPublished, ok := vars["is_published"].(bool); !ok || !isPublished {
-			return nil
-		}
-
 		datasetID := vars["dataset_id"].(string)
 		datasetEdition := vars["edition"].(string)
 		version := vars["version"].(int64)
@@ -532,6 +528,10 @@ func (n *NeoDataStore) GetCodeDatasets(ctx context.Context, codeListID, edition,
 
 		return nil
 	})
+
+	if len(datasetsModel.Items) == 0 {
+		return nil, datastore.NOT_FOUND
+	}
 
 	datasetsModel.NumberOfResults = len(datasetsModel.Items)
 

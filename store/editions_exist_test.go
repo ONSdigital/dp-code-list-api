@@ -1,14 +1,14 @@
 package store
 
 import (
-	"testing"
-	. "github.com/smartystreets/goconvey/convey"
-	"github.com/ONSdigital/dp-code-list-api/store/mock"
 	"context"
-	"github.com/johnnadratowski/golang-neo4j-bolt-driver"
-	"io"
 	"fmt"
+	"github.com/ONSdigital/dp-code-list-api/store/mock"
+	"github.com/johnnadratowski/golang-neo4j-bolt-driver"
 	"github.com/pkg/errors"
+	. "github.com/smartystreets/goconvey/convey"
+	"io"
+	"testing"
 )
 
 var (

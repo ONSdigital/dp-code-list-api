@@ -6,7 +6,7 @@
 <script>
     // let root = "https://api.dev.cmd.onsdigital.co.uk/v1/datasets"
     let root = "https://api.beta.ons.gov.uk/v1/datasets"
-    // let root = "http://localhost:23200/v1/datasets"
+    //root = "http://localhost:23200/v1/datasets"
 
     document.addEventListener("DOMContentLoaded", function () {
         fetch(root, {
@@ -85,7 +85,7 @@
             
 
                     let node = document.createElement("p");                 // Create a <h1> node
-                    let textnode = document.createTextNode("MATCH (n:`_" + instance + "_Instance`) SET n.is_published =true, n.dataset ='"+dataset+"', n.edition ='"+edition+"', n.version ="+version+";");     // Create a text node
+                    let textnode = document.createTextNode("MATCH (n:`_" + instance + "_Instance`) SET n.is_published =true, n.dataset_id ='"+dataset+"', n.edition ='"+edition+"', n.version ="+version+";");     // Create a text node
                     node.appendChild(textnode);                              // Append the text to <h1>
                     document.getElementById("cypher").appendChild(node);
 

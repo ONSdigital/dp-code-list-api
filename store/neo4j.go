@@ -504,9 +504,7 @@ func (n *NeoDataStore) GetCodeDatasets(ctx context.Context, codeListID, edition,
 		vars := node.Properties
 		relVars := relationship.Properties
 
-		isPublished := vars["is_published"].(bool)
-
-		if !isPublished {
+		if isPublished, ok := vars["is_published"].(bool); !ok || !isPublished {
 			return nil
 		}
 

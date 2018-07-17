@@ -9,15 +9,9 @@ import (
 type Configuration struct {
 	BindAddr                string        `envconfig:"BIND_ADDR"`
 	GracefulShutdownTimeout time.Duration `envconfig:"GRACEFUL_SHUTDOWN_TIMEOUT"`
-	MongoConfig             MongoConfig
-}
-
-// MongoConfig contains the config required to connect to MongoDB.
-type MongoConfig struct {
-	BindAddr            string `envconfig:"MONGODB_ADDR"`
-	Database            string `envconfig:"MONGODB_DATABASE"`
-	CodelistsCollection string `envconfig:"MONGODB_CODELISTS_COLLECTION"`
-	CodesCollection     string `envconfig:"MONGODB_CODES_COLLECTION"`
+	Neo4jDatabaseAddress    string        `envconfig:"NEO4J_ADDR"`
+	Neo4jPoolSize           int           `envconfig:"NEO4J_POOL_SIZE"`
+	Neo4jCodeListLabel      string        `envconfig:"NEO4J_CODE_LIST_LABEL"`
 }
 
 var cfg *Configuration
@@ -31,12 +25,9 @@ func Get() (*Configuration, error) {
 	cfg = &Configuration{
 		BindAddr:                ":22400",
 		GracefulShutdownTimeout: time.Second * 5,
-		MongoConfig: MongoConfig{
-			BindAddr:            "localhost:27017",
-			Database:            "codelists",
-			CodelistsCollection: "codelists",
-			CodesCollection:     "codes",
-		},
+		Neo4jDatabaseAddress:    "bolt://localhost:7687",
+		Neo4jPoolSize:           30,
+		Neo4jCodeListLabel:      "code_list",
 	}
 
 	return cfg, envconfig.Process("", cfg)

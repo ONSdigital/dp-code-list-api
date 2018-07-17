@@ -5,26 +5,20 @@
 		{
 			"checksumSHA1": "8GX4z3tt4e6rXHJtJv8q8YZrFwk=",
 			"path": "github.com/ONSdigital/go-ns/common",
-			"revision": "3fdd13a161b0d6221b2405cce8bbe5ec69168ab7",
-			"revisionTime": "2018-07-05T11:25:05Z"
+			"revision": "40bd7a2162e3296b504c5540899bb3a13ef15936",
+			"revisionTime": "2018-06-21T10:26:04Z"
 		},
 		{
-			"checksumSHA1": "J9OiPnhPHFPhQ+R+dq6LFj+dTxE=",
+			"checksumSHA1": "Vjyl/gfY0qx2lW9te3Ieb5HV3/s=",
 			"path": "github.com/ONSdigital/go-ns/handlers/requestID",
-			"revision": "e605c8457f659ef94b6affa56903315e650ac82a",
-			"revisionTime": "2017-09-25T15:05:00Z"
+			"revision": "68b921d454e7cca6a1d33046972c96f5ea9c758b",
+			"revisionTime": "2018-07-05T18:19:58Z"
 		},
 		{
-			"checksumSHA1": "g9flYl+PBs6cYflFY3EpG6IcJGM=",
+			"checksumSHA1": "2DNGNtbblBXMJYttuAlhVT7XCKY=",
 			"path": "github.com/ONSdigital/go-ns/log",
-			"revision": "3fdd13a161b0d6221b2405cce8bbe5ec69168ab7",
-			"revisionTime": "2018-07-05T11:25:05Z"
-		},
-		{
-			"checksumSHA1": "7tpnAZ6SnDPu2Zc5B41Zl1O3yEU=",
-			"path": "github.com/ONSdigital/go-ns/mongo",
-			"revision": "e605c8457f659ef94b6affa56903315e650ac82a",
-			"revisionTime": "2017-09-25T15:05:00Z"
+			"revision": "40bd7a2162e3296b504c5540899bb3a13ef15936",
+			"revisionTime": "2018-06-21T10:26:04Z"
 		},
 		{
 			"checksumSHA1": "Wc0l6IlAATaN3qFb2ECwcjcHH4I=",
@@ -57,6 +51,48 @@
 			"revisionTime": "2017-06-21T21:27:26Z"
 		},
 		{
+			"checksumSHA1": "TsX+LuxHhV9GFmua8C1nxflFcTA=",
+			"path": "github.com/johnnadratowski/golang-neo4j-bolt-driver",
+			"revision": "1108d6e66ccf2c8e68ab26b5f64e6c0a2ad00899",
+			"revisionTime": "2017-12-18T14:36:11Z"
+		},
+		{
+			"checksumSHA1": "ZD+c/CrHF12yYhu5wHszbIq3Aww=",
+			"path": "github.com/johnnadratowski/golang-neo4j-bolt-driver/encoding",
+			"revision": "1108d6e66ccf2c8e68ab26b5f64e6c0a2ad00899",
+			"revisionTime": "2017-12-18T14:36:11Z"
+		},
+		{
+			"checksumSHA1": "9lgMFoaIFZe75vv7ln+IbPKHasE=",
+			"path": "github.com/johnnadratowski/golang-neo4j-bolt-driver/errors",
+			"revision": "1108d6e66ccf2c8e68ab26b5f64e6c0a2ad00899",
+			"revisionTime": "2017-12-18T14:36:11Z"
+		},
+		{
+			"checksumSHA1": "MeB74aEJl/Vif3wfI/yyskLXgQ8=",
+			"path": "github.com/johnnadratowski/golang-neo4j-bolt-driver/log",
+			"revision": "1108d6e66ccf2c8e68ab26b5f64e6c0a2ad00899",
+			"revisionTime": "2017-12-18T14:36:11Z"
+		},
+		{
+			"checksumSHA1": "QBWn/ajykCeEt1W21Ufl9RxLeX4=",
+			"path": "github.com/johnnadratowski/golang-neo4j-bolt-driver/structures",
+			"revision": "1108d6e66ccf2c8e68ab26b5f64e6c0a2ad00899",
+			"revisionTime": "2017-12-18T14:36:11Z"
+		},
+		{
+			"checksumSHA1": "vLBWZ/5wRQ4PIyIOW3dbXlKbd3s=",
+			"path": "github.com/johnnadratowski/golang-neo4j-bolt-driver/structures/graph",
+			"revision": "1108d6e66ccf2c8e68ab26b5f64e6c0a2ad00899",
+			"revisionTime": "2017-12-18T14:36:11Z"
+		},
+		{
+			"checksumSHA1": "WSdNJOxRdPV0gCzq7mX6cqIf3/c=",
+			"path": "github.com/johnnadratowski/golang-neo4j-bolt-driver/structures/messages",
+			"revision": "1108d6e66ccf2c8e68ab26b5f64e6c0a2ad00899",
+			"revisionTime": "2017-12-18T14:36:11Z"
+		},
+		{
 			"checksumSHA1": "Js/yx9fZ3+wH1wZpHNIxSTMIaCg=",
 			"path": "github.com/jtolds/gls",
 			"revision": "77f18212c9c7edc9bd6a33d383a7b545ce62f064",
@@ -81,6 +117,12 @@
 			"path": "github.com/mgutz/ansi",
 			"revision": "e605c8457f659ef94b6affa56903315e650ac82a",
 			"revisionTime": "2017-09-25T15:05:00Z"
+		},
+		{
+			"checksumSHA1": "ljd3FhYRJ91cLZz3wsH9BQQ2JbA=",
+			"path": "github.com/pkg/errors",
+			"revision": "816c9085562cd7ee03e7f8188a1cfd942858cded",
+			"revisionTime": "2018-03-11T21:45:15Z"
 		},
 		{
 			"checksumSHA1": "AikWjAOvWHSJ8G1iU+wNReZnyCk=",
@@ -117,36 +159,6 @@
 			"path": "github.com/smartystreets/goconvey/convey/reporting",
 			"revision": "9e8dc3f972df6c8fcc0375ef492c24d0bb204857",
 			"revisionTime": "2017-06-02T16:46:21Z"
-		},
-		{
-			"checksumSHA1": "1D8GzeoFGUs5FZOoyC2DpQg8c5Y=",
-			"path": "gopkg.in/mgo.v2",
-			"revision": "3f83fa5005286a7fe593b055f0d7771a7dce4655",
-			"revisionTime": "2016-08-18T02:01:20Z"
-		},
-		{
-			"checksumSHA1": "YsB2DChSV9HxdzHaKATllAUKWSI=",
-			"path": "gopkg.in/mgo.v2/bson",
-			"revision": "3f83fa5005286a7fe593b055f0d7771a7dce4655",
-			"revisionTime": "2016-08-18T02:01:20Z"
-		},
-		{
-			"checksumSHA1": "XQsrqoNT1U0KzLxOFcAZVvqhLfk=",
-			"path": "gopkg.in/mgo.v2/internal/json",
-			"revision": "3f83fa5005286a7fe593b055f0d7771a7dce4655",
-			"revisionTime": "2016-08-18T02:01:20Z"
-		},
-		{
-			"checksumSHA1": "LEvMCnprte47qdAxWvQ/zRxVF1U=",
-			"path": "gopkg.in/mgo.v2/internal/sasl",
-			"revision": "3f83fa5005286a7fe593b055f0d7771a7dce4655",
-			"revisionTime": "2016-08-18T02:01:20Z"
-		},
-		{
-			"checksumSHA1": "+1WDRPaOphSCmRMxVPIPBV4aubc=",
-			"path": "gopkg.in/mgo.v2/internal/scram",
-			"revision": "3f83fa5005286a7fe593b055f0d7771a7dce4655",
-			"revisionTime": "2016-08-18T02:01:20Z"
 		}
 	],
 	"rootPath": "github.com/ONSdigital/dp-code-list-api"

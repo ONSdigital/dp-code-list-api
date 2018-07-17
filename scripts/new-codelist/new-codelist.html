@@ -1,0 +1,74 @@
+<html>
+
+<head>
+    <script src="d3.min.js"></script>
+</head>
+
+<body>
+    <div id="constraint"></div>
+    <div id="cypher"></div>
+</body>
+
+<script>
+    let root = "codelist.csv"
+    document.addEventListener("DOMContentLoaded", function () {
+        //get data
+        d3.csv(root, function (data) {
+            headerRow = Object.keys(data[0])
+            //codelist ID will be the first cell in column A
+            codelist = headerRow["0"]
+            //codelist label will will be the first cell in column B
+            label = headerRow["1"]
+            //Need to get an edition from user, not in file so ask for it
+            let edition = prompt("Please enter edition (normally a year")
+            //create cypher query to create the node for the codelist
+            let node = document.createElement("p");
+            let textnode = document.createTextNode("CREATE CONSTRAINT ON (n:`_code_" + codelist +
+                "`) ASSERT n.value IS UNIQUE;");
+            node.appendChild(textnode);
+            document.getElementById("constraint").appendChild(node);
+            let node2 = document.createElement("p");
+            let text = document.createTextNode("CREATE (node:`_code_list`:`_code_list_" + codelist +
+                "` { label:'" +
+                label + "', edition:'"+ edition +"' });");
+            node2.appendChild(text);
+            document.getElementById("cypher").appendChild(node2);
+            //the codes themselves need to be treated differnetly if Geo codes so check if this is
+            if (label === "geography") {
+                let unique = confirm(
+                    "Are you loading geography codes? This script will not create code-list specific nodes. Ensure all codes are globally unique"
+                );
+             if (unique == true) {
+                    data.map(function (data) {
+                        //this stops us from creating multiple versions of the same code for geography, there is a constraint on this codelabel when we use later
+                        codeLabel = "geography"
+                        createCodes(data, codeLabel)
+                    })
+                } else {
+                    alert("Cancelled");
+                }
+            } else {
+                data.map(function (data) {
+                    codeLabel = codelist
+                    createCodes(data, codeLabel)
+                })
+            }
+        });
+    })
+    function createCodes(data) {
+        let node = document.createElement("p");
+        let textnode = document.createTextNode("MERGE (node:`_code`:`_code_" + codeLabel.trim() + "` { value:'" +
+            data[
+                codelist].trim().toLowerCase() + "' });");
+        node.appendChild(textnode);
+        document.getElementById("cypher").appendChild(node);
+        let node2 = document.createElement("p");
+        let text = document.createTextNode("MATCH (parent:`_code_list`:`_code_list_" + codelist.trim() +
+            "`),(node:`_code`:`_code_" + codelist.trim() + "` { value:'" + data[codelist].trim().toLowerCase() +
+            "' }) MERGE (node)-[:usedBy { label:\"" + data[
+                label].trim() + "\"}]->(parent);");
+        node2.appendChild(text);
+        document.getElementById("cypher").appendChild(node2);
+    }
+</script>
+</html>

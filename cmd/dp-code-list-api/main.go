@@ -14,7 +14,6 @@ import (
 	"github.com/ONSdigital/dp-code-list-api/config"
 	"github.com/ONSdigital/dp-code-list-api/store"
 	"github.com/ONSdigital/go-ns/log"
-	"github.com/ONSdigital/go-ns/mongo"
 	"github.com/ONSdigital/go-ns/server"
 	"github.com/gorilla/mux"
 )
@@ -30,14 +29,14 @@ func main() {
 		log.Error(err, nil)
 		os.Exit(1)
 	}
-	mongoDatastore, err := store.CreateMongoDataStore(cfg.MongoConfig)
+	datastore, err := store.CreateNeoDataStore(cfg.Neo4jDatabaseAddress, cfg.Neo4jCodeListLabel, cfg.Neo4jPoolSize)
 	if err != nil {
 		log.Error(err, nil)
 		os.Exit(1)
 	}
 	router := mux.NewRouter()
 	httpErrChannel := make(chan error)
-	_ = api.CreateCodeListAPI(router, mongoDatastore)
+	_ = api.CreateCodeListAPI(router, datastore)
 	httpServer := server.New(cfg.BindAddr, router)
 	httpServer.HandleOSSignals = false
 
@@ -52,8 +51,7 @@ func main() {
 			}
 		}
 
-		///mongo.Close() may use all remaining time in the context - do this last!
-		if err = mongo.Close(ctx, mongoDatastore.Session); err != nil {
+		if err = datastore.Close(); err != nil {
 			log.Error(err, nil)
 		}
 
@@ -64,7 +62,7 @@ func main() {
 	}
 
 	go func() {
-		log.Info("code list API listening .....", log.Data{"BIND_ADDR": cfg.BindAddr})
+		log.Info("code list api starting.....", log.Data{"bind_addr": cfg.BindAddr})
 		if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Error(err, nil)
 			httpErrChannel <- err

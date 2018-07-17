@@ -1,18 +1,27 @@
 package datastore
 
 import (
+	"context"
 	"errors"
+
 	"github.com/ONSdigital/dp-code-list-api/models"
 )
 
-var NOT_FOUND = errors.New("resource not found")
+var (
+	NOT_FOUND          = errors.New("resource not found")
+	ErrEditionNotFound = errors.New("edition not found")
+	ErrCodeNotFound    = errors.New("code not found")
+)
 
 //go:generate moq -out datastoretest/datastore.go -pkg storetest . DataStore
 
 // DataStore used to get resources by the API
 type DataStore interface {
-	GetCodes(codeListID string) (*models.CodeResults, error)
-	GetCode(codeListID, codeID string) (*models.Code, error)
-	GetCodeLists() (*models.CodeListResults, error)
-	GetCodeList(codeListID string) (*models.CodeList, error)
+	GetCodeLists(ctx context.Context, filterBy string) (*models.CodeListResults, error)
+	GetCodeList(ctx context.Context, codeListID string) (*models.CodeList, error)
+	GetEditions(ctx context.Context, codeListID string) (*models.Editions, error)
+	GetEdition(ctx context.Context, codeListID, edition string) (*models.Edition, error)
+	GetCodes(ctx context.Context, codeListID, edition string) (*models.CodeResults, error)
+	GetCode(ctx context.Context, codeListID, edition string, code string) (*models.Code, error)
+	GetCodeDatasets(ctx context.Context, codeListID, edition string, code string) (*models.Datasets, error)
 }

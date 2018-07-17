@@ -510,7 +510,7 @@ func (n *NeoDataStore) GetCodeDatasets(ctx context.Context, codeListID, edition,
 			return nil
 		}
 
-		datasetID := vars["dataset"].(string)
+		datasetID := vars["dataset_id"].(string)
 		datasetEdition := vars["edition"].(string)
 		version := vars["version"].(int64)
 

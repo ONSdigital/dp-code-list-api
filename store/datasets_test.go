@@ -28,7 +28,7 @@ func TestCodeDatasets(t *testing.T) {
 					return []interface{}{
 						graph.Node{
 							Properties: map[string]interface{}{
-								"dataset":      "cpih01",
+								"dataset_id":   "cpih01",
 								"edition":      "time-series",
 								"version":      int64(1),
 								"is_published": true,
@@ -45,7 +45,7 @@ func TestCodeDatasets(t *testing.T) {
 					return []interface{}{
 						graph.Node{
 							Properties: map[string]interface{}{
-								"dataset":      "mid-year-pop-est",
+								"dataset_id":   "mid-year-pop-est",
 								"edition":      "time-series",
 								"version":      int64(2),
 								"is_published": true,
@@ -274,7 +274,7 @@ func TestCodeDatasets(t *testing.T) {
 					return []interface{}{
 						graph.Node{
 							Properties: map[string]interface{}{
-								"dataset":      "cpih01",
+								"dataset_id":   "cpih01",
 								"edition":      "time-series",
 								"version":      int64(1),
 								"is_published": true,
@@ -291,7 +291,7 @@ func TestCodeDatasets(t *testing.T) {
 					return []interface{}{
 						graph.Node{
 							Properties: map[string]interface{}{
-								"dataset":      "mid-year-pop-est",
+								"dataset_id":   "mid-year-pop-est",
 								"edition":      "time-series",
 								"version":      int64(2),
 								"is_published": false,

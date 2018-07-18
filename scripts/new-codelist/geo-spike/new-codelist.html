@@ -5,6 +5,9 @@
     <div id="cypher"></div>
 
     <form id="myForm">
+        Codelist:
+        <input type="text" id="uberCodelist">
+        <br>
         Codelist name:
         <input type="text" id="codelistTitle">
         <br> Edition:
@@ -24,6 +27,7 @@
     function runCypher() {
         document.getElementById("myForm").style.visibility = "hidden";
         let codelistTitle = document.getElementById("codelistTitle").value
+        let uberCodelist = document.getElementById("uberCodelist").value
         let edition = document.getElementById("edition").value
         let root = document.getElementById("root").value
         //get data
@@ -39,25 +43,24 @@
 
                 //create cypher query to create the node for the codelist
                 let node = document.createElement("p");
-                let textnode = document.createTextNode("CREATE CONSTRAINT ON (n:`_code_" + codelist +
-                    "`) ASSERT n.value IS UNIQUE;");
+                let textnode = document.createTextNode("CREATE CONSTRAINT ON (n:`_code_geography`) ASSERT n.value IS UNIQUE;");
                 node.appendChild(textnode);
                 document.getElementById("constraint").appendChild(node);
                 let node2 = document.createElement("p");
-                let text = document.createTextNode("CREATE (node:`_code_list`:`_code_list_" + codelist +
-                    "` { label:'" + codelistTitle + "', edition:'" + edition + "', geography:true });");
+                let text = document.createTextNode("CREATE (node:`_code_list`:`_code_list_" + uberCodelist +
+                    "`:`_geography` { label:'" + codelistTitle + "', edition:'" + edition + "', geography_list_ID:'" + codelist + "' });");
                 node2.appendChild(text);
                 document.getElementById("cypher").appendChild(node2);
                 //the codes themselves need to be treated differnetly if Geo codes so check if this is
 
                 data.features.map(function (data) {
-                    createCodes(data, codelist, codelistID, codelistName)
+                    createCodes(data, codelist, codelistID, codelistName, uberCodelist)
 
                 });
             })
     }
 
-    function createCodes(data, codelist, codelistID, codelistName) {
+    function createCodes(data, codelist, codelistID, codelistName, uberCodelist) {
 
         let node = document.createElement("p");
         let textnode = document.createTextNode("MERGE (node:`_code`:`_code_geography` { value:'" +
@@ -65,8 +68,7 @@
         node.appendChild(textnode);
         document.getElementById("cypher").appendChild(node);
         let node2 = document.createElement("p");
-        let text = document.createTextNode("MATCH (parent:`_code_list`:`_code_list_" + codelist +
-            "`),(node:`_code`:`_code_geography` { value:'" + data.attributes[codelistID] +
+        let text = document.createTextNode("MATCH (parent:`_code_list`:`_code_list_"+uberCodelist+"`:`_geography`{geography_list_ID:'" + codelist + "'}),(node:`_code`:`_code_geography` { value:'" + data.attributes[codelistID] +
             "' }) MERGE (node)-[:usedBy { label:\"" + data.attributes[codelistName] + "\"}]->(parent);");
         node2.appendChild(text);
         document.getElementById("cypher").appendChild(node2);

@@ -83,7 +83,7 @@ func TestCodeDatasets(t *testing.T) {
 			datasets, err := neo.GetCodeDatasets(context.Background(), "my-code-list-id", "2017", "my-code")
 			Convey("then the datasets are returned correctly", func() {
 				So(err, ShouldBeNil)
-				So(datasets.NumberOfResults, ShouldEqual, 2)
+				So(datasets.Count, ShouldEqual, 2)
 
 				item1 := datasets.Items[0]
 				So(item1.DimensionLabel, ShouldEqual, "Overall index")

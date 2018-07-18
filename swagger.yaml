@@ -22,9 +22,15 @@ parameters:
     in: path
     type: string
     required: true
+  edition:
+    name: edition
+    description: "The edition of the code list"
+    in: path
+    type: string
+    required: true
   codeId:
     name: code_id
-    description: "The ID of the Code within a code list"
+    description: "The ID of the code within a code list"
     in: path
     type: string
     required: true
@@ -34,7 +40,7 @@ paths:
       tags:
       - "Code List"
       summary: "Get a list of code lists"
-      description: "Get a set of codes lists containing information about dimensions which are used for all datasets at the ONS"
+      description: "Get a set of code lists containing information about dimensions which are used for all datasets at the ONS"
       produces:
       - "application/json"
       responses:
@@ -42,8 +48,6 @@ paths:
           description: "A Json message containing a set of code lists"
           schema:
             $ref: '#/definitions/CodeLists'
-        400:
-          description: "Missing parameters within request"
         500:
           description: "Failed to process the request due to an internal error"
   /code-lists/{id}:
@@ -65,14 +69,54 @@ paths:
           description: "Code list not found"
         500:
           description: "Failed to process the request due to an internal error"
-  /code-lists/{id}/codes:
+  /code-lists/{id}/editions:
+    get:
+      tags:
+      - "Code List"
+      summary: "Get a list of editions"
+      description: "Get a list of editions associated with a code list"
+      parameters:
+      - $ref: '#/parameters/id'
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "Json object containing an array of editions"
+          schema:
+            $ref: '#/definitions/Editions'
+        404:
+          description: "Code list not found"
+        500:
+          description: "Failed to process the request due to an internal error"
+  /code-lists/{id}/editions/{edition}:
+    get:
+      tags:
+      - "Code List"
+      summary: "Get an edition"
+      description: "Get information about an edition of a code list"
+      parameters:
+      - $ref: '#/parameters/id'
+      - $ref: '#/parameters/edition'
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "Json object containing information about the code list"
+          schema:
+            $ref: '#/definitions/Edition'
+        404:
+          description: "Edition not found"
+        500:
+          description: "Failed to process the request due to an internal error"
+  /code-lists/{id}/editions/{edition}/codes:
     get:
       tags:
        - "Code List"
-      summary: "Get a list of all codes within a code list"
-      description: "Get a list of codes within a code list type"
+      summary: "Get a list of all codes within a code list edition"
+      description: "Get a list of codes within a code list edition"
       parameters:
       - $ref: '#/parameters/id'
+      - $ref: '#/parameters/edition'
       produces:
       - "application/json"
       responses:
@@ -81,10 +125,10 @@ paths:
           schema:
             $ref: '#/definitions/Codes'
         404:
-          description: "Code list not found"
+          description: "Edition not found"
         500:
           description: "Failed to process the request due to an internal error"
-  /code-lists/{id}/codes/{code_id}:
+  /code-lists/{id}/editions/{edition}/codes/{code_id}:
     get:
       tags:
        - "Code List"
@@ -92,6 +136,7 @@ paths:
       description: "Get information about a code within a code list"
       parameters:
       - $ref: '#/parameters/id'
+      - $ref: '#/parameters/edition'
       - $ref: '#/parameters/codeId'
       produces:
       - "application/json"
@@ -99,9 +144,30 @@ paths:
         200:
           description: "Get in depth information about a code"
           schema:
-            $ref: '#/definitions/CodeInformation'
+            $ref: '#/definitions/Code'
         404:
           description: "Code list or code not found"
+        500:
+          description: "Failed to process the request due to an internal error"
+  /code-lists/{id}/editions/{edition}/codes/{code_id}/datasets:
+    get:
+      tags:
+       - "Code List"
+      summary: "Get datasets"
+      description: "Get the datasets that use this code"
+      parameters:
+      - $ref: '#/parameters/id'
+      - $ref: '#/parameters/edition'
+      - $ref: '#/parameters/codeId'
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "Get the datasets that use this code"
+          schema:
+            $ref: '#/definitions/Datasets'
+        404:
+          description: "Code not found"
         500:
           description: "Failed to process the request due to an internal error"
 definitions:
@@ -128,13 +194,16 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/CodeList'
-      number_of_results:
-        type: integer
-        description: "The number of results available"
+      count:
+        $ref: '#/definitions/Count'
+      total_count:
+        $ref: '#/definitions/TotalCount'
+      limit:
+        $ref: '#/definitions/Limit'
   Code:
     type: object
     properties:
-      code:
+      id:
         type: string
         description: "The value of a code"
       label:
@@ -147,6 +216,8 @@ definitions:
             $ref: '#/definitions/Href'
           code_list:
             $ref: '#/definitions/Href'
+          datasets:
+            $ref: '#/definitions/Href'
   Codes:
     type: object
     properties:
@@ -154,21 +225,82 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/Code'
-      number_of_results:
-              type: integer
-              description: "The number of results available"
-  CodeInformation:
+      count:
+        $ref: '#/definitions/Count'
+      total_count:
+        $ref: '#/definitions/TotalCount'
+      limit:
+        $ref: '#/definitions/Limit'
+  Edition:
     type: object
     properties:
-      id:
+      edition:
         type: string
-        description: "The id for the code"
-      name:
+        description: "The edition"
+      label:
         type: string
-        description: "The name for the code"
-      information:
+        description: "A label used by the edition"
+      links:
         type: object
-        description: "Additional information about the code"
+        properties:
+          self:
+            $ref: '#/definitions/Href'
+          codes:
+            $ref: '#/definitions/Href'
+          editions:
+            $ref: '#/definitions/Href'
+  Editions:
+    type: object
+    properties:
+      items:
+        type: array
+        items:
+          $ref: '#/definitions/Edition'
+      count:
+        $ref: '#/definitions/Count'
+      total_count:
+        $ref: '#/definitions/TotalCount'
+      limit:
+        $ref: '#/definitions/Limit'
+  Dataset:
+    type: object
+    properties:
+      dataset_id:
+        type: string
+        description: "The ID of the dataset"
+      dimension_label:
+        type: string
+        description: "The code label used by this dataset"
+      editions:
+        items:
+          type: array
+          items:
+            $ref: '#/definitions/DatasetEdition'
+  DatasetEdition:
+    type: object
+    properties:
+      links:
+        type: object
+        properties:
+          self:
+            $ref: '#/definitions/Href'
+          dataset_dimension:
+            $ref: '#/definitions/Href'
+          latest_version:
+            $ref: '#/definitions/Href'
+  Datasets:
+    type: object
+    properties:
+      items:
+        type: array
+        items:
+          $ref: '#/definitions/Dataset'
+      count:
+        $ref: '#/definitions/Count'
+      total_count:
+        $ref: '#/definitions/TotalCount'
+      limit:
+        $ref: '#/definitions/Limit'
   Href:
     type: object
     properties:
@@ -178,3 +310,13 @@ definitions:
       href:
         type: string
         description: "The URL to the resource"
+  Count:
+    type: string
+    description: "The number of results returned in this response"
+  TotalCount:
+    type: string
+    description: "The total number of results available"
+  Limit:
+    type: string
+    description: "The limit applied to the number of results returned"
+

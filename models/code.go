@@ -2,10 +2,10 @@ package models
 
 // CodeResults contains an array of codes which can be paginated
 type CodeResults struct {
+	Items      []Code `json:"items"`
 	Count      int    `json:"count"`
 	Offset     int    `json:"offset"`
 	Limit      int    `json:"limit"`
-	Items      []Code `json:"items"`
 	TotalCount int    `json:"total_count"`
 }
 
@@ -21,5 +21,6 @@ type Code struct {
 // CodeLinks contains links for a code resource
 type CodeLinks struct {
 	CodeList Link `json:"code_list"`
+	Datasets Link `json:"datasets"`
 	Self     Link `json:"self"`
 }

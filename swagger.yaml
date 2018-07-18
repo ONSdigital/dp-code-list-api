@@ -265,9 +265,11 @@ definitions:
   Dataset:
     type: object
     properties:
-      dataset_id:
-        type: string
-        description: "The ID of the dataset"
+      links:
+        type: object
+        properties:
+          self:
+            $ref: '#/definitions/Href'
       dimension_label:
         type: string
         description: "The code label used by this dataset"

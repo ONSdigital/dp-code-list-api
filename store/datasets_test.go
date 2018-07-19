@@ -46,6 +46,23 @@ func TestCodeDatasets(t *testing.T) {
 					return []interface{}{
 						graph.Node{
 							Properties: map[string]interface{}{
+								"dataset_id":   "cpih01",
+								"edition":      "time-series",
+								"version":      int64(3),
+								"is_published": true,
+							},
+						},
+						graph.Relationship{
+							Properties: map[string]interface{}{
+								"label": "Overall index",
+							},
+						},
+					}, nil, nil
+				}
+				if index == 5 {
+					return []interface{}{
+						graph.Node{
+							Properties: map[string]interface{}{
 								"dataset_id":   "mid-year-pop-est",
 								"edition":      "time-series",
 								"version":      int64(2),
@@ -54,7 +71,7 @@ func TestCodeDatasets(t *testing.T) {
 						},
 						graph.Relationship{
 							Properties: map[string]interface{}{
-								"label": "Overall index",
+								"label": "Overall index 2",
 							},
 						},
 					}, nil, nil
@@ -85,23 +102,27 @@ func TestCodeDatasets(t *testing.T) {
 				So(err, ShouldBeNil)
 				So(datasets.Count, ShouldEqual, 2)
 
-				item1 := datasets.Items[0]
-				So(item1.DimensionLabel, ShouldEqual, "Overall index")
-				So(item1.ID, ShouldEqual, "cpih01")
-				So(item1.Edition, ShouldEqual, "time-series")
-				So(item1.Version, ShouldEqual, 1)
-				So(item1.Links.CodeEdition.Href, ShouldEqual, "/code-lists/my-code-list-id/editions/2017")
-				So(item1.Links.DatasetDimension.Href, ShouldEqual, "/datasets/cpih01/editions/time-series/versions/1/dimensions/my-code-list-id")
-				So(item1.Links.DatasetVersion.Href, ShouldEqual, "/datasets/cpih01/editions/time-series/versions/1")
+				dataset1 := datasets.Items[0]
+				So(dataset1.DimensionLabel, ShouldEqual, "Overall index")
+				So(dataset1.Links.Self.ID, ShouldEqual, "cpih01")
+				So(dataset1.Links.Self.Href, ShouldEqual, "/datasets/cpih01")
+				So(dataset1.Editions[0].Links.Self.ID, ShouldEqual, "time-series")
+				So(dataset1.Editions[0].Links.Self.Href, ShouldEqual, "/datasets/cpih01/editions/time-series")
+				So(dataset1.Editions[0].Links.LatestVersion.ID, ShouldEqual, "3")
+				So(dataset1.Editions[0].Links.LatestVersion.Href, ShouldEqual, "/datasets/cpih01/editions/time-series/versions/3")
+				So(dataset1.Editions[0].Links.DatasetDimension.ID, ShouldEqual, "my-code-list-id")
+				So(dataset1.Editions[0].Links.DatasetDimension.Href, ShouldEqual, "/datasets/cpih01/editions/time-series/versions/3/dimensions/my-code-list-id")
 
-				item2 := datasets.Items[1]
-				So(item2.DimensionLabel, ShouldEqual, "Overall index")
-				So(item2.ID, ShouldEqual, "mid-year-pop-est")
-				So(item2.Edition, ShouldEqual, "time-series")
-				So(item2.Version, ShouldEqual, 2)
-				So(item2.Links.CodeEdition.Href, ShouldEqual, "/code-lists/my-code-list-id/editions/2017")
-				So(item2.Links.DatasetDimension.Href, ShouldEqual, "/datasets/mid-year-pop-est/editions/time-series/versions/2/dimensions/my-code-list-id")
-				So(item2.Links.DatasetVersion.Href, ShouldEqual, "/datasets/mid-year-pop-est/editions/time-series/versions/2")
+				dataset2 := datasets.Items[1]
+				So(dataset2.DimensionLabel, ShouldEqual, "Overall index 2")
+				So(dataset2.Links.Self.ID, ShouldEqual, "mid-year-pop-est")
+				So(dataset2.Links.Self.Href, ShouldEqual, "/datasets/mid-year-pop-est")
+				So(dataset2.Editions[0].Links.Self.ID, ShouldEqual, "time-series")
+				So(dataset2.Editions[0].Links.Self.Href, ShouldEqual, "/datasets/mid-year-pop-est/editions/time-series")
+				So(dataset2.Editions[0].Links.LatestVersion.ID, ShouldEqual, "2")
+				So(dataset2.Editions[0].Links.LatestVersion.Href, ShouldEqual, "/datasets/mid-year-pop-est/editions/time-series/versions/2")
+				So(dataset2.Editions[0].Links.DatasetDimension.ID, ShouldEqual, "my-code-list-id")
+				So(dataset2.Editions[0].Links.DatasetDimension.Href, ShouldEqual, "/datasets/mid-year-pop-est/editions/time-series/versions/2/dimensions/my-code-list-id")
 			})
 		})
 	})

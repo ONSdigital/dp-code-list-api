@@ -49,6 +49,15 @@ type DBPool interface {
 	Close() error
 }
 
+type datasets map[string]datasetData
+type editions map[string]versions
+type versions []int
+
+type datasetData struct {
+	DimensionLabel string
+	Editions       editions
+}
+
 // Close is a wrapper for the neo pool close
 func (n *NeoDataStore) Close() error {
 	return n.pool.Close()
@@ -500,7 +509,8 @@ func (n *NeoDataStore) GetCodeDatasets(ctx context.Context, codeListID, edition,
 	}
 	defer rows.Close()
 
-	datasetsModel := &models.Datasets{}
+	// map the data for each version against its dataset ID
+	datasets := make(datasets, 0)
 
 	err = extractRowResults(ctx, rows, func(row []interface{}, rowIndex int) error {
 		node := row[0].(graph.Node)
@@ -511,28 +521,28 @@ func (n *NeoDataStore) GetCodeDatasets(ctx context.Context, codeListID, edition,
 
 		datasetID := vars["dataset_id"].(string)
 		datasetEdition := vars["edition"].(string)
-		version := vars["version"].(int64)
+		version := (int)(vars["version"].(int64))
+		dimensionLabel := relVars["label"].(string)
 
-		datasetsModel.Items = append(datasetsModel.Items, models.Dataset{
-			ID:             datasetID,
-			Edition:        datasetEdition,
-			Version:        int(version),
-			DimensionLabel: relVars["label"].(string),
-			Links: models.DatasetLink{
-				CodeEdition: models.Link{
-					Href: fmt.Sprintf("/code-lists/%s/editions/%s", codeListID, edition),
-				},
-				DatasetVersion: models.Link{
-					Href: fmt.Sprintf("/datasets/%s/editions/%s/versions/%d", datasetID, datasetEdition, version),
-				},
-				DatasetDimension: models.Link{
-					Href: fmt.Sprintf("/datasets/%s/editions/%s/versions/%d/dimensions/%s", datasetID, datasetEdition, version, codeListID),
-				},
-			},
-		})
+		dataset, ok := datasets[datasetID]
+		if !ok {
+			dataset = datasetData{
+				DimensionLabel: dimensionLabel,
+				Editions:       make(editions, 0),
+			}
+		}
 
+		if dataset.Editions[datasetEdition] == nil {
+			dataset.Editions[datasetEdition] = make(versions, 0)
+		}
+
+		dataset.Editions[datasetEdition] = append(dataset.Editions[datasetEdition], version)
+
+		datasets[datasetID] = dataset
 		return nil
 	})
+
+	datasetsModel := createDatasetsResponseModel(datasets, codeListID)
 
 	if len(datasetsModel.Items) == 0 {
 		return nil, datastore.NOT_FOUND
@@ -543,6 +553,62 @@ func (n *NeoDataStore) GetCodeDatasets(ctx context.Context, codeListID, edition,
 	datasetsModel.Limit = len(datasetsModel.Items)
 
 	return datasetsModel, err
+}
+
+func createDatasetsResponseModel(datasets datasets, codeListID string) *models.Datasets {
+
+	datasetsModel := &models.Datasets{}
+	for datasetID, dataset := range datasets {
+
+		editions := make([]models.DatasetEdition, 0)
+
+		for editionID, versions := range dataset.Editions {
+
+			latestVersion := strconv.Itoa(max(versions))
+
+			editions = append(editions, models.DatasetEdition{
+				Links: models.DatasetEditionLinks{
+					Self: models.Link{
+						ID:   editionID,
+						Href: fmt.Sprintf("/datasets/%s/editions/%s", datasetID, editionID),
+					},
+					LatestVersion: models.Link{
+						ID:   latestVersion,
+						Href: fmt.Sprintf("/datasets/%s/editions/%s/versions/%s", datasetID, editionID, latestVersion),
+					},
+					DatasetDimension: models.Link{
+						ID:   codeListID,
+						Href: fmt.Sprintf("/datasets/%s/editions/%s/versions/%s/dimensions/%s", datasetID, editionID, latestVersion, codeListID),
+					},
+				},
+			})
+		}
+
+		datasetsModel.Items = append(datasetsModel.Items, models.Dataset{
+
+			DimensionLabel: dataset.DimensionLabel,
+			Links: models.DatasetLinks{
+				Self: models.Link{
+					ID:   datasetID,
+					Href: fmt.Sprintf("/datasets/%s", datasetID),
+				},
+			},
+			Editions: editions,
+		})
+	}
+
+	return datasetsModel
+}
+
+func max(input []int) (max int) {
+
+	for _, value := range input {
+		if value > max {
+			max = value
+		}
+	}
+
+	return max
 }
 
 func (n *NeoDataStore) EditionExists(ctx context.Context, codeListID string, edition string) (bool, error) {

@@ -3,8 +3,11 @@ package models
 // Datasets represents the model returned from the api datasets
 // endpoint
 type Datasets struct {
-	Items           []Dataset `json:"datasets"`
-	NumberOfResults int       `json:"number_of_results"`
+	Items      []Dataset `json:"items"`
+	Count      int       `json:"count"`
+	Offset     int       `json:"offset"`
+	Limit      int       `json:"limit"`
+	TotalCount int       `json:"total_count"`
 }
 
 // Dataset represents an individual model dataset

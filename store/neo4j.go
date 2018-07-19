@@ -297,7 +297,9 @@ func (n *NeoDataStore) GetEditions(ctx context.Context, codeListID string) (*mod
 		return nil, datastore.NOT_FOUND
 	}
 
-	editions.NumberOfResults = len(editions.Items)
+	editions.Count = len(editions.Items)
+	editions.Limit = len(editions.Items)
+	editions.TotalCount = len(editions.Items)
 
 	return editions, nil
 }
@@ -396,6 +398,9 @@ func (n *NeoDataStore) GetCodes(ctx context.Context, codeListID, edition string)
 			Links: models.CodeLinks{
 				Self: models.Link{
 					Href: fmt.Sprintf("/code-lists/%s/editions/%s/codes/%s", codeListID, edition, codeValue),
+				},
+				Datasets: models.Link{
+					Href: fmt.Sprintf("/code-lists/%s/editions/%s/codes/%s/datasets", codeListID, edition, codeValue),
 				},
 				CodeList: models.Link{
 					Href: fmt.Sprintf("/code-lists/%s", codeListID),
@@ -533,7 +538,9 @@ func (n *NeoDataStore) GetCodeDatasets(ctx context.Context, codeListID, edition,
 		return nil, datastore.NOT_FOUND
 	}
 
-	datasetsModel.NumberOfResults = len(datasetsModel.Items)
+	datasetsModel.TotalCount = len(datasetsModel.Items)
+	datasetsModel.Count = len(datasetsModel.Items)
+	datasetsModel.Limit = len(datasetsModel.Items)
 
 	return datasetsModel, err
 }

@@ -1,12 +1,12 @@
 package api
 
 import (
-	"net/http"
-	"github.com/ONSdigital/go-ns/log"
 	"encoding/json"
+	"github.com/ONSdigital/dp-code-list-api/datastore"
+	"github.com/ONSdigital/go-ns/log"
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
-	"github.com/ONSdigital/dp-code-list-api/datastore"
+	"net/http"
 )
 
 var codesNotFoundErrors = map[error]bool{

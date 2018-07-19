@@ -1,18 +1,18 @@
 package api
 
 import (
-	"testing"
-	"github.com/gorilla/mux"
+	"context"
+	"encoding/json"
+	"github.com/ONSdigital/dp-code-list-api/datastore"
 	"github.com/ONSdigital/dp-code-list-api/datastore/datastoretest"
 	"github.com/ONSdigital/dp-code-list-api/models"
-	"context"
+	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
-	"net/http/httptest"
 	. "github.com/smartystreets/goconvey/convey"
 	"net/http"
+	"net/http/httptest"
 	"strings"
-	"github.com/ONSdigital/dp-code-list-api/datastore"
-	"encoding/json"
+	"testing"
 )
 
 var (

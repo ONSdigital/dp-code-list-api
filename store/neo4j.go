@@ -3,12 +3,13 @@ package store
 import (
 	"context"
 	"fmt"
+
 	"github.com/ONSdigital/dp-code-list-api/datastore"
 	"github.com/ONSdigital/dp-code-list-api/models"
 	"github.com/ONSdigital/go-ns/log"
-	"github.com/pkg/errors"
 	dpbolt "github.com/ONSdigital/dp-bolt/bolt"
 	"github.com/ONSdigital/dp-code-list-api/store/mapper"
+	"github.com/pkg/errors"
 )
 
 const (
@@ -18,6 +19,13 @@ const (
 	countEditions           = "MATCH (cl:_code_list:`_name_%s`) WHERE cl.edition = %q RETURN count(*)"
 	getCodesQuery           = "MATCH (c:_code) -[r:usedBy]->(cl:_code_list: `_name_%s`) WHERE cl.edition = %q RETURN c, r"
 	getCodeQuery            = "MATCH (c:_code) -[r:usedBy]->(cl:_code_list: `_name_%s`) WHERE cl.edition = %q AND c.value = %q RETURN c, r"
+	getCodeDatasets         = "MATCH (d)<-[inDataset]-(c:_code)-[r:usedBy]->(cl:_code_list:`_code_list_%s`) WHERE (cl.edition=" + `"%s"` + ") AND (c.value=" + `"%s"` + ") AND (d.is_published=true) RETURN d,r"
+
+	/*	getCodeListQuery        = "MATCH (i:_%s:`_code_list_%s`) RETURN i"
+		getCodeListEditionQuery = "MATCH (i:_%s:`_code_list_%s` {edition:" + `"%s"` + "}) RETURN i"
+		countEditions           = "MATCH (cl:_code_list:`_code_list_%s`) WHERE cl.edition = %q RETURN count(*)"
+		getCodesQuery           = "MATCH (c:_code) -[r:usedBy]->(cl:_code_list: `_code_list_%s`) WHERE cl.edition = %q RETURN c, r"
+		getCodeQuery            = "MATCH (c:_code) -[r:usedBy]->(cl:_code_list: `_code_list_%s`) WHERE cl.edition = %q AND c.value = %q RETURN c, r"*/
 )
 
 type BoltDB interface {
@@ -207,4 +215,26 @@ func (n *NeoDataStore) EditionExists(ctx context.Context, codeListID string, edi
 		return false, errors.New("editionExists: multiple editions found")
 	}
 	return *count == 1, nil
+}
+
+func (n *NeoDataStore) GetCodeDatasets(ctx context.Context, codeListID, edition, code string) (*models.Datasets, error) {
+	editionExists, err := n.EditionExists(ctx, codeListID, edition)
+	if err != nil {
+		return nil, err
+	}
+	if !editionExists {
+		return nil, datastore.ErrEditionNotFound
+	}
+
+	query := fmt.Sprintf(getCodeDatasets, codeListID, edition, code)
+
+	datasetsModel := &models.Datasets{}
+
+	err = n.bolt.QueryForResults(query, nil, mapper.CodesDatasets(datasetsModel, codeListID, edition))
+	if err != nil && err == dpbolt.ErrNoResults {
+		return nil, datastore.NOT_FOUND
+	}
+	datasetsModel.NumberOfResults = len(datasetsModel.Items)
+
+	return datasetsModel, err
 }

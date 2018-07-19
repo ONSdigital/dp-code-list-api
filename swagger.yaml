@@ -154,7 +154,7 @@ paths:
       tags:
        - "Code List"
       summary: "Get datasets"
-      description: "Get the datasets that use this code"
+      description: "Get a list of the datasets that use this code"
       parameters:
       - $ref: '#/parameters/id'
       - $ref: '#/parameters/edition'
@@ -163,7 +163,7 @@ paths:
       - "application/json"
       responses:
         200:
-          description: "Get the datasets that use this code"
+          description: "Get a list of the datasets that use this code"
           schema:
             $ref: '#/definitions/Datasets'
         404:

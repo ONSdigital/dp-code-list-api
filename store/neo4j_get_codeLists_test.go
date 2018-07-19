@@ -17,7 +17,6 @@ func TestNeoDataStore_GetCodeListsSuccess(t *testing.T) {
 		expected := &models.CodeListResults{
 			Items: []models.CodeList{
 				{
-					Name: "c1",
 					Links: models.CodeListLink{
 						Self: &models.Link{
 							Href: fmt.Sprintf("/code-lists/%s", "c1"),
@@ -26,14 +25,9 @@ func TestNeoDataStore_GetCodeListsSuccess(t *testing.T) {
 						Editions: &models.Link{
 							Href: fmt.Sprintf("/code-lists/%s/editions", "c1"),
 						},
-						Latest: &models.Link{
-							Href: fmt.Sprintf("/code-lists/%s/editions/%s", "c1", "e1"),
-							ID:   "e1",
-						},
 					},
 				},
 				{
-					Name: "c2",
 					Links: models.CodeListLink{
 						Self: &models.Link{
 							Href: fmt.Sprintf("/code-lists/%s", "c2"),
@@ -41,10 +35,6 @@ func TestNeoDataStore_GetCodeListsSuccess(t *testing.T) {
 						},
 						Editions: &models.Link{
 							Href: fmt.Sprintf("/code-lists/%s/editions", "c2"),
-						},
-						Latest: &models.Link{
-							Href: fmt.Sprintf("/code-lists/%s/editions/%s", "c2", "e2"),
-							ID:   "e2",
 						},
 					},
 				},

@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	getCodeListsQuery       = "MATCH (i) WHERE i:_%s%s RETURN distinct labels(i) as labels, i"
+	getCodeListsQuery       = "MATCH (i) WHERE i:_%s%s RETURN distinct labels(i) as labels"
 	getCodeListQuery        = "MATCH (i:_%s:`_name_%s`) RETURN i"
 	getCodeListEditionQuery = "MATCH (i:_%s:`_name_%s` {edition:" + `"%s"` + "}) RETURN i"
 	countEditions           = "MATCH (cl:_code_list:`_name_%s`) WHERE cl.edition = %q RETURN count(*)"
@@ -59,9 +59,9 @@ func (n *NeoDataStore) GetCodeLists(ctx context.Context, filterBy string) (*mode
 	log.InfoCtx(ctx, "about to query neo4j for code lists", logData)
 
 	query := fmt.Sprintf(getCodeListsQuery, n.codeListLabel, filterBy)
-	codeListEditionsMap := make(map[string]*models.CodeList)
+	codeListResults := &models.CodeListResults{}
 
-	err := n.bolt.QueryForResults(query, nil, mapper.CodeLists(codeListEditionsMap))
+	err := n.bolt.QueryForResults(query, nil, mapper.CodeLists(codeListResults))
 	if err != nil && err == dpbolt.ErrNoResults {
 		return nil, datastore.NOT_FOUND
 	}
@@ -69,21 +69,16 @@ func (n *NeoDataStore) GetCodeLists(ctx context.Context, filterBy string) (*mode
 		return nil, err
 	}
 
-	codeLists := &models.CodeListResults{}
-	for _, codelist := range codeListEditionsMap {
-		codeLists.Items = append(codeLists.Items, *codelist)
-	}
-
-	return codeLists, nil
+	return codeListResults, nil
 }
 
 func (n *NeoDataStore) GetCodeList(ctx context.Context, code string) (*models.CodeList, error) {
 	log.InfoCtx(ctx, "about to query neo4j for code list", log.Data{"code_list_id": code})
 
-	query := fmt.Sprintf(getCodeListQuery, n.codeListLabel, code)
-	codeList := &models.CodeList{}
+	query := fmt.Sprintf("MATCH (cl:_code_list:`_name_%s`) RETURN count(*)", code)
+	count, mapper := mapper.CodeListCount()
 
-	err := n.bolt.QueryForResult(query, nil, mapper.CodeList(codeList, code))
+	err := n.bolt.QueryForResult(query, nil, mapper)
 	if err != nil && err == dpbolt.ErrNoResults {
 		return nil, datastore.NOT_FOUND
 	}
@@ -92,7 +87,22 @@ func (n *NeoDataStore) GetCodeList(ctx context.Context, code string) (*models.Co
 		return nil, err
 	}
 
-	return codeList, nil
+	// from a Neo4j POV Codelists are't actually a thing a codeList exists if there is 1 or more edition nodes.
+	if *count == 0 {
+		return nil, datastore.NOT_FOUND
+	}
+
+	return &models.CodeList{
+		Links: models.CodeListLink{
+			Self: &models.Link{
+				ID:   code,
+				Href: fmt.Sprintf("/code-lists/%s", code),
+			},
+			Editions: &models.Link{
+				Href: fmt.Sprintf("/code-lists/%s/editions", code),
+			},
+		},
+	}, nil
 }
 
 func (n *NeoDataStore) GetEditions(ctx context.Context, codeListID string) (*models.Editions, error) {

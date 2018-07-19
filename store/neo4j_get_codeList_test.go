@@ -32,7 +32,6 @@ func TestNeoDataStore_GetCodeListSuccess(t *testing.T) {
 			Convey("then the expected code list is returned", func() {
 				So(err, ShouldBeNil)
 				So(cl, ShouldResemble, &models.CodeList{
-					Name: "testLabel",
 					Links: models.CodeListLink{
 						Self: &models.Link{
 							Href: fmt.Sprintf("/code-lists/%s", testCodeListID),

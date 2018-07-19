@@ -42,8 +42,11 @@ func (c *CodeListAPI) getCodeList(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	vars := mux.Vars(r)
 	id := vars["id"]
-	codeList, err := c.store.GetCodeList(r.Context(), id)
+	data := log.Data{"code_list_id": id}
+
+	codeList, err := c.store.GetCodeList(ctx, id)
 	if err != nil {
+		log.ErrorCtx(ctx, errors.WithMessage(err, "getCodeList endpoint: store.GetCodeList returned an error"), data)
 		handleError(ctx, w, err, nil)
 		return
 	}
@@ -55,8 +58,9 @@ func (c *CodeListAPI) getCodeList(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := c.writeBody(w, b); err != nil {
-		log.ErrorCtx(ctx, errors.WithMessage(err, "getCodeList endpoint: failed to write bytes to response"), log.Data{"code_list_id": id})
+		log.ErrorCtx(ctx, errors.WithMessage(err, "getCodeList endpoint: failed to write bytes to response"), data)
 		return
 	}
-	log.InfoCtx(r.Context(), "retrieved codelist", log.Data{"code_list_id": id})
+
+	log.InfoCtx(r.Context(), "getCodeList endpoint: request successful", data)
 }

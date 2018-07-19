@@ -12,13 +12,11 @@ type CodeListResults struct {
 // CodeList containing links to all possible codes
 type CodeList struct {
 	ID    string       `json:"-"`
-	Name  string       `json:"name"`
-	Links CodeListLink `json:"links"`
+	Links CodeListLink `json:"links,omitempty"`
 }
 
 // CodeListLink contains links for a code list resource
 type CodeListLink struct {
-	Self     *Link `json:"self"`
-	Editions *Link `json:"editions"`
-	Latest   *Link `json:"latest,omitempty"`
+	Self     *Link `json:"self,omitempty"`
+	Editions *Link `json:"editions,omitempty"`
 }

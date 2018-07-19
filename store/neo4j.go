@@ -14,11 +14,12 @@ import (
 
 const (
 	getCodeListsQuery       = "MATCH (i) WHERE i:_%s%s RETURN distinct labels(i) as labels"
-	getCodeListQuery        = "MATCH (i:_%s:`_name_%s`) RETURN i"
-	getCodeListEditionQuery = "MATCH (i:_%s:`_name_%s` {edition:" + `"%s"` + "}) RETURN i"
-	countEditions           = "MATCH (cl:_code_list:`_name_%s`) WHERE cl.edition = %q RETURN count(*)"
-	getCodesQuery           = "MATCH (c:_code) -[r:usedBy]->(cl:_code_list: `_name_%s`) WHERE cl.edition = %q RETURN c, r"
-	getCodeQuery            = "MATCH (c:_code) -[r:usedBy]->(cl:_code_list: `_name_%s`) WHERE cl.edition = %q AND c.value = %q RETURN c, r"
+	getCodeListQuery        = "MATCH (i:_code_list:`_%s_%s`) RETURN i"
+	codeListExistsQuery     = "MATCH (cl:_code_list:`_%s_%s`) RETURN count(*)"
+	getCodeListEditionQuery = "MATCH (i:_code_list:`_%s_%s` {edition:" + `"%s"` + "}) RETURN i"
+	countEditions           = "MATCH (cl:_code_list:`_%s_%s`) WHERE cl.edition = %q RETURN count(*)"
+	getCodesQuery           = "MATCH (c:_code) -[r:usedBy]->(cl:_code_list: `_%s_%s`) WHERE cl.edition = %q RETURN c, r"
+	getCodeQuery            = "MATCH (c:_code) -[r:usedBy]->(cl:_code_list: `_%s_%s`) WHERE cl.edition = %q AND c.value = %q RETURN c, r"
 	getCodeDatasets         = "MATCH (d)<-[inDataset]-(c:_code)-[r:usedBy]->(cl:_code_list:`_code_list_%s`) WHERE (cl.edition=" + `"%s"` + ") AND (c.value=" + `"%s"` + ") AND (d.is_published=true) RETURN d,r"
 
 	/*	getCodeListQuery        = "MATCH (i:_%s:`_code_list_%s`) RETURN i"
@@ -69,7 +70,8 @@ func (n *NeoDataStore) GetCodeLists(ctx context.Context, filterBy string) (*mode
 	query := fmt.Sprintf(getCodeListsQuery, n.codeListLabel, filterBy)
 	codeListResults := &models.CodeListResults{}
 
-	err := n.bolt.QueryForResults(query, nil, mapper.CodeLists(codeListResults))
+	prefix := "_" + n.codeListLabel + "_"
+	err := n.bolt.QueryForResults(query, nil, mapper.CodeLists(codeListResults, prefix))
 	if err != nil && err == dpbolt.ErrNoResults {
 		return nil, datastore.NOT_FOUND
 	}
@@ -83,7 +85,7 @@ func (n *NeoDataStore) GetCodeLists(ctx context.Context, filterBy string) (*mode
 func (n *NeoDataStore) GetCodeList(ctx context.Context, code string) (*models.CodeList, error) {
 	log.InfoCtx(ctx, "about to query neo4j for code list", log.Data{"code_list_id": code})
 
-	query := fmt.Sprintf("MATCH (cl:_code_list:`_name_%s`) RETURN count(*)", code)
+	query := fmt.Sprintf(codeListExistsQuery, n.codeListLabel, code)
 	count, mapper := mapper.CodeListCount()
 
 	err := n.bolt.QueryForResult(query, nil, mapper)
@@ -159,7 +161,7 @@ func (n *NeoDataStore) GetCodes(ctx context.Context, codeListID, edition string)
 	}
 
 	codeResults := &models.CodeResults{}
-	query := fmt.Sprintf(getCodesQuery, codeListID, edition)
+	query := fmt.Sprintf(getCodesQuery, n.codeListLabel, codeListID, edition)
 
 	err = n.bolt.QueryForResults(query, nil, mapper.Codes(codeResults, codeListID, edition))
 	if err != nil && err == dpbolt.ErrNoResults {
@@ -184,7 +186,7 @@ func (n *NeoDataStore) GetCode(ctx context.Context, codeListID, edition string, 
 	}
 
 	codeModel := &models.Code{}
-	query := fmt.Sprintf(getCodeQuery, codeListID, edition, code)
+	query := fmt.Sprintf(getCodeQuery, n.codeListLabel, codeListID, edition, code)
 
 	err = n.bolt.QueryForResult(query, nil, mapper.Code(codeModel, codeListID, edition))
 	if err != nil && err == dpbolt.ErrNoResults {
@@ -202,7 +204,7 @@ func (n *NeoDataStore) EditionExists(ctx context.Context, codeListID string, edi
 	data := log.Data{"codelist_id": codeListID, "edition": edition}
 	log.InfoCtx(ctx, "checking edition exists", data)
 
-	query := fmt.Sprintf(countEditions, codeListID, edition)
+	query := fmt.Sprintf(countEditions, n.codeListLabel, codeListID, edition)
 
 	count, extractor := mapper.EditionCount()
 	err := n.bolt.QueryForResult(query, nil, extractor)
@@ -233,8 +235,10 @@ func (n *NeoDataStore) GetCodeDatasets(ctx context.Context, codeListID, edition,
 	err = n.bolt.QueryForResults(query, nil, mapper.CodesDatasets(datasetsModel, codeListID, edition))
 	if err != nil && err == dpbolt.ErrNoResults {
 		return nil, datastore.NOT_FOUND
+	} else if err != nil {
+		return nil, err
 	}
-	datasetsModel.NumberOfResults = len(datasetsModel.Items)
 
+	datasetsModel.NumberOfResults = len(datasetsModel.Items)
 	return datasetsModel, err
 }

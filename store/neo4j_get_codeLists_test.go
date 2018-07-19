@@ -5,7 +5,6 @@ import (
 	. "github.com/smartystreets/goconvey/convey"
 	"github.com/ONSdigital/dp-bolt/boltmock"
 	"github.com/ONSdigital/dp-bolt/bolt"
-	"github.com/johnnadratowski/golang-neo4j-bolt-driver/structures/graph"
 	"context"
 	"github.com/ONSdigital/dp-code-list-api/models"
 	"fmt"
@@ -46,15 +45,13 @@ func TestNeoDataStore_GetCodeListsSuccess(t *testing.T) {
 				func(query string, params map[string]interface{}, mapResult bolt.ResultMapper) error {
 					mapResult(&bolt.Result{
 						Data: []interface{}{
-							[]interface{}{"_name_c1"},
-							graph.Node{Properties: map[string]interface{}{"label": "c1", "edition": "e1"}},
+							[]interface{}{"_" + codeListLabel + "_c1"},
 						},
 					})
 
 					mapResult(&bolt.Result{
 						Data: []interface{}{
-							[]interface{}{"_name_c2"},
-							graph.Node{Properties: map[string]interface{}{"label": "c2", "edition": "e2"}},
+							[]interface{}{"_" + codeListLabel + "_c2"},
 						},
 					})
 					return nil
@@ -62,7 +59,7 @@ func TestNeoDataStore_GetCodeListsSuccess(t *testing.T) {
 			},
 		}
 
-		store := NeoDataStore{codeListLabel: "666", bolt: db}
+		store := NeoDataStore{codeListLabel: codeListLabel, bolt: db}
 
 		Convey("when getCodeLists is called", func() {
 			actual, err := store.GetCodeLists(context.Background(), "")

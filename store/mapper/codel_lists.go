@@ -10,17 +10,16 @@ import (
 )
 
 const (
-	namePrefix  = "_name_"
 	codeListURI = "/code-lists/%s"
 )
 
-func CodeLists(codeLists *models.CodeListResults) dpbolt.ResultMapper {
+func CodeLists(codeLists *models.CodeListResults, prefix string) dpbolt.ResultMapper {
 	return func(r *dpbolt.Result) error {
 		var label string
 		for _, v := range r.Data[0].([]interface{}) {
 			s := v.(string)
-			if strings.Contains(s, namePrefix) {
-				label = strings.Replace(s, namePrefix, "", -1)
+			if strings.Contains(s, prefix) {
+				label = strings.Replace(s, prefix, "", -1)
 				break
 			}
 		}

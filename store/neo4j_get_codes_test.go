@@ -62,6 +62,8 @@ var (
 			Properties: map[string]interface{}{"label": code2.Label},
 		},
 	}
+
+	codeListLabel = "666"
 )
 
 func TestNeoDataStore_GetCodesSuccess(t *testing.T) {
@@ -82,7 +84,7 @@ func TestNeoDataStore_GetCodesSuccess(t *testing.T) {
 				},
 			},
 		}
-		store := NeoDataStore{bolt: db}
+		store := NeoDataStore{bolt: db, codeListLabel: codeListLabel}
 
 		result, err := store.GetCodes(context.Background(), testCodeListID, testEdition)
 
@@ -93,11 +95,11 @@ func TestNeoDataStore_GetCodesSuccess(t *testing.T) {
 
 		Convey("and the expected calls are made", func() {
 			So(db.QueryForResultCalls, ShouldHaveLength, 1)
-			So(db.QueryForResultCalls[0].Query, ShouldEqual, fmt.Sprintf(countEditions, testCodeListID, testEdition))
+			So(db.QueryForResultCalls[0].Query, ShouldEqual, fmt.Sprintf(countEditions, codeListLabel, testCodeListID, testEdition))
 			So(db.QueryForResultCalls[0].Params, ShouldBeNil)
 
 			So(db.QueryForResultsCalls, ShouldHaveLength, 1)
-			So(db.QueryForResultsCalls[0].Query, ShouldEqual, fmt.Sprintf(getCodesQuery, testCodeListID, testEdition))
+			So(db.QueryForResultsCalls[0].Query, ShouldEqual, fmt.Sprintf(getCodesQuery, codeListLabel, testCodeListID, testEdition))
 			So(db.QueryForResultsCalls[0].Params, ShouldBeNil)
 		})
 	})
@@ -110,7 +112,7 @@ func TestNeoDataStore_GetCodesEditionExitsError(t *testing.T) {
 				boltmock.ErrQueryFunc,
 			},
 		}
-		store := NeoDataStore{bolt: db}
+		store := NeoDataStore{bolt: db, codeListLabel: codeListLabel}
 
 		result, err := store.GetCodes(context.Background(), testCodeListID, testEdition)
 
@@ -121,7 +123,7 @@ func TestNeoDataStore_GetCodesEditionExitsError(t *testing.T) {
 
 		Convey("and the expected calls are made", func() {
 			So(db.QueryForResultCalls, ShouldHaveLength, 1)
-			So(db.QueryForResultCalls[0].Query, ShouldEqual, fmt.Sprintf(countEditions, testCodeListID, testEdition))
+			So(db.QueryForResultCalls[0].Query, ShouldEqual, fmt.Sprintf(countEditions, codeListLabel, testCodeListID, testEdition))
 			So(db.QueryForResultCalls[0].Params, ShouldBeNil)
 
 			So(db.QueryForResultsCalls, ShouldHaveLength, 0)
@@ -140,7 +142,7 @@ func TestNeoDataStore_GetCodesEditionExitsFalse(t *testing.T) {
 				},
 			},
 		}
-		store := NeoDataStore{bolt: db}
+		store := NeoDataStore{bolt: db, codeListLabel: codeListLabel}
 
 		result, err := store.GetCodes(context.Background(), testCodeListID, testEdition)
 
@@ -151,7 +153,7 @@ func TestNeoDataStore_GetCodesEditionExitsFalse(t *testing.T) {
 
 		Convey("and the expected calls are made", func() {
 			So(db.QueryForResultCalls, ShouldHaveLength, 1)
-			So(db.QueryForResultCalls[0].Query, ShouldEqual, fmt.Sprintf(countEditions, testCodeListID, testEdition))
+			So(db.QueryForResultCalls[0].Query, ShouldEqual, fmt.Sprintf(countEditions, codeListLabel, testCodeListID, testEdition))
 			So(db.QueryForResultCalls[0].Params, ShouldBeNil)
 
 			So(db.QueryForResultsCalls, ShouldHaveLength, 0)
@@ -173,7 +175,7 @@ func TestNeoDataStore_GetCodesResultMapperError(t *testing.T) {
 				boltmock.ErrQueryFunc,
 			},
 		}
-		store := NeoDataStore{bolt: db}
+		store := NeoDataStore{bolt: db, codeListLabel: codeListLabel}
 
 		result, err := store.GetCodes(context.Background(), testCodeListID, testEdition)
 
@@ -184,11 +186,11 @@ func TestNeoDataStore_GetCodesResultMapperError(t *testing.T) {
 
 		Convey("and the expected calls are made", func() {
 			So(db.QueryForResultCalls, ShouldHaveLength, 1)
-			So(db.QueryForResultCalls[0].Query, ShouldEqual, fmt.Sprintf(countEditions, testCodeListID, testEdition))
+			So(db.QueryForResultCalls[0].Query, ShouldEqual, fmt.Sprintf(countEditions, codeListLabel, testCodeListID, testEdition))
 			So(db.QueryForResultCalls[0].Params, ShouldBeNil)
 
 			So(db.QueryForResultsCalls, ShouldHaveLength, 1)
-			So(db.QueryForResultsCalls[0].Query, ShouldEqual, fmt.Sprintf(getCodesQuery, testCodeListID, testEdition))
+			So(db.QueryForResultsCalls[0].Query, ShouldEqual, fmt.Sprintf(getCodesQuery, codeListLabel, testCodeListID, testEdition))
 			So(db.QueryForResultsCalls[0].Params, ShouldBeNil)
 		})
 	})
@@ -208,7 +210,7 @@ func TestNeoDataStore_GetCodesNoResults(t *testing.T) {
 				boltmock.NoResultFunc,
 			},
 		}
-		store := NeoDataStore{bolt: db}
+		store := NeoDataStore{bolt: db, codeListLabel: codeListLabel}
 
 		result, err := store.GetCodes(context.Background(), testCodeListID, testEdition)
 
@@ -219,11 +221,11 @@ func TestNeoDataStore_GetCodesNoResults(t *testing.T) {
 
 		Convey("and the expected calls are made", func() {
 			So(db.QueryForResultCalls, ShouldHaveLength, 1)
-			So(db.QueryForResultCalls[0].Query, ShouldEqual, fmt.Sprintf(countEditions, testCodeListID, testEdition))
+			So(db.QueryForResultCalls[0].Query, ShouldEqual, fmt.Sprintf(countEditions, codeListLabel, testCodeListID, testEdition))
 			So(db.QueryForResultCalls[0].Params, ShouldBeNil)
 
 			So(db.QueryForResultsCalls, ShouldHaveLength, 1)
-			So(db.QueryForResultsCalls[0].Query, ShouldEqual, fmt.Sprintf(getCodesQuery, testCodeListID, testEdition))
+			So(db.QueryForResultsCalls[0].Query, ShouldEqual, fmt.Sprintf(getCodesQuery, codeListLabel, testCodeListID, testEdition))
 			So(db.QueryForResultsCalls[0].Params, ShouldBeNil)
 		})
 	})

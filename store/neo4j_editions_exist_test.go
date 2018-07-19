@@ -22,14 +22,14 @@ func TestNeoDataStore_EditionExistsSuccess(t *testing.T) {
 			},
 		}
 
-		store := &NeoDataStore{bolt: db}
+		store := &NeoDataStore{bolt: db, codeListLabel: codeListLabel}
 
 		Convey("then EditionExists should return exists true and no error", func() {
 			exists, err := store.EditionExists(context.Background(), testCodeListID, testEdition)
 			So(err, ShouldBeNil)
 			So(exists, ShouldBeTrue)
 			So(db.QueryForResultCalls, ShouldHaveLength, 1)
-			So(db.QueryForResultCalls[0].Query, ShouldEqual, fmt.Sprintf(countEditions, testCodeListID, testEdition))
+			So(db.QueryForResultCalls[0].Query, ShouldEqual, fmt.Sprintf(countEditions, codeListLabel, testCodeListID, testEdition))
 			So(db.QueryForResultCalls[0].Params, ShouldBeNil)
 		})
 	})
@@ -48,14 +48,14 @@ func TestNeoDataStore_EditionExistsMoreThanOneResult(t *testing.T) {
 			},
 		}
 
-		store := &NeoDataStore{bolt: db}
+		store := &NeoDataStore{bolt: db, codeListLabel: codeListLabel}
 
 		Convey("then EditionExists should return exists true and no error", func() {
 			exists, err := store.EditionExists(context.Background(), testCodeListID, testEdition)
 			So(err.Error(), ShouldEqual, "editionExists: multiple editions found")
 			So(exists, ShouldBeFalse)
 			So(db.QueryForResultCalls, ShouldHaveLength, 1)
-			So(db.QueryForResultCalls[0].Query, ShouldEqual, fmt.Sprintf(countEditions, testCodeListID, testEdition))
+			So(db.QueryForResultCalls[0].Query, ShouldEqual, fmt.Sprintf(countEditions, codeListLabel, testCodeListID, testEdition))
 			So(db.QueryForResultCalls[0].Params, ShouldBeNil)
 		})
 	})
@@ -69,14 +69,14 @@ func TestNeoDataStore_EditionExistsQueryForResultError(t *testing.T) {
 			},
 		}
 
-		store := &NeoDataStore{bolt: db}
+		store := &NeoDataStore{bolt: db, codeListLabel: codeListLabel}
 
 		Convey("then EditionExists should return exists false and the expected error", func() {
 			exists, err := store.EditionExists(context.Background(), testCodeListID, testEdition)
 			So(err, ShouldEqual, boltmock.Err)
 			So(exists, ShouldBeFalse)
 			So(db.QueryForResultCalls, ShouldHaveLength, 1)
-			So(db.QueryForResultCalls[0].Query, ShouldEqual, fmt.Sprintf(countEditions, testCodeListID, testEdition))
+			So(db.QueryForResultCalls[0].Query, ShouldEqual, fmt.Sprintf(countEditions, codeListLabel, testCodeListID, testEdition))
 			So(db.QueryForResultCalls[0].Params, ShouldBeNil)
 		})
 	})

@@ -5,7 +5,6 @@ import (
 	. "github.com/smartystreets/goconvey/convey"
 	"github.com/ONSdigital/dp-bolt/boltmock"
 	"github.com/ONSdigital/dp-bolt/bolt"
-	"github.com/johnnadratowski/golang-neo4j-bolt-driver/structures/graph"
 	"context"
 	"github.com/ONSdigital/dp-code-list-api/models"
 	"fmt"
@@ -18,13 +17,14 @@ func TestNeoDataStore_GetCodeListSuccess(t *testing.T) {
 			QueryForResultFuncs: []boltmock.QueryFunc{
 				func(query string, params map[string]interface{}, mapResult bolt.ResultMapper) error {
 					return mapResult(&bolt.Result{
-						Data: []interface{}{graph.Node{Properties: map[string]interface{}{"label": "testLabel"}}},
+						//Data: []interface{}{graph.Node{Properties: map[string]interface{}{"label": "testLabel"}}},
+						Data: []interface{}{int64(1)},
 					})
 				},
 			},
 		}
 
-		store := NeoDataStore{codeListLabel: "666", bolt: db}
+		store := NeoDataStore{codeListLabel: codeListLabel, bolt: db}
 
 		Convey("when get code list is called", func() {
 			cl, err := store.GetCodeList(context.Background(), testCodeListID)
@@ -44,7 +44,7 @@ func TestNeoDataStore_GetCodeListSuccess(t *testing.T) {
 				})
 
 				So(db.QueryForResultCalls, ShouldHaveLength, 1)
-				So(db.QueryForResultCalls[0].Query, ShouldEqual, fmt.Sprintf(getCodeListQuery, store.codeListLabel, testCodeListID))
+				So(db.QueryForResultCalls[0].Query, ShouldEqual, fmt.Sprintf(codeListExistsQuery, store.codeListLabel, testCodeListID))
 				So(db.QueryForResultCalls[0].Params, ShouldBeNil)
 			})
 		})
@@ -59,7 +59,7 @@ func TestNeoDataStore_GetCodeListNoResults(t *testing.T) {
 			},
 		}
 
-		store := NeoDataStore{codeListLabel: "666", bolt: db}
+		store := NeoDataStore{codeListLabel: codeListLabel, bolt: db}
 
 		Convey("when get code list is called", func() {
 			cl, err := store.GetCodeList(context.Background(), testCodeListID)
@@ -69,7 +69,7 @@ func TestNeoDataStore_GetCodeListNoResults(t *testing.T) {
 				So(cl, ShouldBeNil)
 
 				So(db.QueryForResultCalls, ShouldHaveLength, 1)
-				So(db.QueryForResultCalls[0].Query, ShouldEqual, fmt.Sprintf(getCodeListQuery, store.codeListLabel, testCodeListID))
+				So(db.QueryForResultCalls[0].Query, ShouldEqual, fmt.Sprintf(codeListExistsQuery, store.codeListLabel, testCodeListID))
 				So(db.QueryForResultCalls[0].Params, ShouldBeNil)
 			})
 		})
@@ -84,7 +84,7 @@ func TestNeoDataStore_GetCodeListQueryForResultError(t *testing.T) {
 			},
 		}
 
-		store := NeoDataStore{codeListLabel: "666", bolt: db}
+		store := NeoDataStore{codeListLabel: codeListLabel, bolt: db}
 
 		Convey("when get code list is called", func() {
 			cl, err := store.GetCodeList(context.Background(), testCodeListID)
@@ -94,7 +94,7 @@ func TestNeoDataStore_GetCodeListQueryForResultError(t *testing.T) {
 				So(cl, ShouldBeNil)
 
 				So(db.QueryForResultCalls, ShouldHaveLength, 1)
-				So(db.QueryForResultCalls[0].Query, ShouldEqual, fmt.Sprintf(getCodeListQuery, store.codeListLabel, testCodeListID))
+				So(db.QueryForResultCalls[0].Query, ShouldEqual, fmt.Sprintf(codeListExistsQuery, store.codeListLabel, testCodeListID))
 				So(db.QueryForResultCalls[0].Params, ShouldBeNil)
 			})
 		})

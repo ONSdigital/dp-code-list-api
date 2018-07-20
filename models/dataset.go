@@ -12,16 +12,22 @@ type Datasets struct {
 
 // Dataset represents an individual model dataset
 type Dataset struct {
-	ID             string      `json:"dataset_id"`
-	Edition        string      `json:"edition"`
-	Version        int         `json:"version"`
-	DimensionLabel string      `json:"dimension_label"`
-	Links          DatasetLink `json:"links"`
+	Links          DatasetLinks     `json:"links"`
+	DimensionLabel string           `json:"dimension_label"`
+	Editions       []DatasetEdition `json:"editions"`
+}
+
+type DatasetEdition struct {
+	Links DatasetEditionLinks `json:"links"`
+}
+
+type DatasetEditionLinks struct {
+	Self             Link `json:"self"`
+	DatasetDimension Link `json:"dataset_dimension"`
+	LatestVersion    Link `json:"latest_version"`
 }
 
 // DatasetLink represents the links returned specifically for a dataset
-type DatasetLink struct {
-	CodeEdition      Link `json:"code_edition"`
-	DatasetVersion   Link `json:"dataset_version"`
-	DatasetDimension Link `json:"dataset_dimension"`
+type DatasetLinks struct {
+	Self Link `json:"self"`
 }

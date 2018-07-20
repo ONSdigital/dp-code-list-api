@@ -1,12 +1,12 @@
 package mapper
 
 import (
-	"github.com/pkg/errors"
-	dpbolt "github.com/ONSdigital/dp-bolt/bolt"
-	"strings"
-	"github.com/ONSdigital/dp-code-list-api/models"
 	"fmt"
+	dpbolt "github.com/ONSdigital/dp-bolt/bolt"
 	"github.com/ONSdigital/dp-code-list-api/datastore"
+	"github.com/ONSdigital/dp-code-list-api/models"
+	"github.com/pkg/errors"
+	"strings"
 )
 
 const (
@@ -42,7 +42,7 @@ func CodeLists(codeLists *models.CodeListResults, prefix string) dpbolt.ResultMa
 func CodeList(codeList *models.CodeList, id string) dpbolt.ResultMapper {
 	return func(r *dpbolt.Result) error {
 		if len(r.Data) == 0 {
-			return datastore.NOT_FOUND
+			return datastore.ErrCodeListNotFound
 		}
 
 		codeList.Links = models.CodeListLink{

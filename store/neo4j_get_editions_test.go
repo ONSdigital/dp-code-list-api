@@ -1,15 +1,15 @@
 package store
 
 import (
-	"testing"
-	. "github.com/smartystreets/goconvey/convey"
-	"github.com/ONSdigital/dp-bolt/boltmock"
-	"github.com/ONSdigital/dp-bolt/bolt"
-	"github.com/johnnadratowski/golang-neo4j-bolt-driver/structures/graph"
-	"github.com/ONSdigital/dp-code-list-api/models"
-	"fmt"
 	"context"
+	"fmt"
+	"github.com/ONSdigital/dp-bolt/bolt"
+	"github.com/ONSdigital/dp-bolt/boltmock"
 	"github.com/ONSdigital/dp-code-list-api/datastore"
+	"github.com/ONSdigital/dp-code-list-api/models"
+	"github.com/johnnadratowski/golang-neo4j-bolt-driver/structures/graph"
+	. "github.com/smartystreets/goconvey/convey"
+	"testing"
 )
 
 func TestNeoDataStore_GetEditionsSuccess(t *testing.T) {
@@ -73,7 +73,9 @@ func TestNeoDataStore_GetEditionsSuccess(t *testing.T) {
 					},
 				},
 			},
-			NumberOfResults: 2,
+			TotalCount: 2,
+			Count:      2,
+			Limit:      2,
 		}
 
 		Convey("when GetEditions is called", func() {
@@ -131,7 +133,7 @@ func TestNeoDataStore_GetEditionsNoResults(t *testing.T) {
 			eds, err := store.GetEditions(context.Background(), testCodeListID)
 
 			Convey("then the expected error is returned", func() {
-				So(err, ShouldEqual, datastore.NOT_FOUND)
+				So(err, ShouldEqual, datastore.ErrEditionsNotFound)
 				So(eds, ShouldBeNil)
 
 				So(db.QueryForResultsCalls, ShouldHaveLength, 1)

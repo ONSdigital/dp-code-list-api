@@ -1,14 +1,14 @@
 package store
 
 import (
-	"testing"
-	. "github.com/smartystreets/goconvey/convey"
-	"github.com/ONSdigital/dp-bolt/boltmock"
-	"github.com/ONSdigital/dp-bolt/bolt"
 	"context"
-	"github.com/ONSdigital/dp-code-list-api/models"
 	"fmt"
+	"github.com/ONSdigital/dp-bolt/bolt"
+	"github.com/ONSdigital/dp-bolt/boltmock"
 	"github.com/ONSdigital/dp-code-list-api/datastore"
+	"github.com/ONSdigital/dp-code-list-api/models"
+	. "github.com/smartystreets/goconvey/convey"
+	"testing"
 )
 
 func TestNeoDataStore_GetCodeListsSuccess(t *testing.T) {
@@ -41,7 +41,7 @@ func TestNeoDataStore_GetCodeListsSuccess(t *testing.T) {
 		}
 
 		db := &boltmock.DB{
-			QueryForResultsFuncs: [] boltmock.QueryFunc{
+			QueryForResultsFuncs: []boltmock.QueryFunc{
 				func(query string, params map[string]interface{}, mapResult bolt.ResultMapper) error {
 					mapResult(&bolt.Result{
 						Data: []interface{}{
@@ -87,7 +87,7 @@ func TestNeoDataStore_GetCodeListsNoResults(t *testing.T) {
 
 		Convey("when get codeList is caleld", func() {
 			res, err := store.GetCodeLists(context.Background(), "")
-			So(err, ShouldEqual, datastore.NOT_FOUND)
+			So(err, ShouldEqual, datastore.ErrCodeListsNotFound)
 			So(res, ShouldBeNil)
 			So(db.QueryForResultsCalls, ShouldHaveLength, 1)
 			So(db.QueryForResultsCalls[0].Query, ShouldEqual, fmt.Sprintf(getCodeListsQuery, store.codeListLabel, ""))

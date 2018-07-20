@@ -38,7 +38,7 @@ paths:
       tags:
       - "Code Lists"
       summary: "Get a list of code lists"
-      description: "Get a set of codes lists containing information about dimensions which are used for all datasets at the ONS"
+      description: "Get a set of code lists containing information about dimensions which are used for all datasets at the ONS"
       produces:
       - "application/json"
       responses:
@@ -73,8 +73,8 @@ paths:
     get:
       tags:
       - "Editions"
-      summary: "Get a the editions of a code list"
-      description: "Get a the editions of a code list"
+      summary: "Get a list of editions"
+      description: "Get a list of editions for a code list"
       parameters:
       - $ref: '#/parameters/id'
       produces:
@@ -92,8 +92,8 @@ paths:
     get:
       tags:
       - "Editions"
-      summary: "Get a the editions of a code list"
-      description: "Get an edition of a code list"
+      summary: "Get an edition of a code list"
+      description: "Get information about an edition of a code list"
       parameters:
       - $ref: '#/parameters/id'
       - $ref: '#/parameters/edition'
@@ -101,7 +101,7 @@ paths:
       - "application/json"
       responses:
         200:
-          description: "Json object containing information about the code list editions"
+          description: "Json object containing information about the code list edition"
           schema:
             $ref: '#/definitions/Edition'
         404:
@@ -112,8 +112,8 @@ paths:
     get:
       tags:
        - "Codes"
-      summary: "Get a list of all codes within a code list"
-      description: "Get a list of codes within a code list type"
+      summary: "Get a list of all codes within a code list edition"
+      description: "Get a list of codes within a code list edition"
       parameters:
       - $ref: '#/parameters/id'
       - $ref: '#/parameters/edition'
@@ -125,7 +125,7 @@ paths:
           schema:
             $ref: '#/definitions/Codes'
         404:
-          description: "Code list not found"
+          description: "Edition not found"
         500:
           description: "Failed to process the request due to an internal error"
   /code-lists/{id}/editions/{edition}/codes/{code_id}:
@@ -149,6 +149,27 @@ paths:
           description: "Code list or Edition or code not found"
         500:
           description: "Failed to process the request due to an internal error"
+  /code-lists/{id}/editions/{edition}/codes/{code_id}/datasets:
+    get:
+      tags:
+       - "Datasets"
+      summary: "Get datasets"
+      description: "Get a list of the datasets that use this code"
+      parameters:
+      - $ref: '#/parameters/id'
+      - $ref: '#/parameters/edition'
+      - $ref: '#/parameters/codeId'
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "Get a list of the datasets that use this code"
+          schema:
+            $ref: '#/definitions/Datasets'
+        404:
+          description: "Code not found"
+        500:
+          description: "Failed to process the request due to an internal error"
 definitions:
   CodeList:
     type: object
@@ -170,6 +191,7 @@ definitions:
       number_of_results:
         type: integer
         description: "The number of results available"
+
   Edition:
     type: object
     properties:
@@ -178,15 +200,15 @@ definitions:
         description: "The edition"
       label:
         type: string
-        description: "The label of the edition"
+        description: "A label used by the edition"
       links:
         type: object
         properties:
           self:
-            $ref: '#/definitions/SelfHref'
-          editions:
             $ref: '#/definitions/Href'
           codes:
+            $ref: '#/definitions/Href'
+          editions:
             $ref: '#/definitions/Href'
   Editions:
     type: object
@@ -195,9 +217,12 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/Edition'
-      number_of_results:
-        type: integer
-        description: "The number of results available"
+      count:
+        $ref: '#/definitions/Count'
+      total_count:
+        $ref: '#/definitions/TotalCount'
+      limit:
+        $ref: '#/definitions/Limit'
   Code:
     type: object
     properties:
@@ -214,6 +239,8 @@ definitions:
             $ref: '#/definitions/Href'
           code_list:
             $ref: '#/definitions/Href'
+          datasets:
+            $ref: '#/definitions/Href'
   Codes:
     type: object
     properties:
@@ -221,22 +248,54 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/Code'
-      number_of_results:
-              type: integer
-              description: "The number of results available"
-  CodeInformation:
+      count:
+        $ref: '#/definitions/Count'
+      total_count:
+        $ref: '#/definitions/TotalCount'
+      limit:
+        $ref: '#/definitions/Limit'
+  Dataset:
     type: object
     properties:
-      id:
-        type: string
-        description: "The id for the code"
-      name:
-        type: string
-        description: "The name for the code"
-      information:
+      links:
         type: object
-        description: "Additional information about the code"
-  SelfHref:
+        properties:
+          self:
+            $ref: '#/definitions/Href'
+      dimension_label:
+        type: string
+        description: "The code label used by this dataset"
+      editions:
+        items:
+          type: array
+          items:
+            $ref: '#/definitions/DatasetEdition'
+  DatasetEdition:
+    type: object
+    properties:
+      links:
+        type: object
+        properties:
+          self:
+            $ref: '#/definitions/Href'
+          dataset_dimension:
+            $ref: '#/definitions/Href'
+          latest_version:
+            $ref: '#/definitions/Href'
+  Datasets:
+    type: object
+    properties:
+      items:
+        type: array
+        items:
+          $ref: '#/definitions/Dataset'
+      count:
+        $ref: '#/definitions/Count'
+      total_count:
+        $ref: '#/definitions/TotalCount'
+      limit:
+        $ref: '#/definitions/Limit'
+  Href:
     type: object
     properties:
       id:
@@ -245,9 +304,12 @@ definitions:
       href:
         type: string
         description: "The URL to the resource"
-  Href:
-    type: object
-    properties:
-      href:
-        type: string
-        description: "The URL to the resource"
+  Count:
+    type: string
+    description: "The number of results returned in this response"
+  TotalCount:
+    type: string
+    description: "The total number of results available"
+  Limit:
+    type: string
+    description: "The limit applied to the number of results returned"

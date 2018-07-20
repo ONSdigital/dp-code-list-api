@@ -50,7 +50,13 @@ func CreateCodeListAPI(route *mux.Router, store datastore.DataStore) *CodeListAP
 
 func handleError(ctx context.Context, w http.ResponseWriter, err error, data log.Data) {
 	log.ErrorCtx(ctx, err, data)
-	if datastore.NOT_FOUND == err || datastore.ErrEditionNotFound == err || datastore.ErrCodeNotFound == err {
+	if datastore.ErrCodeListsNotFound == err ||
+		datastore.ErrCodeListNotFound == err ||
+		datastore.ErrEditionNotFound == err ||
+		datastore.ErrEditionsNotFound == err ||
+		datastore.ErrCodeNotFound == err ||
+		datastore.ErrCodesNotFound == err ||
+		datastore.ErrDatasetsNotFound == err {
 		http.Error(w, err.Error(), http.StatusNotFound)
 	} else {
 		http.Error(w, internalServerErr, http.StatusInternalServerError)

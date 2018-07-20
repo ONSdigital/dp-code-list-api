@@ -10,6 +10,7 @@ import (
 	"os/signal"
 	"syscall"
 
+	dpbolt "github.com/ONSdigital/dp-bolt/bolt"
 	"github.com/ONSdigital/dp-code-list-api/api"
 	"github.com/ONSdigital/dp-code-list-api/config"
 	"github.com/ONSdigital/dp-code-list-api/store"
@@ -17,7 +18,6 @@ import (
 	"github.com/ONSdigital/go-ns/server"
 	"github.com/gorilla/mux"
 	bolt "github.com/johnnadratowski/golang-neo4j-bolt-driver"
-	dpbolt "github.com/ONSdigital/dp-bolt/bolt"
 )
 
 func main() {

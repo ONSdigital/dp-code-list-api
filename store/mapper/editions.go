@@ -10,7 +10,7 @@ import (
 
 const (
 	editionsURI = "/code-lists/%s/editions"
-	editionURI = "/code-lists/%s/editions/%s"
+	editionURI  = "/code-lists/%s/editions/%s"
 )
 
 func Editions(editions *models.Editions, codeListID string) dpbolt.ResultMapper {

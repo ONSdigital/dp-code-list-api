@@ -3,7 +3,10 @@ package models
 // CodeListResults contains an array of code lists which can be paginated
 type CodeListResults struct {
 	Items      []CodeList `json:"items"`
-	TotalCount int        `json:"number_of_results"`
+	Count      int        `json:"count"`
+	Offset     int        `json:"offset"`
+	Limit      int        `json:"limit"`
+	TotalCount int        `json:"total_count"`
 }
 
 // CodeList containing links to all possible codes

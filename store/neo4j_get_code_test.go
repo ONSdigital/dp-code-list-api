@@ -1,16 +1,16 @@
 package store
 
 import (
-	"testing"
-	. "github.com/smartystreets/goconvey/convey"
-	"github.com/ONSdigital/dp-bolt/boltmock"
 	"context"
 	"fmt"
 	dpbolt "github.com/ONSdigital/dp-bolt/bolt"
+	"github.com/ONSdigital/dp-bolt/boltmock"
 	"github.com/ONSdigital/dp-code-list-api/datastore"
-	"github.com/johnnadratowski/golang-neo4j-bolt-driver/structures/graph"
 	"github.com/ONSdigital/dp-code-list-api/models"
+	"github.com/johnnadratowski/golang-neo4j-bolt-driver/structures/graph"
+	. "github.com/smartystreets/goconvey/convey"
 	"strconv"
+	"testing"
 )
 
 var (
@@ -20,7 +20,6 @@ var (
 	testNodeIdentity      = int64(666) // the number of the best \m/
 	testNodeValue         = "node value"
 	testRelationshipLabel = "relationship label"
-
 )
 
 func TestNeoDataStore_GetCodeEditionExistsErrors(t *testing.T) {
@@ -254,6 +253,9 @@ func TestNeoDataStore_GetCodeSuccess(t *testing.T) {
 				Links: models.CodeLinks{
 					Self: models.Link{
 						Href: fmt.Sprintf("/code-lists/%s/editions/%s/codes/%s", testCodeListID, testEdition, testNodeValue),
+					},
+					Datasets: models.Link{
+						Href: fmt.Sprintf("/code-lists/%s/editions/%s/codes/%s/datasets", testCodeListID, testEdition, testNodeValue),
 					},
 					CodeList: models.Link{
 						Href: fmt.Sprintf("/code-lists/%s", testCodeListID),

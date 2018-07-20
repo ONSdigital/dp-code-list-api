@@ -1,14 +1,116 @@
 package store
 
 import (
-	"testing"
-	. "github.com/smartystreets/goconvey/convey"
-	"github.com/ONSdigital/dp-bolt/boltmock"
-	"github.com/ONSdigital/dp-bolt/bolt"
 	"context"
 	"fmt"
+	"github.com/ONSdigital/dp-bolt/bolt"
+	dpbolt "github.com/ONSdigital/dp-bolt/bolt"
+	"github.com/ONSdigital/dp-bolt/boltmock"
 	"github.com/ONSdigital/dp-code-list-api/datastore"
+	"github.com/johnnadratowski/golang-neo4j-bolt-driver/structures/graph"
+	. "github.com/smartystreets/goconvey/convey"
+	"testing"
 )
+
+func TestNeoDataStore_GetCodeDatasets(t *testing.T) {
+	Convey("given a code with related datasets exists in neo4j", t, func() {
+
+		db := &boltmock.DB{
+			QueryForResultFuncs: []boltmock.QueryFunc{
+				func(query string, params map[string]interface{}, mapResult dpbolt.ResultMapper) error {
+					return mapResult(
+						&dpbolt.Result{Data: []interface{}{int64(1)}},
+					)
+				},
+			},
+			QueryForResultsFuncs: []boltmock.QueryFunc{
+				func(query string, params map[string]interface{}, mapResult dpbolt.ResultMapper) error {
+					mapResult(&dpbolt.Result{Data: []interface{}{
+						graph.Node{
+							Properties: map[string]interface{}{
+								"dataset_id":   "cpih01",
+								"edition":      "time-series",
+								"version":      int64(1),
+								"is_published": true,
+							},
+						},
+						graph.Relationship{
+							Properties: map[string]interface{}{
+								"label": "Overall index",
+							},
+						},
+					}})
+					mapResult(&dpbolt.Result{Data: []interface{}{
+						graph.Node{
+							Properties: map[string]interface{}{
+								"dataset_id":   "cpih01",
+								"edition":      "time-series",
+								"version":      int64(3),
+								"is_published": true,
+							},
+						},
+						graph.Relationship{
+							Properties: map[string]interface{}{
+								"label": "Overall index",
+							},
+						},
+					}})
+					mapResult(&dpbolt.Result{Data: []interface{}{
+						graph.Node{
+							Properties: map[string]interface{}{
+								"dataset_id":   "mid-year-pop-est",
+								"edition":      "time-series",
+								"version":      int64(2),
+								"is_published": true,
+							},
+						},
+						graph.Relationship{
+							Properties: map[string]interface{}{
+								"label": "Overall index 2",
+							},
+						},
+					}})
+					return nil
+				},
+			},
+		}
+
+		neo := NeoDataStore{
+			codeListLabel: "",
+			bolt:          db,
+		}
+
+		Convey("when I request the datasets from the store", func() {
+			datasets, err := neo.GetCodeDatasets(context.Background(), "my-code-list-id", "2017", "my-code")
+			Convey("then the datasets are returned correctly", func() {
+				So(err, ShouldBeNil)
+				So(datasets.Count, ShouldEqual, 2)
+
+				dataset1 := datasets.Items[0]
+				So(dataset1.DimensionLabel, ShouldEqual, "Overall index")
+				So(dataset1.Links.Self.ID, ShouldEqual, "cpih01")
+				So(dataset1.Links.Self.Href, ShouldEqual, "/datasets/cpih01")
+				So(dataset1.Editions[0].Links.Self.ID, ShouldEqual, "time-series")
+				So(dataset1.Editions[0].Links.Self.Href, ShouldEqual, "/datasets/cpih01/editions/time-series")
+				So(dataset1.Editions[0].Links.LatestVersion.ID, ShouldEqual, "3")
+				So(dataset1.Editions[0].Links.LatestVersion.Href, ShouldEqual, "/datasets/cpih01/editions/time-series/versions/3")
+				So(dataset1.Editions[0].Links.DatasetDimension.ID, ShouldEqual, "my-code-list-id")
+				So(dataset1.Editions[0].Links.DatasetDimension.Href, ShouldEqual, "/datasets/cpih01/editions/time-series/versions/3/dimensions/my-code-list-id")
+
+				dataset2 := datasets.Items[1]
+				So(dataset2.DimensionLabel, ShouldEqual, "Overall index 2")
+				So(dataset2.Links.Self.ID, ShouldEqual, "mid-year-pop-est")
+				So(dataset2.Links.Self.Href, ShouldEqual, "/datasets/mid-year-pop-est")
+				So(dataset2.Editions[0].Links.Self.ID, ShouldEqual, "time-series")
+				So(dataset2.Editions[0].Links.Self.Href, ShouldEqual, "/datasets/mid-year-pop-est/editions/time-series")
+				So(dataset2.Editions[0].Links.LatestVersion.ID, ShouldEqual, "2")
+				So(dataset2.Editions[0].Links.LatestVersion.Href, ShouldEqual, "/datasets/mid-year-pop-est/editions/time-series/versions/2")
+				So(dataset2.Editions[0].Links.DatasetDimension.ID, ShouldEqual, "my-code-list-id")
+				So(dataset2.Editions[0].Links.DatasetDimension.Href, ShouldEqual, "/datasets/mid-year-pop-est/editions/time-series/versions/2/dimensions/my-code-list-id")
+			})
+		})
+	})
+}
 
 func TestNeoDataStore_GetCodeDatasetsEditionNotFound(t *testing.T) {
 	Convey("should return expected error if no addition exists", t, func() {
@@ -103,7 +205,7 @@ func TestNeoDataStore_GetCodeDatasetsNoResults(t *testing.T) {
 
 		So(datasets, ShouldBeNil)
 		So(err, ShouldNotBeNil)
-		So(err, ShouldEqual, datastore.NOT_FOUND)
+		So(err, ShouldEqual, datastore.ErrDatasetsNotFound)
 		So(db.QueryForResultCalls, ShouldHaveLength, 1)
 		So(db.QueryForResultCalls[0].Query, ShouldEqual, fmt.Sprintf(countEditions, codeListLabel, testCodeListID, testEdition))
 		So(db.QueryForResultCalls[0].Params, ShouldBeNil)

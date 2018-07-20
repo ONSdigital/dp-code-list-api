@@ -1,13 +1,13 @@
 package mapper
 
 import (
+	"fmt"
 	dpbolt "github.com/ONSdigital/dp-bolt/bolt"
 	"github.com/ONSdigital/dp-code-list-api/models"
-	"reflect"
-	"github.com/pkg/errors"
-	"strconv"
-	"fmt"
 	"github.com/johnnadratowski/golang-neo4j-bolt-driver/structures/graph"
+	"github.com/pkg/errors"
+	"reflect"
+	"strconv"
 )
 
 var errCodeNotFound = errors.New("code not found")
@@ -32,6 +32,9 @@ func Codes(results *models.CodeResults, codeListID string, edition string) dpbol
 				Self: models.Link{
 					Href: fmt.Sprintf(codeURI, codeListID, edition, codeVal),
 				},
+				Datasets: models.Link{
+					Href: fmt.Sprintf(datasetsURI, codeListID, edition, codeVal),
+				},
 				CodeList: models.Link{
 					Href: fmt.Sprintf(codeListURI, codeListID),
 				},
@@ -54,6 +57,9 @@ func Code(codeModel *models.Code, codeListID string, edition string) dpbolt.Resu
 		codeModel.Links = models.CodeLinks{
 			Self: models.Link{
 				Href: fmt.Sprintf(codeURI, codeListID, edition, codeVal),
+			},
+			Datasets: models.Link{
+				Href: fmt.Sprintf(datasetsURI, codeListID, edition, codeVal),
 			},
 			CodeList: models.Link{
 				Href: fmt.Sprintf(codeListURI, codeListID),

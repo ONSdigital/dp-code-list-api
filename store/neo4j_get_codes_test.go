@@ -1,15 +1,15 @@
 package store
 
 import (
-	"github.com/ONSdigital/dp-code-list-api/models"
-	"fmt"
-	"testing"
-	"github.com/ONSdigital/dp-bolt/boltmock"
-	"github.com/johnnadratowski/golang-neo4j-bolt-driver/structures/graph"
 	"context"
+	"fmt"
 	dpbolt "github.com/ONSdigital/dp-bolt/bolt"
-	. "github.com/smartystreets/goconvey/convey"
+	"github.com/ONSdigital/dp-bolt/boltmock"
 	"github.com/ONSdigital/dp-code-list-api/datastore"
+	"github.com/ONSdigital/dp-code-list-api/models"
+	"github.com/johnnadratowski/golang-neo4j-bolt-driver/structures/graph"
+	. "github.com/smartystreets/goconvey/convey"
+	"testing"
 )
 
 var (
@@ -20,6 +20,9 @@ var (
 		Links: models.CodeLinks{
 			Self: models.Link{
 				Href: fmt.Sprintf("/code-lists/%s/editions/%s/codes/%s", testCodeListID, testEdition, "c1"),
+			},
+			Datasets: models.Link{
+				Href: fmt.Sprintf("/code-lists/%s/editions/%s/codes/%s/datasets", testCodeListID, testEdition, "c1"),
 			},
 			CodeList: models.Link{
 				Href: fmt.Sprintf("/code-lists/%s", testCodeListID),
@@ -34,6 +37,9 @@ var (
 		Links: models.CodeLinks{
 			Self: models.Link{
 				Href: fmt.Sprintf("/code-lists/%s/editions/%s/codes/%s", testCodeListID, testEdition, "c2"),
+			},
+			Datasets: models.Link{
+				Href: fmt.Sprintf("/code-lists/%s/editions/%s/codes/%s/datasets", testCodeListID, testEdition, "c2"),
 			},
 			CodeList: models.Link{
 				Href: fmt.Sprintf("/code-lists/%s", testCodeListID),
@@ -90,7 +96,12 @@ func TestNeoDataStore_GetCodesSuccess(t *testing.T) {
 
 		Convey("then the expected codeResult is returned and error is nil", func() {
 			So(err, ShouldBeNil)
-			So(result, ShouldResemble, &models.CodeResults{Items: codes, Count: 2})
+			So(result, ShouldResemble, &models.CodeResults{
+				Items:      codes,
+				Count:      2,
+				TotalCount: 2,
+				Limit:      2,
+			})
 		})
 
 		Convey("and the expected calls are made", func() {
@@ -215,7 +226,7 @@ func TestNeoDataStore_GetCodesNoResults(t *testing.T) {
 		result, err := store.GetCodes(context.Background(), testCodeListID, testEdition)
 
 		Convey("then codeResult is nil and the expected error is returned", func() {
-			So(err, ShouldResemble, datastore.NOT_FOUND)
+			So(err, ShouldResemble, datastore.ErrCodesNotFound)
 			So(result, ShouldBeNil)
 		})
 

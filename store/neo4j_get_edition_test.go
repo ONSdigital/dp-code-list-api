@@ -1,15 +1,15 @@
 package store
 
 import (
-	"testing"
-	. "github.com/smartystreets/goconvey/convey"
-	"github.com/ONSdigital/dp-bolt/boltmock"
 	"context"
 	"fmt"
-	"github.com/ONSdigital/dp-code-list-api/datastore"
-	"github.com/johnnadratowski/golang-neo4j-bolt-driver/structures/graph"
 	"github.com/ONSdigital/dp-bolt/bolt"
+	"github.com/ONSdigital/dp-bolt/boltmock"
+	"github.com/ONSdigital/dp-code-list-api/datastore"
 	"github.com/ONSdigital/dp-code-list-api/models"
+	"github.com/johnnadratowski/golang-neo4j-bolt-driver/structures/graph"
+	. "github.com/smartystreets/goconvey/convey"
+	"testing"
 )
 
 func TestNeoDataStore_GetEditionQueryForResultError(t *testing.T) {
@@ -51,7 +51,7 @@ func TestNeoDataStore_GetEditionNoResults(t *testing.T) {
 			ed, err := store.GetEdition(context.Background(), testCodeListID, testEdition)
 
 			Convey("then the expected error is returned", func() {
-				So(err, ShouldEqual, datastore.NOT_FOUND)
+				So(err, ShouldEqual, datastore.ErrEditionNotFound)
 				So(ed, ShouldBeNil)
 
 				So(mockDB.QueryForResultCalls, ShouldHaveLength, 1)

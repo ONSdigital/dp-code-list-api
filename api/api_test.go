@@ -70,7 +70,7 @@ func TestGetCodeList(t *testing.T) {
 
 		mockDatastore := &storetest.DataStoreMock{
 			GetCodeListFunc: func(ctx context.Context, id string) (*models.CodeList, error) {
-				return nil, datastore.NOT_FOUND
+				return nil, datastore.ErrCodeListNotFound
 			},
 		}
 
@@ -115,7 +115,7 @@ func TestGetEditions(t *testing.T) {
 
 		mockDatastore := &storetest.DataStoreMock{
 			GetEditionsFunc: func(ctx context.Context, f string) (*models.Editions, error) {
-				return &models.Editions{}, datastore.NOT_FOUND
+				return &models.Editions{}, datastore.ErrEditionsNotFound
 			},
 		}
 
@@ -160,7 +160,7 @@ func TestGetEdition(t *testing.T) {
 
 		mockDatastore := &storetest.DataStoreMock{
 			GetEditionFunc: func(ctx context.Context, f, e string) (*models.Edition, error) {
-				return &models.Edition{}, datastore.NOT_FOUND
+				return &models.Edition{}, datastore.ErrEditionNotFound
 			},
 		}
 

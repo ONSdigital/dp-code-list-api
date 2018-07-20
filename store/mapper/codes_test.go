@@ -1,14 +1,14 @@
 package mapper
 
 import (
-	"testing"
-	. "github.com/smartystreets/goconvey/convey"
-	dpbolt "github.com/ONSdigital/dp-bolt/bolt"
-	"github.com/johnnadratowski/golang-neo4j-bolt-driver/structures/graph"
-	"github.com/ONSdigital/dp-code-list-api/models"
-	"strconv"
 	"fmt"
+	dpbolt "github.com/ONSdigital/dp-bolt/bolt"
+	"github.com/ONSdigital/dp-code-list-api/models"
+	"github.com/johnnadratowski/golang-neo4j-bolt-driver/structures/graph"
 	"github.com/pkg/errors"
+	. "github.com/smartystreets/goconvey/convey"
+	"strconv"
+	"testing"
 )
 
 var (
@@ -53,6 +53,9 @@ func TestCodeResultExtractor_Success(t *testing.T) {
 					Links: models.CodeLinks{
 						Self: models.Link{
 							Href: fmt.Sprintf("/code-lists/%s/editions/%s/codes/%s", testCodeListID, testEdition, testNodeValue),
+						},
+						Datasets: models.Link{
+							Href: fmt.Sprintf("/code-lists/%s/editions/%s/codes/%s/datasets", testCodeListID, testEdition, testNodeValue),
 						},
 						CodeList: models.Link{
 							Href: fmt.Sprintf("/code-lists/%s", testCodeListID),

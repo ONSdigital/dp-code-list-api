@@ -1,14 +1,14 @@
 package store
 
 import (
-	"testing"
-	. "github.com/smartystreets/goconvey/convey"
-	"github.com/ONSdigital/dp-bolt/boltmock"
-	"github.com/ONSdigital/dp-bolt/bolt"
 	"context"
-	"github.com/ONSdigital/dp-code-list-api/models"
 	"fmt"
+	"github.com/ONSdigital/dp-bolt/bolt"
+	"github.com/ONSdigital/dp-bolt/boltmock"
 	"github.com/ONSdigital/dp-code-list-api/datastore"
+	"github.com/ONSdigital/dp-code-list-api/models"
+	. "github.com/smartystreets/goconvey/convey"
+	"testing"
 )
 
 func TestNeoDataStore_GetCodeListSuccess(t *testing.T) {
@@ -65,7 +65,7 @@ func TestNeoDataStore_GetCodeListNoResults(t *testing.T) {
 			cl, err := store.GetCodeList(context.Background(), testCodeListID)
 
 			Convey("then the expected error is returned", func() {
-				So(err, ShouldEqual, datastore.NOT_FOUND)
+				So(err, ShouldEqual, datastore.ErrCodeListNotFound)
 				So(cl, ShouldBeNil)
 
 				So(db.QueryForResultCalls, ShouldHaveLength, 1)

@@ -4,12 +4,13 @@ import (
 	"context"
 	"fmt"
 
+	dpbolt "github.com/ONSdigital/dp-bolt/bolt"
 	"github.com/ONSdigital/dp-code-list-api/datastore"
 	"github.com/ONSdigital/dp-code-list-api/models"
-	"github.com/ONSdigital/go-ns/log"
-	dpbolt "github.com/ONSdigital/dp-bolt/bolt"
 	"github.com/ONSdigital/dp-code-list-api/store/mapper"
+	"github.com/ONSdigital/go-ns/log"
 	"github.com/pkg/errors"
+	"strconv"
 )
 
 const (
@@ -67,7 +68,7 @@ func (n *NeoDataStore) GetCodeLists(ctx context.Context, filterBy string) (*mode
 	prefix := "_" + n.codeListLabel + "_"
 	err := n.bolt.QueryForResults(query, nil, mapper.CodeLists(codeListResults, prefix))
 	if err != nil && err == dpbolt.ErrNoResults {
-		return nil, datastore.NOT_FOUND
+		return nil, datastore.ErrCodeListsNotFound
 	}
 	if err != nil {
 		return nil, err
@@ -84,7 +85,7 @@ func (n *NeoDataStore) GetCodeList(ctx context.Context, code string) (*models.Co
 
 	err := n.bolt.QueryForResult(query, nil, mapper)
 	if err != nil && err == dpbolt.ErrNoResults {
-		return nil, datastore.NOT_FOUND
+		return nil, datastore.ErrCodeListNotFound
 	}
 
 	if err != nil {
@@ -93,7 +94,7 @@ func (n *NeoDataStore) GetCodeList(ctx context.Context, code string) (*models.Co
 
 	// from a Neo4j POV Codelists are't actually a thing a codeList exists if there is 1 or more edition nodes.
 	if *count == 0 {
-		return nil, datastore.NOT_FOUND
+		return nil, datastore.ErrCodeListNotFound
 	}
 
 	return &models.CodeList{
@@ -117,13 +118,16 @@ func (n *NeoDataStore) GetEditions(ctx context.Context, codeListID string) (*mod
 	editions := &models.Editions{}
 	err := n.bolt.QueryForResults(query, nil, mapper.Editions(editions, codeListID))
 	if err != nil && err == dpbolt.ErrNoResults {
-		return nil, datastore.NOT_FOUND
+		return nil, datastore.ErrEditionsNotFound
 	}
 	if err != nil {
 		return nil, err
 	}
 
-	editions.NumberOfResults = len(editions.Items)
+	editions.Count = len(editions.Items)
+	editions.Limit = len(editions.Items)
+	editions.TotalCount = len(editions.Items)
+
 	return editions, nil
 }
 
@@ -135,7 +139,7 @@ func (n *NeoDataStore) GetEdition(ctx context.Context, codeListID, edition strin
 	editionModel := &models.Edition{}
 	err := n.bolt.QueryForResult(query, nil, mapper.Edition(editionModel, codeListID, edition))
 	if err != nil && err == dpbolt.ErrNoResults {
-		return nil, datastore.NOT_FOUND
+		return nil, datastore.ErrEditionNotFound
 	}
 
 	if err != nil {
@@ -167,6 +171,8 @@ func (n *NeoDataStore) GetCodes(ctx context.Context, codeListID, edition string)
 	}
 
 	codeResults.TotalCount = len(codeResults.Items)
+	codeResults.Count = len(codeResults.Items)
+	codeResults.Limit = len(codeResults.Items)
 	return codeResults, nil
 }
 
@@ -223,16 +229,76 @@ func (n *NeoDataStore) GetCodeDatasets(ctx context.Context, codeListID, edition,
 	}
 
 	query := fmt.Sprintf(getCodeDatasets, codeListID, edition, code)
+	datasets := make(mapper.Datasets, 0)
 
-	datasetsModel := &models.Datasets{}
-
-	err = n.bolt.QueryForResults(query, nil, mapper.CodesDatasets(datasetsModel, codeListID, edition))
+	err = n.bolt.QueryForResults(query, nil, mapper.CodesDatasets(datasets))
 	if err != nil && err == dpbolt.ErrNoResults {
-		return nil, datastore.NOT_FOUND
+		return nil, datastore.ErrDatasetsNotFound
 	} else if err != nil {
 		return nil, err
 	}
 
-	datasetsModel.NumberOfResults = len(datasetsModel.Items)
+	datasetsModel := createDatasetsResponseModel(datasets, codeListID)
+
+	datasetsModel.TotalCount = len(datasetsModel.Items)
+	datasetsModel.Count = len(datasetsModel.Items)
+	datasetsModel.Limit = len(datasetsModel.Items)
+
 	return datasetsModel, err
+}
+
+func createDatasetsResponseModel(datasets mapper.Datasets, codeListID string) *models.Datasets {
+
+	datasetsModel := &models.Datasets{}
+	for datasetID, dataset := range datasets {
+
+		editions := make([]models.DatasetEdition, 0)
+
+		for editionID, versions := range dataset.Editions {
+
+			latestVersion := strconv.Itoa(max(versions))
+
+			editions = append(editions, models.DatasetEdition{
+				Links: models.DatasetEditionLinks{
+					Self: models.Link{
+						ID:   editionID,
+						Href: fmt.Sprintf("/datasets/%s/editions/%s", datasetID, editionID),
+					},
+					LatestVersion: models.Link{
+						ID:   latestVersion,
+						Href: fmt.Sprintf("/datasets/%s/editions/%s/versions/%s", datasetID, editionID, latestVersion),
+					},
+					DatasetDimension: models.Link{
+						ID:   codeListID,
+						Href: fmt.Sprintf("/datasets/%s/editions/%s/versions/%s/dimensions/%s", datasetID, editionID, latestVersion, codeListID),
+					},
+				},
+			})
+		}
+
+		datasetsModel.Items = append(datasetsModel.Items, models.Dataset{
+
+			DimensionLabel: dataset.DimensionLabel,
+			Links: models.DatasetLinks{
+				Self: models.Link{
+					ID:   datasetID,
+					Href: fmt.Sprintf("/datasets/%s", datasetID),
+				},
+			},
+			Editions: editions,
+		})
+	}
+
+	return datasetsModel
+}
+
+func max(input []int) (max int) {
+
+	for _, value := range input {
+		if value > max {
+			max = value
+		}
+	}
+
+	return max
 }

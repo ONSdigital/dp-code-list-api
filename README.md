@@ -27,7 +27,7 @@ The endpoint `/healthcheck` checks the connection to the database and returns on
 
 | Environment variable        | Default                                | Description
 | --------------------------- | ---------------------------------------| -----------
-| BIND_ADDR                   | :22000                                 | The host and port to bind to
+| BIND_ADDR                   | :22400                                 | The host and port to bind to
 | NEO4J_BIND_ADDRESS          | bolt://localhost:7687                  | The address of the neo4j database to retrieve dataset data from
 | NEO4J_POOL_SIZE             | 5                                      | The number of neo4j connections to pool
 | NEO4J_CODE_LIST_LABEL       | code_list                              | The code list node label identifier in neo4j

@@ -1,12 +1,12 @@
 package store
 
 import (
-	"testing"
+	"context"
+	"fmt"
+	dpbolt "github.com/ONSdigital/dp-bolt/bolt"
 	"github.com/ONSdigital/dp-bolt/boltmock"
 	. "github.com/smartystreets/goconvey/convey"
-	"context"
-	dpbolt "github.com/ONSdigital/dp-bolt/bolt"
-	"fmt"
+	"testing"
 )
 
 func TestNeoDataStore_EditionExistsSuccess(t *testing.T) {

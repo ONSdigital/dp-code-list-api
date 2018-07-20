@@ -8,10 +8,13 @@ import (
 )
 
 var (
-	NOT_FOUND          = errors.New("resource not found")
-	ErrEditionNotFound = errors.New("edition not found")
-	ErrCodeNotFound    = errors.New("code not found")
-	ErrCodesNotFound   = errors.New("codes not found")
+	ErrEditionNotFound   = errors.New("edition not found")
+	ErrEditionsNotFound  = errors.New("editions not found")
+	ErrCodeNotFound      = errors.New("code not found")
+	ErrCodeListNotFound  = errors.New("code list not found")
+	ErrCodeListsNotFound = errors.New("code lists not found")
+	ErrCodesNotFound     = errors.New("codes not found")
+	ErrDatasetsNotFound  = errors.New("datasets not found")
 )
 
 //go:generate moq -out datastoretest/datastore.go -pkg storetest . DataStore

@@ -2,13 +2,26 @@ package mapper
 
 import (
 	dpbolt "github.com/ONSdigital/dp-bolt/bolt"
-	"github.com/ONSdigital/dp-code-list-api/models"
-	"fmt"
 	"github.com/johnnadratowski/golang-neo4j-bolt-driver/structures/graph"
 )
 
-func CodesDatasets(datasetsModel *models.Datasets, codeListID string, edition string) dpbolt.ResultMapper {
+type Datasets map[string]datasetData
+type DatasetEditions map[string]Versions
+type Versions []int
+
+type datasetData struct {
+	DimensionLabel string
+	Editions       DatasetEditions
+}
+
+const (
+	datasetsURI = "/code-lists/%s/editions/%s/codes/%s/datasets"
+)
+
+func CodesDatasets(datasets Datasets) dpbolt.ResultMapper {
+
 	return func(r *dpbolt.Result) error {
+
 		node := r.Data[0].(graph.Node)
 		relationship := r.Data[1].(graph.Relationship)
 
@@ -17,25 +30,25 @@ func CodesDatasets(datasetsModel *models.Datasets, codeListID string, edition st
 
 		datasetID := vars["dataset_id"].(string)
 		datasetEdition := vars["edition"].(string)
-		version := vars["version"].(int64)
+		version := (int)(vars["version"].(int64))
+		dimensionLabel := relVars["label"].(string)
 
-		datasetsModel.Items = append(datasetsModel.Items, models.Dataset{
-			ID:             datasetID,
-			Edition:        datasetEdition,
-			Version:        int(version),
-			DimensionLabel: relVars["label"].(string),
-			Links: models.DatasetLink{
-				CodeEdition: models.Link{
-					Href: fmt.Sprintf("/code-lists/%s/editions/%s", codeListID, edition),
-				},
-				DatasetVersion: models.Link{
-					Href: fmt.Sprintf("/datasets/%s/editions/%s/versions/%d", datasetID, datasetEdition, version),
-				},
-				DatasetDimension: models.Link{
-					Href: fmt.Sprintf("/datasets/%s/editions/%s/versions/%d/dimensions/%s", datasetID, datasetEdition, version, codeListID),
-				},
-			},
-		})
+		dataset, ok := datasets[datasetID]
+		if !ok {
+			dataset = datasetData{
+				DimensionLabel: dimensionLabel,
+				Editions:       make(DatasetEditions, 0),
+			}
+		}
+
+		if dataset.Editions[datasetEdition] == nil {
+			dataset.Editions[datasetEdition] = make(Versions, 0)
+		}
+
+		dataset.Editions[datasetEdition] = append(dataset.Editions[datasetEdition], version)
+
+		datasets[datasetID] = dataset
+
 		return nil
 	}
 }

@@ -19,11 +19,7 @@ func (c *CodeListAPI) getCodeLists(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	count := len(codeLists.Items)
-
-	codeLists.Count = count
-	codeLists.Limit = count
-	codeLists.TotalCount = count
+	codeLists.TotalCount = len(codeLists.Items)
 
 	b, err := json.Marshal(codeLists)
 	if err != nil {

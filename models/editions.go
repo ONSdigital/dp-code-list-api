@@ -10,7 +10,6 @@ type Editions struct {
 type Edition struct {
 	Edition     string       `json:"edition"`
 	Label       string       `json:"label"`
-	ReleaseDate string       `json:"release_date,omitempty"`
 	Links       EditionLinks `json:"links"`
 }
 

@@ -159,14 +159,14 @@ func (n *NeoDataStore) GetCodes(ctx context.Context, codeListID, edition string)
 
 	err = n.bolt.QueryForResults(query, nil, mapper.Codes(codeResults, codeListID, edition))
 	if err != nil && err == dpbolt.ErrNoResults {
-		return nil, datastore.NOT_FOUND
+		return nil, datastore.ErrCodesNotFound
 	}
 
 	if err != nil {
 		return nil, err
 	}
 
-	codeResults.Count = len(codeResults.Items)
+	codeResults.TotalCount = len(codeResults.Items)
 	return codeResults, nil
 }
 

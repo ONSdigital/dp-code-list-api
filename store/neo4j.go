@@ -170,9 +170,10 @@ func (n *NeoDataStore) GetCodes(ctx context.Context, codeListID, edition string)
 		return nil, err
 	}
 
-	codeResults.TotalCount = len(codeResults.Items)
-	codeResults.Count = len(codeResults.Items)
-	codeResults.Limit = len(codeResults.Items)
+	count := len(codeResults.Items)
+	codeResults.TotalCount = count
+	codeResults.Count = count
+	codeResults.Limit = count
 	return codeResults, nil
 }
 

@@ -11,6 +11,8 @@ info:
     name: "Open Government Licence v3.0"
     url: "http://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/"
 basePath: "/v1"
+tags:
+- name: "Code List"
 schemes:
 - "http"
 parameters:
@@ -22,13 +24,13 @@ parameters:
     required: true
   edition:
     name: edition
-    description: "The ID of a code list edition"
+    description: "The edition of the code list"
     in: path
     type: string
     required: true
   codeId:
     name: code_id
-    description: "The ID of the Code within an edition of a code list"
+    description: "The ID of the code within a code list"
     in: path
     type: string
     required: true
@@ -36,7 +38,7 @@ paths:
   /code-lists:
     get:
       tags:
-      - "Code Lists"
+      - "Code List"
       summary: "Get a list of code lists"
       description: "Get a set of code lists containing information about dimensions which are used for all datasets at the ONS"
       produces:
@@ -47,13 +49,13 @@ paths:
           schema:
             $ref: '#/definitions/CodeLists'
         404:
-          description: "CodeLists not found"
+          description: "Code lists not found"
         500:
           description: "Failed to process the request due to an internal error"
   /code-lists/{id}:
     get:
       tags:
-      - "Code Lists"
+      - "Code List"
       summary: "Get a code list"
       description: "Get information about a code list"
       parameters:
@@ -72,27 +74,27 @@ paths:
   /code-lists/{id}/editions:
     get:
       tags:
-      - "Editions"
+      - "Code List"
       summary: "Get a list of editions"
-      description: "Get a list of editions for a code list"
+      description: "Get a list of editions associated with a code list"
       parameters:
       - $ref: '#/parameters/id'
       produces:
       - "application/json"
       responses:
         200:
-          description: "Json object containing information about the code list editions"
+          description: "Json object containing an array of editions"
           schema:
             $ref: '#/definitions/Editions'
         404:
-          description: "Editions for code list not found"
+          description: "Code list editions not found"
         500:
           description: "Failed to process the request due to an internal error"
   /code-lists/{id}/editions/{edition}:
     get:
       tags:
-      - "Editions"
-      summary: "Get an edition of a code list"
+      - "Code List"
+      summary: "Get an edition"
       description: "Get information about an edition of a code list"
       parameters:
       - $ref: '#/parameters/id'
@@ -101,17 +103,17 @@ paths:
       - "application/json"
       responses:
         200:
-          description: "Json object containing information about the code list edition"
+          description: "Json object containing information about the code list"
           schema:
             $ref: '#/definitions/Edition'
         404:
-          description: "Edition for code list not found"
+          description: "Edition not found"
         500:
           description: "Failed to process the request due to an internal error"
   /code-lists/{id}/editions/{edition}/codes:
     get:
       tags:
-       - "Codes"
+       - "Code List"
       summary: "Get a list of all codes within a code list edition"
       description: "Get a list of codes within a code list edition"
       parameters:
@@ -125,14 +127,14 @@ paths:
           schema:
             $ref: '#/definitions/Codes'
         404:
-          description: "Edition not found"
+          description: "codes not found"
         500:
           description: "Failed to process the request due to an internal error"
   /code-lists/{id}/editions/{edition}/codes/{code_id}:
     get:
       tags:
-       - "Codes"
-      summary: "Get a code from a edition of a code list"
+       - "Code List"
+      summary: "Get a code"
       description: "Get information about a code within a code list"
       parameters:
       - $ref: '#/parameters/id'
@@ -146,13 +148,13 @@ paths:
           schema:
             $ref: '#/definitions/Code'
         404:
-          description: "Code list or Edition or code not found"
+          description: "Code list edition or code not found"
         500:
           description: "Failed to process the request due to an internal error"
   /code-lists/{id}/editions/{edition}/codes/{code_id}/datasets:
     get:
       tags:
-       - "Datasets"
+       - "Code List"
       summary: "Get datasets"
       description: "Get a list of the datasets that use this code"
       parameters:
@@ -188,41 +190,14 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/CodeList'
-      number_of_results:
-        type: integer
-        description: "The number of results available"
-
-  Edition:
-    type: object
-    properties:
-      edition:
-        type: string
-        description: "The edition"
-      label:
-        type: string
-        description: "A label used by the edition"
-      links:
-        type: object
-        properties:
-          self:
-            $ref: '#/definitions/Href'
-          codes:
-            $ref: '#/definitions/Href'
-          editions:
-            $ref: '#/definitions/Href'
-  Editions:
-    type: object
-    properties:
-      items:
-        type: array
-        items:
-          $ref: '#/definitions/Edition'
       count:
         $ref: '#/definitions/Count'
       total_count:
         $ref: '#/definitions/TotalCount'
       limit:
         $ref: '#/definitions/Limit'
+      offset:
+        $ref: '#/definitions/Offset'
   Code:
     type: object
     properties:
@@ -254,6 +229,41 @@ definitions:
         $ref: '#/definitions/TotalCount'
       limit:
         $ref: '#/definitions/Limit'
+      offset:
+        $ref: '#/definitions/Offset'
+  Edition:
+    type: object
+    properties:
+      edition:
+        type: string
+        description: "The edition"
+      label:
+        type: string
+        description: "A label used by the edition"
+      links:
+        type: object
+        properties:
+          self:
+            $ref: '#/definitions/SelfHref'
+          codes:
+            $ref: '#/definitions/Href'
+          editions:
+            $ref: '#/definitions/Href'
+  Editions:
+    type: object
+    properties:
+      items:
+        type: array
+        items:
+          $ref: '#/definitions/Edition'
+      count:
+        $ref: '#/definitions/Count'
+      total_count:
+        $ref: '#/definitions/TotalCount'
+      limit:
+        $ref: '#/definitions/Limit'
+      offset:
+        $ref: '#/definitions/Offset'
   Dataset:
     type: object
     properties:
@@ -295,12 +305,18 @@ definitions:
         $ref: '#/definitions/TotalCount'
       limit:
         $ref: '#/definitions/Limit'
-  Href:
+  SelfHref:
     type: object
     properties:
       id:
         type: string
         description: "The id of the resource"
+      href:
+        type: string
+        description: "The URL to the resource"
+  Href:
+    type: object
+    properties:
       href:
         type: string
         description: "The URL to the resource"
@@ -313,3 +329,7 @@ definitions:
   Limit:
     type: string
     description: "The limit applied to the number of results returned"
+  Offset:
+    type: string
+    description: "The offset applied to the number of results returned"
+

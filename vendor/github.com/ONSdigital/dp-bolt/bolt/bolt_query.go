@@ -6,7 +6,7 @@ import (
 	"io"
 )
 
-//go:generate moq -out mock/bolt.go -pkg mock . DBPool NeoConn NeoRows
+//go:generate moq -out mock/bolt.go -pkg mock . DBPool NeoConn NeoRows NeoResult
 
 var NonUniqueResult = errors.New("unique result expected but was not")
 
@@ -22,6 +22,7 @@ type ResultMapper func(r *Result) error
 
 type NeoConn neo4j.Conn
 type NeoRows neo4j.Rows
+type NeoResult neo4j.Result
 
 // DBPool contains the methods to control access to the Neo4J
 // database pool
@@ -69,7 +70,8 @@ func (d *DB) query(cypherQuery string, params map[string]interface{}, mapResult 
 
 	index := 0
 	numOfResults := 0
-	results: for {
+results:
+	for {
 		data, meta, nextNeoErr := rows.NextNeo()
 		if nextNeoErr != nil {
 			if nextNeoErr == io.EOF {

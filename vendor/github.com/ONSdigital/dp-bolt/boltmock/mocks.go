@@ -1,8 +1,8 @@
 package boltmock
 
 import (
-	"github.com/ONSdigital/dp-bolt/bolt"
 	"github.com/pkg/errors"
+	"github.com/ONSdigital/dp-bolt/bolt"
 )
 
 type QueryParams struct {

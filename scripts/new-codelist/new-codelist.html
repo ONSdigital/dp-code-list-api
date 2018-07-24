@@ -28,28 +28,10 @@
     function parseFile() {
         document.getElementById("cypher").innerHTML = "";
         document.getElementById("upload").style.visibility = "hidden";
-        // console.log(reader.result)
         let edition = prompt("Please enter edition (normally a year")
         let codes = []
-        //   var doesColumnExist = false;
-        //   let data = d3.csv.parse(reader.result, function(data){
         d3.csv.parse(reader.result, function (data, i) {
-            // console.log (i);
-
             if (i === 0) {
-
-
-                //   console.log(data)
-                //     doesColumnExist = d.hasOwnProperty("yyyy");
-                //     return d;   
-                //   });
-                //   console.log(doesColumnExist);
-                // }
-                // root.onchange = function () {
-                // console.log (root.result)
-                // document.addEventListener("DOMContentLoaded", function () {
-                //get data
-                // d3.csv.parse(root, function (data) {
                 headerRow = d3.keys(data)
                 //codelist ID will be the first cell in column A
                 codelist = headerRow["0"]

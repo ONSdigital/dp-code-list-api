@@ -2,6 +2,7 @@ package mapper
 
 import (
 	"fmt"
+
 	dpbolt "github.com/ONSdigital/dp-bolt/bolt"
 	"github.com/ONSdigital/dp-code-list-api/models"
 	"github.com/johnnadratowski/golang-neo4j-bolt-driver/structures/graph"
@@ -62,14 +63,15 @@ func Edition(editionModel *models.Edition, codeListID string, edition string) dp
 }
 
 // EditionCount is a result mapper for gett
-func EditionCount() (*int64, dpbolt.ResultMapper) {
-	var count int64
+func EditionCount() (*int, dpbolt.ResultMapper) {
+	var count int
 	return &count, func(r *dpbolt.Result) error {
-		var ok bool
-		count, ok = r.Data[0].(int64)
+		countInt64, ok := r.Data[0].(int64)
 		if !ok {
 			return errors.New("extract row result error: failed to cast result to int64")
 		}
+
+		count = int(countInt64)
 		return nil
 	}
 }

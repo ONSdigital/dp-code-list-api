@@ -3,12 +3,13 @@ package store
 import (
 	"context"
 	"fmt"
+	"testing"
+
 	"github.com/ONSdigital/dp-bolt/bolt"
 	"github.com/ONSdigital/dp-bolt/boltmock"
 	"github.com/ONSdigital/dp-code-list-api/datastore"
 	"github.com/ONSdigital/dp-code-list-api/models"
 	. "github.com/smartystreets/goconvey/convey"
-	"testing"
 )
 
 func TestNeoDataStore_GetCodeListsSuccess(t *testing.T) {

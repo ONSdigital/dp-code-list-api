@@ -30,7 +30,7 @@ func CodesDatasets(datasets Datasets) dpbolt.ResultMapper {
 
 		datasetID := vars["dataset_id"].(string)
 		datasetEdition := vars["edition"].(string)
-		version := (int)(vars["version"].(int64))
+		version := vars["version"].(int)
 		dimensionLabel := relVars["label"].(string)
 
 		dataset, ok := datasets[datasetID]

@@ -3,13 +3,14 @@ package store
 import (
 	"context"
 	"fmt"
+	"testing"
+
 	"github.com/ONSdigital/dp-bolt/bolt"
 	dpbolt "github.com/ONSdigital/dp-bolt/bolt"
 	"github.com/ONSdigital/dp-bolt/boltmock"
 	"github.com/ONSdigital/dp-code-list-api/datastore"
 	"github.com/johnnadratowski/golang-neo4j-bolt-driver/structures/graph"
 	. "github.com/smartystreets/goconvey/convey"
-	"testing"
 )
 
 func TestNeoDataStore_GetCodeDatasets(t *testing.T) {
@@ -30,7 +31,7 @@ func TestNeoDataStore_GetCodeDatasets(t *testing.T) {
 							Properties: map[string]interface{}{
 								"dataset_id":   "cpih01",
 								"edition":      "time-series",
-								"version":      int64(1),
+								"version":      int(1),
 								"is_published": true,
 							},
 						},
@@ -45,7 +46,7 @@ func TestNeoDataStore_GetCodeDatasets(t *testing.T) {
 							Properties: map[string]interface{}{
 								"dataset_id":   "cpih01",
 								"edition":      "time-series",
-								"version":      int64(3),
+								"version":      int(3),
 								"is_published": true,
 							},
 						},
@@ -60,7 +61,7 @@ func TestNeoDataStore_GetCodeDatasets(t *testing.T) {
 							Properties: map[string]interface{}{
 								"dataset_id":   "mid-year-pop-est",
 								"edition":      "time-series",
-								"version":      int64(2),
+								"version":      2,
 								"is_published": true,
 							},
 						},

@@ -13,6 +13,7 @@ const (
 	codeListURI = "/code-lists/%s"
 )
 
+//CodeLists returns a dpbolt.ResultMapper which converts a dpbolt.Result to models.CodeLists
 func CodeLists(codeLists *models.CodeListResults, prefix string) dpbolt.ResultMapper {
 	return func(r *dpbolt.Result) error {
 		var label string
@@ -39,6 +40,7 @@ func CodeLists(codeLists *models.CodeListResults, prefix string) dpbolt.ResultMa
 	}
 }
 
+//CodeList returns a dpbolt.ResultMapper which converts a dpbolt.Result to a model.CodeList
 func CodeList(codeList *models.CodeList, id string) dpbolt.ResultMapper {
 	return func(r *dpbolt.Result) error {
 		if len(r.Data) == 0 {
@@ -58,7 +60,7 @@ func CodeList(codeList *models.CodeList, id string) dpbolt.ResultMapper {
 	}
 }
 
-// EditionCount is a result mapper for gett
+//CodeListCount returns a dpbolt.ResultMapper extracts an int64 value from  dpbolt.Result
 func CodeListCount() (*int64, dpbolt.ResultMapper) {
 	var count int64
 	return &count, func(r *dpbolt.Result) error {

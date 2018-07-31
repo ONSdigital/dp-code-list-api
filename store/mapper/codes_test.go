@@ -90,7 +90,7 @@ func TestCodeResultExtractor_BadTypes(t *testing.T) {
 
 			Convey("then expected error is returned", func() {
 				So(err, ShouldNotBeNil)
-				So(err.Error(), ShouldEqual, "row.Data[0] incorrect type - expected \"graph.Node\", actual \"string\"")
+				So(err.Error(), ShouldEqual, "failed to cast value to requested type, expected \"graph.Node\" but was type \"string\"")
 				So(actual.ID, ShouldBeBlank)
 				So(actual.Code, ShouldBeBlank)
 				So(actual.Label, ShouldBeBlank)
@@ -113,7 +113,7 @@ func TestCodeResultExtractor_BadTypes(t *testing.T) {
 
 			Convey("then expected error is returned", func() {
 				So(err, ShouldNotBeNil)
-				So(err.Error(), ShouldEqual, "node.Properties[\"value\"] incorrect type - expected \"string\", actual \"int\"")
+				So(err.Error(), ShouldEqual, "failed to cast value to requested type, expected \"string\" but was type \"int\"")
 				So(actual.ID, ShouldBeBlank)
 				So(actual.Code, ShouldBeBlank)
 				So(actual.Label, ShouldBeBlank)
@@ -136,7 +136,7 @@ func TestCodeResultExtractor_BadTypes(t *testing.T) {
 
 			Convey("then expected error is returned", func() {
 				So(err, ShouldNotBeNil)
-				So(err.Error(), ShouldEqual, "row.Data[1] incorrect type - expected \"graph.Relationship\", actual \"string\"")
+				So(err.Error(), ShouldEqual, "failed to cast value to requested type, expected \"graph.Relationship\" but was type \"graph.Relationship\"")
 				So(actual.ID, ShouldBeBlank)
 				So(actual.Code, ShouldBeBlank)
 				So(actual.Label, ShouldBeBlank)
@@ -159,7 +159,7 @@ func TestCodeResultExtractor_BadTypes(t *testing.T) {
 
 			Convey("then expected error is returned", func() {
 				So(err, ShouldNotBeNil)
-				So(err.Error(), ShouldEqual, "rel.Properties[\"label\"] incorrect type - expected \"string\", actual \"int\"")
+				So(err.Error(), ShouldEqual, "failed to cast value to requested type, expected \"string\" but was type \"int\"")
 				So(actual.ID, ShouldBeBlank)
 				So(actual.Code, ShouldBeBlank)
 				So(actual.Label, ShouldBeBlank)

@@ -24,6 +24,7 @@ const (
 	getCodeDatasets         = "MATCH (d)<-[inDataset]-(c:_code)-[r:usedBy]->(cl:_code_list:`_code_list_%s`) WHERE (cl.edition=" + `"%s"` + ") AND (c.value=" + `"%s"` + ") AND (d.is_published=true) RETURN d,r"
 )
 
+//BoltDB represents an interface for querying a Neo4j database
 type BoltDB interface {
 	QueryForResult(query string, params map[string]interface{}, extractResult dpbolt.ResultMapper) error
 	QueryForResults(query string, params map[string]interface{}, extractResult dpbolt.ResultMapper) error
@@ -77,6 +78,7 @@ func (n *NeoDataStore) GetCodeLists(ctx context.Context, filterBy string) (*mode
 	return codeListResults, nil
 }
 
+//GetCodeList returns a models.CodeList from Neo4j with the specified code if it exists.
 func (n *NeoDataStore) GetCodeList(ctx context.Context, code string) (*models.CodeList, error) {
 	log.InfoCtx(ctx, "about to query neo4j for code list", log.Data{"code_list_id": code})
 
@@ -110,6 +112,7 @@ func (n *NeoDataStore) GetCodeList(ctx context.Context, code string) (*models.Co
 	}, nil
 }
 
+//GetEditions returns models.Editions from Neo4j with the specified codeListID if it exists.
 func (n *NeoDataStore) GetEditions(ctx context.Context, codeListID string) (*models.Editions, error) {
 	log.InfoCtx(ctx, "about to query neo4j for code list editions", log.Data{"code_list_id": codeListID})
 
@@ -131,6 +134,7 @@ func (n *NeoDataStore) GetEditions(ctx context.Context, codeListID string) (*mod
 	return editions, nil
 }
 
+//GetEdition returns models.Edition from Neo4j with the specified codeListID and edition label if it exists.
 func (n *NeoDataStore) GetEdition(ctx context.Context, codeListID, edition string) (*models.Edition, error) {
 	log.InfoCtx(ctx, "about to query neo4j for code list edition", log.Data{"code_list_id": codeListID, "edition": edition})
 
@@ -149,6 +153,7 @@ func (n *NeoDataStore) GetEdition(ctx context.Context, codeListID, edition strin
 	return editionModel, nil
 }
 
+//GetCodes returns models.CodeResults from Neo4j with the specified codeListID and editions label if any exist.
 func (n *NeoDataStore) GetCodes(ctx context.Context, codeListID, edition string) (*models.CodeResults, error) {
 	editionExists, err := n.EditionExists(ctx, codeListID, edition)
 	if err != nil {
@@ -177,6 +182,7 @@ func (n *NeoDataStore) GetCodes(ctx context.Context, codeListID, edition string)
 	return codeResults, nil
 }
 
+//GetCode returns models.Code from Neo4j with the specified codeListID, editions label and code value if it exist.
 func (n *NeoDataStore) GetCode(ctx context.Context, codeListID, edition string, code string) (*models.Code, error) {
 	editionExists, err := n.EditionExists(ctx, codeListID, edition)
 	if err != nil {
@@ -201,6 +207,8 @@ func (n *NeoDataStore) GetCode(ctx context.Context, codeListID, edition string, 
 	return codeModel, nil
 }
 
+//EditionExists return true if the specified codeList edition exists, false otherwise or error if there was an issue
+// querying Neo4j.
 func (n *NeoDataStore) EditionExists(ctx context.Context, codeListID string, edition string) (bool, error) {
 	data := log.Data{"codelist_id": codeListID, "edition": edition}
 	log.InfoCtx(ctx, "checking edition exists", data)
@@ -220,6 +228,7 @@ func (n *NeoDataStore) EditionExists(ctx context.Context, codeListID string, edi
 	return *count == 1, nil
 }
 
+//GetCodeDatasets query Neo4j for Datasets containing the specified code if any exist.
 func (n *NeoDataStore) GetCodeDatasets(ctx context.Context, codeListID, edition, code string) (*models.Datasets, error) {
 	editionExists, err := n.EditionExists(ctx, codeListID, edition)
 	if err != nil {
@@ -249,11 +258,9 @@ func (n *NeoDataStore) GetCodeDatasets(ctx context.Context, codeListID, edition,
 }
 
 func createDatasetsResponseModel(datasets mapper.Datasets, codeListID string) *models.Datasets {
-
 	datasetsModel := &models.Datasets{}
 	for datasetID, dataset := range datasets {
-
-		editions := make([]models.DatasetEdition, 0)
+		var editions []models.DatasetEdition
 
 		for editionID, versions := range dataset.Editions {
 
@@ -294,12 +301,10 @@ func createDatasetsResponseModel(datasets mapper.Datasets, codeListID string) *m
 }
 
 func max(input []int) (max int) {
-
 	for _, value := range input {
 		if value > max {
 			max = value
 		}
 	}
-
 	return max
 }

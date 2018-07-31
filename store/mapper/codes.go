@@ -6,7 +6,6 @@ import (
 	"github.com/ONSdigital/dp-code-list-api/models"
 	"github.com/johnnadratowski/golang-neo4j-bolt-driver/structures/graph"
 	"github.com/pkg/errors"
-	"reflect"
 	"strconv"
 )
 
@@ -17,10 +16,33 @@ const (
 	codeURI  = "/code-lists/%s/editions/%s/codes/%s"
 )
 
+//Codes returns a dpbolt.ResultMapper mapper which converts dpbolt.Result to models.CodeResults
 func Codes(results *models.CodeResults, codeListID string, edition string) dpbolt.ResultMapper {
 	return func(r *dpbolt.Result) error {
-		codeVal, codeLabel, id, err := getCodeData(r.Data)
-		if err != nil {
+		if len(r.Data) == 0 {
+			return errCodeNotFound
+		}
+
+		var err error
+		var node graph.Node
+		if node, err = getNode(r.Data[0]); err != nil {
+			return err
+		}
+
+		id := node.NodeIdentity
+
+		var codeVal string
+		if codeVal, err = getStringProperty("value", node.Properties); err != nil {
+			return err
+		}
+
+		var rel graph.Relationship
+		if rel, err = getRelationship(r.Data[1]); err != nil {
+			return err
+		}
+
+		var codeLabel string
+		if codeLabel, err = getStringProperty("label", rel.Properties); err != nil {
 			return err
 		}
 
@@ -44,10 +66,33 @@ func Codes(results *models.CodeResults, codeListID string, edition string) dpbol
 	}
 }
 
+//Code returns a dpbolt.ResultMapper which converts a dpbolt.Result to models.Code
 func Code(codeModel *models.Code, codeListID string, edition string) dpbolt.ResultMapper {
 	return func(r *dpbolt.Result) error {
-		codeVal, codeLabel, id, err := getCodeData(r.Data)
-		if err != nil {
+		if len(r.Data) == 0 {
+			return errCodeNotFound
+		}
+
+		var err error
+		var node graph.Node
+		if node, err = getNode(r.Data[0]); err != nil {
+			return err
+		}
+
+		id := node.NodeIdentity
+
+		var codeVal string
+		if codeVal, err = getStringProperty("value", node.Properties); err != nil {
+			return err
+		}
+
+		var rel graph.Relationship
+		if rel, err = getRelationship(r.Data[1]); err != nil {
+			return err
+		}
+
+		var codeLabel string
+		if codeLabel, err = getStringProperty("label", rel.Properties); err != nil {
 			return err
 		}
 
@@ -67,43 +112,4 @@ func Code(codeModel *models.Code, codeListID string, edition string) dpbolt.Resu
 		}
 		return nil
 	}
-}
-
-func getCodeData(data []interface{}) (codeVal string, codeLabel string, id int64, err error) {
-	var ok bool
-
-	if len(data) == 0 {
-		err = errCodeNotFound
-		return
-	}
-
-	node, ok := data[0].(graph.Node)
-	if !ok {
-		t := reflect.TypeOf(data[0]).String()
-		err = errors.Errorf("row.Data[0] incorrect type - expected \"graph.Node\", actual %q", t)
-		return
-	}
-	id = node.NodeIdentity
-
-	codeVal, ok = node.Properties["value"].(string)
-	if !ok {
-		t := reflect.TypeOf(node.Properties["value"]).String()
-		err = errors.Errorf("node.Properties[\"value\"] incorrect type - expected \"string\", actual %q", t)
-		return
-	}
-
-	rel, ok := data[1].(graph.Relationship)
-	if !ok {
-		t := reflect.TypeOf(data[1]).String()
-		err = errors.Errorf("row.Data[1] incorrect type - expected \"graph.Relationship\", actual %q", t)
-		return
-	}
-
-	codeLabel, ok = rel.Properties["label"].(string)
-	if !ok {
-		t := reflect.TypeOf(rel.Properties["label"]).String()
-		err = errors.Errorf("rel.Properties[\"label\"] incorrect type - expected \"string\", actual %q", t)
-		return
-	}
-	return
 }

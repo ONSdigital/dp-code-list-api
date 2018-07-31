@@ -34,7 +34,7 @@ func (c *CodeListAPI) getCodeLists(w http.ResponseWriter, r *http.Request) {
 		log.ErrorCtx(ctx, errors.WithMessage(err, "getCodeLists endpoint: failed to write bytes to response"), nil)
 		return
 	}
-	log.InfoCtx(r.Context(), "retrieved all codelists", nil)
+	log.InfoCtx(ctx, "retrieved all codelists", nil)
 }
 
 func (c *CodeListAPI) getCodeList(w http.ResponseWriter, r *http.Request) {
@@ -61,5 +61,5 @@ func (c *CodeListAPI) getCodeList(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.InfoCtx(r.Context(), "getCodeList endpoint: request successful", data)
+	log.InfoCtx(ctx, "getCodeList endpoint: request successful", data)
 }

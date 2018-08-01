@@ -83,7 +83,7 @@ func (n *NeoDataStore) GetCodeList(ctx context.Context, code string) (*models.Co
 	log.InfoCtx(ctx, "about to query neo4j for code list", log.Data{"code_list_id": code})
 
 	query := fmt.Sprintf(codeListExistsQuery, n.codeListLabel, code)
-	count, mapper := mapper.CodeListCount()
+	count, mapper := mapper.GetCount()
 
 	err := n.bolt.QueryForResult(query, nil, mapper)
 	if err != nil && err == dpbolt.ErrNoResults {
@@ -215,7 +215,7 @@ func (n *NeoDataStore) EditionExists(ctx context.Context, codeListID string, edi
 
 	query := fmt.Sprintf(countEditions, n.codeListLabel, codeListID, edition)
 
-	count, extractor := mapper.EditionCount()
+	count, extractor := mapper.GetCount()
 	err := n.bolt.QueryForResult(query, nil, extractor)
 	if err != nil {
 		return false, err

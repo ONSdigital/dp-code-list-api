@@ -69,7 +69,7 @@ func TestNeoDataStore_GetCodeEditionExistsErrors(t *testing.T) {
 
 		Convey("then the expected error is returned", func() {
 			So(code, ShouldBeNil)
-			So(err.Error(), ShouldEqual, "extract row result error: failed to cast result to int64")
+			So(err.Error(), ShouldEqual, "failed to cast value to requested type, expected \"int64\" but was type \"string\"")
 		})
 
 		Convey("and bolt.QueryForResult is called the expected number of times", func() {

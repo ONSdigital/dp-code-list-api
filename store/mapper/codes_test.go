@@ -136,7 +136,7 @@ func TestCodeResultExtractor_BadTypes(t *testing.T) {
 
 			Convey("then expected error is returned", func() {
 				So(err, ShouldNotBeNil)
-				So(err.Error(), ShouldEqual, "failed to cast value to requested type, expected \"graph.Relationship\" but was type \"graph.Relationship\"")
+				So(err.Error(), ShouldEqual, "failed to cast value to requested type, expected \"graph.Relationship\" but was type \"string\"")
 				So(actual.ID, ShouldBeBlank)
 				So(actual.Code, ShouldBeBlank)
 				So(actual.Label, ShouldBeBlank)

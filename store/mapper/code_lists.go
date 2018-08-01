@@ -5,8 +5,7 @@ import (
 	dpbolt "github.com/ONSdigital/dp-bolt/bolt"
 	"github.com/ONSdigital/dp-code-list-api/datastore"
 	"github.com/ONSdigital/dp-code-list-api/models"
-	"github.com/pkg/errors"
-	"strings"
+		"strings"
 )
 
 const (
@@ -55,19 +54,6 @@ func CodeList(codeList *models.CodeList, id string) dpbolt.ResultMapper {
 			Editions: &models.Link{
 				Href: fmt.Sprintf(editionsURI, id),
 			},
-		}
-		return nil
-	}
-}
-
-//CodeListCount returns a dpbolt.ResultMapper extracts an int64 value from  dpbolt.Result
-func CodeListCount() (*int64, dpbolt.ResultMapper) {
-	var count int64
-	return &count, func(r *dpbolt.Result) error {
-		var ok bool
-		count, ok = r.Data[0].(int64)
-		if !ok {
-			return errors.New("extract row result error: failed to cast result to int64")
 		}
 		return nil
 	}

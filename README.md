@@ -5,6 +5,9 @@ An API used to navigate code lists
 
 ### Installation
 
+* Install [mongodb](https://www.mongodb.com/)
+* Run `./scripts/setup.sh` to setup the code data
+
 #### Database
 
 - Run `brew install neo4j`

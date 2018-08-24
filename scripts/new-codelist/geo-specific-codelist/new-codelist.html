@@ -1,0 +1,78 @@
+<html>
+
+<body>
+    <div id="constraint"></div>
+    <div id="cypher"></div>
+
+    <form id="myForm">
+        Codelist:
+        <input type="text" id="uberCodelist">
+        <br>
+        Codelist name:
+        <input type="text" id="codelistTitle">
+        <br> Edition:
+        <input type="text" id="edition">
+        <br> Geoportal link:
+        <input type="text" id="root">
+        <br>
+        e.g. Take 'Query URL' from http://geoportal.statistics.gov.uk/datasets/local-authority-districts-december-2016-names-and-codes-in-the-united-kingdom/geoservice
+        <br><br>
+        <input type="button" onclick="runCypher()" value="Submit form">
+    </form>
+
+</body>
+
+<script>
+    // let root = "https://services1.arcgis.com/ESMARspQHYMw9BZ9/arcgis/rest/services/MCTY_DEC_2016_EN_NC/FeatureServer/0/query?where=1%3D1&outFields=*&outSR=4326&f=json"
+    function runCypher() {
+        document.getElementById("myForm").style.visibility = "hidden";
+        let codelistTitle = document.getElementById("codelistTitle").value
+        let uberCodelist = document.getElementById("uberCodelist").value
+        let edition = document.getElementById("edition").value
+        let root = document.getElementById("root").value
+        //get data
+        fetch(root, {
+                mode: 'cors'
+            })
+            .then(data => data.json())
+            .then(function (data) {
+
+                const codelistID = data.fields["0"].alias
+                const codelist = codelistID.replace("CD", "").toLowerCase();
+                const codelistName = codelistID.replace("CD", "NM")
+
+                //create cypher query to create the node for the codelist
+                let node = document.createElement("p");
+                let textnode = document.createTextNode("CREATE CONSTRAINT ON (n:`_code_geography`) ASSERT n.value IS UNIQUE;");
+                node.appendChild(textnode);
+                document.getElementById("constraint").appendChild(node);
+                let node2 = document.createElement("p");
+                let text = document.createTextNode("CREATE (node:`_code_list`:`_code_list_" + uberCodelist +
+                    "`:`_geography` { label:'" + codelistTitle + "', edition:'" + edition + "', geography_list_ID:'" + codelist + "' });");
+                node2.appendChild(text);
+                document.getElementById("cypher").appendChild(node2);
+                //the codes themselves need to be treated differnetly if Geo codes so check if this is
+
+                data.features.map(function (data) {
+                    createCodes(data, codelist, codelistID, codelistName, uberCodelist)
+
+                });
+            })
+    }
+
+    function createCodes(data, codelist, codelistID, codelistName, uberCodelist) {
+
+        let node = document.createElement("p");
+        let textnode = document.createTextNode("MERGE (node:`_code`:`_code_geography` { value:'" +
+            data.attributes[codelistID] + "' });");
+        node.appendChild(textnode);
+        document.getElementById("cypher").appendChild(node);
+        let node2 = document.createElement("p");
+        let text = document.createTextNode("MATCH (parent:`_code_list`:`_code_list_"+uberCodelist+"`:`_geography`{geography_list_ID:'" + codelist + "'}),(node:`_code`:`_code_geography` { value:'" + data.attributes[codelistID] +
+            "' }) MERGE (node)-[:usedBy { label:\"" + data.attributes[codelistName] + "\"}]->(parent);");
+        node2.appendChild(text);
+        document.getElementById("cypher").appendChild(node2);
+    }
+</script>
+
+</html>

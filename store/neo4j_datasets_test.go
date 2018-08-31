@@ -9,6 +9,7 @@ import (
 	dpbolt "github.com/ONSdigital/dp-bolt/bolt"
 	"github.com/ONSdigital/dp-bolt/boltmock"
 	"github.com/ONSdigital/dp-code-list-api/datastore"
+	"github.com/ONSdigital/dp-code-list-api/models"
 	"github.com/ONSdigital/dp-code-list-api/store/mapper"
 	"github.com/johnnadratowski/golang-neo4j-bolt-driver/structures/graph"
 	. "github.com/smartystreets/goconvey/convey"
@@ -86,27 +87,40 @@ func TestNeoDataStore_GetCodeDatasets(t *testing.T) {
 				So(err, ShouldBeNil)
 				So(datasets.Count, ShouldEqual, 2)
 
-				dataset1 := datasets.Items[0]
-				So(dataset1.DimensionLabel, ShouldEqual, "Overall index")
-				So(dataset1.Links.Self.ID, ShouldEqual, "cpih01")
-				So(dataset1.Links.Self.Href, ShouldEqual, "/datasets/cpih01")
-				So(dataset1.Editions[0].Links.Self.ID, ShouldEqual, "time-series")
-				So(dataset1.Editions[0].Links.Self.Href, ShouldEqual, "/datasets/cpih01/editions/time-series")
-				So(dataset1.Editions[0].Links.LatestVersion.ID, ShouldEqual, "3")
-				So(dataset1.Editions[0].Links.LatestVersion.Href, ShouldEqual, "/datasets/cpih01/editions/time-series/versions/3")
-				So(dataset1.Editions[0].Links.DatasetDimension.ID, ShouldEqual, "my-code-list-id")
-				So(dataset1.Editions[0].Links.DatasetDimension.Href, ShouldEqual, "/datasets/cpih01/editions/time-series/versions/3/dimensions/my-code-list-id")
+				checkCPIH := func(dataset *models.Dataset) {
+					So(dataset.DimensionLabel, ShouldEqual, "Overall index")
+					So(dataset.Links.Self.ID, ShouldEqual, "cpih01")
+					So(dataset.Links.Self.Href, ShouldEqual, "/datasets/cpih01")
+					So(dataset.Editions[0].Links.Self.ID, ShouldEqual, "time-series")
+					So(dataset.Editions[0].Links.Self.Href, ShouldEqual, "/datasets/cpih01/editions/time-series")
+					So(dataset.Editions[0].Links.LatestVersion.ID, ShouldEqual, "3")
+					So(dataset.Editions[0].Links.LatestVersion.Href, ShouldEqual, "/datasets/cpih01/editions/time-series/versions/3")
+					So(dataset.Editions[0].Links.DatasetDimension.ID, ShouldEqual, "my-code-list-id")
+					So(dataset.Editions[0].Links.DatasetDimension.Href, ShouldEqual, "/datasets/cpih01/editions/time-series/versions/3/dimensions/my-code-list-id")
+				}
+				checkMidYearPop := func(dataset *models.Dataset) {
+					So(dataset.DimensionLabel, ShouldEqual, "Overall index 2")
+					So(dataset.Links.Self.ID, ShouldEqual, "mid-year-pop-est")
+					So(dataset.Links.Self.Href, ShouldEqual, "/datasets/mid-year-pop-est")
+					So(dataset.Editions[0].Links.Self.ID, ShouldEqual, "time-series")
+					So(dataset.Editions[0].Links.Self.Href, ShouldEqual, "/datasets/mid-year-pop-est/editions/time-series")
+					So(dataset.Editions[0].Links.LatestVersion.ID, ShouldEqual, "2")
+					So(dataset.Editions[0].Links.LatestVersion.Href, ShouldEqual, "/datasets/mid-year-pop-est/editions/time-series/versions/2")
+					So(dataset.Editions[0].Links.DatasetDimension.ID, ShouldEqual, "my-code-list-id")
+					So(dataset.Editions[0].Links.DatasetDimension.Href, ShouldEqual, "/datasets/mid-year-pop-est/editions/time-series/versions/2/dimensions/my-code-list-id")
+				}
 
-				dataset2 := datasets.Items[1]
-				So(dataset2.DimensionLabel, ShouldEqual, "Overall index 2")
-				So(dataset2.Links.Self.ID, ShouldEqual, "mid-year-pop-est")
-				So(dataset2.Links.Self.Href, ShouldEqual, "/datasets/mid-year-pop-est")
-				So(dataset2.Editions[0].Links.Self.ID, ShouldEqual, "time-series")
-				So(dataset2.Editions[0].Links.Self.Href, ShouldEqual, "/datasets/mid-year-pop-est/editions/time-series")
-				So(dataset2.Editions[0].Links.LatestVersion.ID, ShouldEqual, "2")
-				So(dataset2.Editions[0].Links.LatestVersion.Href, ShouldEqual, "/datasets/mid-year-pop-est/editions/time-series/versions/2")
-				So(dataset2.Editions[0].Links.DatasetDimension.ID, ShouldEqual, "my-code-list-id")
-				So(dataset2.Editions[0].Links.DatasetDimension.Href, ShouldEqual, "/datasets/mid-year-pop-est/editions/time-series/versions/2/dimensions/my-code-list-id")
+				for _, ds := range datasets.Items {
+					switch {
+					case ds.Links.Self.ID == "cpih01":
+						checkCPIH(&ds)
+					case ds.Links.Self.ID == "mid-year-pop-est":
+						checkMidYearPop(&ds)
+					default:
+						//fail if any dataset does not match the two that were provided
+						So(ds, ShouldBeNil)
+					}
+				}
 			})
 		})
 	})

@@ -2,10 +2,11 @@ package mapper
 
 import (
 	"fmt"
+	"strings"
+
 	dpbolt "github.com/ONSdigital/dp-bolt/bolt"
 	"github.com/ONSdigital/dp-code-list-api/datastore"
 	"github.com/ONSdigital/dp-code-list-api/models"
-		"strings"
 )
 
 const (
@@ -13,7 +14,7 @@ const (
 )
 
 //CodeLists returns a dpbolt.ResultMapper which converts a dpbolt.Result to models.CodeLists
-func CodeLists(codeLists *models.CodeListResults, prefix string) dpbolt.ResultMapper {
+func (m *Mapper) CodeLists(codeLists *models.CodeListResults, prefix string) dpbolt.ResultMapper {
 	return func(r *dpbolt.Result) error {
 		var label string
 		for _, v := range r.Data[0].([]interface{}) {
@@ -26,13 +27,8 @@ func CodeLists(codeLists *models.CodeListResults, prefix string) dpbolt.ResultMa
 
 		codeLists.Items = append(codeLists.Items, models.CodeList{
 			Links: models.CodeListLink{
-				Self: &models.Link{
-					Href: fmt.Sprintf(codeListURI, label),
-					ID:   label,
-				},
-				Editions: &models.Link{
-					Href: fmt.Sprintf(editionsURI, label),
-				},
+				Self:     models.CreateLink(label, fmt.Sprintf(codeListURI, label), m.Host),
+				Editions: models.CreateLink("", fmt.Sprintf(editionsURI, label), m.Host),
 			},
 		})
 		return nil
@@ -40,20 +36,15 @@ func CodeLists(codeLists *models.CodeListResults, prefix string) dpbolt.ResultMa
 }
 
 //CodeList returns a dpbolt.ResultMapper which converts a dpbolt.Result to a model.CodeList
-func CodeList(codeList *models.CodeList, id string) dpbolt.ResultMapper {
+func (m *Mapper) CodeList(codeList *models.CodeList, id string) dpbolt.ResultMapper {
 	return func(r *dpbolt.Result) error {
 		if len(r.Data) == 0 {
 			return datastore.ErrCodeListNotFound
 		}
 
 		codeList.Links = models.CodeListLink{
-			Self: &models.Link{
-				Href: fmt.Sprintf(codeListURI, id),
-				ID:   id,
-			},
-			Editions: &models.Link{
-				Href: fmt.Sprintf(editionsURI, id),
-			},
+			Self:     models.CreateLink(id, fmt.Sprintf(codeListURI, id), m.Host),
+			Editions: models.CreateLink("", fmt.Sprintf(editionsURI, id), m.Host),
 		}
 		return nil
 	}

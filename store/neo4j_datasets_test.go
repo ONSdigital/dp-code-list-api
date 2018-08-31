@@ -3,13 +3,15 @@ package store
 import (
 	"context"
 	"fmt"
+	"testing"
+
 	"github.com/ONSdigital/dp-bolt/bolt"
 	dpbolt "github.com/ONSdigital/dp-bolt/bolt"
 	"github.com/ONSdigital/dp-bolt/boltmock"
 	"github.com/ONSdigital/dp-code-list-api/datastore"
+	"github.com/ONSdigital/dp-code-list-api/store/mapper"
 	"github.com/johnnadratowski/golang-neo4j-bolt-driver/structures/graph"
 	. "github.com/smartystreets/goconvey/convey"
-	"testing"
 )
 
 func TestNeoDataStore_GetCodeDatasets(t *testing.T) {
@@ -75,10 +77,8 @@ func TestNeoDataStore_GetCodeDatasets(t *testing.T) {
 			},
 		}
 
-		neo := NeoDataStore{
-			codeListLabel: "",
-			bolt:          db,
-		}
+		neo := testStore
+		neo.bolt = db
 
 		Convey("when I request the datasets from the store", func() {
 			datasets, err := neo.GetCodeDatasets(context.Background(), "my-code-list-id", "2017", "my-code")
@@ -122,7 +122,8 @@ func TestNeoDataStore_GetCodeDatasetsEditionNotFound(t *testing.T) {
 			},
 		}
 
-		neo := NeoDataStore{codeListLabel: codeListLabel, bolt: db}
+		neo := testStore
+		neo.bolt = db
 
 		datasets, err := neo.GetCodeDatasets(context.Background(), testCodeListID, testEdition, testCode)
 
@@ -143,7 +144,7 @@ func TestNeoDataStore_GetCodeDatasetsEditionExitsError(t *testing.T) {
 			},
 		}
 
-		neo := NeoDataStore{codeListLabel: codeListLabel, bolt: db}
+		neo := NeoDataStore{codeListLabel: codeListLabel, bolt: db, mapper: &mapper.Mapper{Host: ""}}
 
 		datasets, err := neo.GetCodeDatasets(context.Background(), testCodeListID, testEdition, testCode)
 
@@ -171,7 +172,7 @@ func TestNeoDataStore_GetCodeDatasetsQueryForDatasetsError(t *testing.T) {
 			},
 		}
 
-		neo := NeoDataStore{codeListLabel: codeListLabel, bolt: db}
+		neo := NeoDataStore{codeListLabel: codeListLabel, bolt: db, mapper: &mapper.Mapper{Host: ""}}
 
 		datasets, err := neo.GetCodeDatasets(context.Background(), testCodeListID, testEdition, testCode)
 
@@ -199,7 +200,7 @@ func TestNeoDataStore_GetCodeDatasetsNoResults(t *testing.T) {
 			},
 		}
 
-		neo := NeoDataStore{codeListLabel: codeListLabel, bolt: db}
+		neo := NeoDataStore{codeListLabel: codeListLabel, bolt: db, mapper: &mapper.Mapper{Host: ""}}
 
 		datasets, err := neo.GetCodeDatasets(context.Background(), testCodeListID, testEdition, testCode)
 

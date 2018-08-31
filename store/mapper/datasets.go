@@ -4,6 +4,7 @@ import (
 	dpbolt "github.com/ONSdigital/dp-bolt/bolt"
 	"github.com/johnnadratowski/golang-neo4j-bolt-driver/structures/graph"
 )
+
 //Datasets map of datasetID to dataset
 type Datasets map[string]datasetData
 type DatasetEditions map[string]Versions
@@ -19,7 +20,7 @@ const (
 )
 
 //CodesDatasets returns a dpbolt.ResultMapper which converts dpbolt.Result to Datasets
-func CodesDatasets(datasets Datasets) dpbolt.ResultMapper {
+func (m *Mapper) CodesDatasets(datasets Datasets) dpbolt.ResultMapper {
 	return func(r *dpbolt.Result) error {
 		var err error
 

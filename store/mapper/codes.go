@@ -2,11 +2,12 @@ package mapper
 
 import (
 	"fmt"
+	"strconv"
+
 	dpbolt "github.com/ONSdigital/dp-bolt/bolt"
 	"github.com/ONSdigital/dp-code-list-api/models"
 	"github.com/johnnadratowski/golang-neo4j-bolt-driver/structures/graph"
 	"github.com/pkg/errors"
-	"strconv"
 )
 
 var errCodeNotFound = errors.New("code not found")
@@ -17,7 +18,7 @@ const (
 )
 
 //Codes returns a dpbolt.ResultMapper mapper which converts dpbolt.Result to models.CodeResults
-func Codes(results *models.CodeResults, codeListID string, edition string) dpbolt.ResultMapper {
+func (m *Mapper) Codes(results *models.CodeResults, codeListID string, edition string) dpbolt.ResultMapper {
 	return func(r *dpbolt.Result) error {
 		if len(r.Data) == 0 {
 			return errCodeNotFound
@@ -51,15 +52,9 @@ func Codes(results *models.CodeResults, codeListID string, edition string) dpbol
 			Code:  codeVal,
 			Label: codeLabel,
 			Links: models.CodeLinks{
-				Self: models.Link{
-					Href: fmt.Sprintf(codeURI, codeListID, edition, codeVal),
-				},
-				Datasets: models.Link{
-					Href: fmt.Sprintf(datasetsURI, codeListID, edition, codeVal),
-				},
-				CodeList: models.Link{
-					Href: fmt.Sprintf(codeListURI, codeListID),
-				},
+				Self:     *models.CreateLink("", fmt.Sprintf(codeURI, codeListID, edition, codeVal), m.Host),
+				Datasets: *models.CreateLink("", fmt.Sprintf(datasetsURI, codeListID, edition, codeVal), m.Host),
+				CodeList: *models.CreateLink("", fmt.Sprintf(codeListURI, codeListID), m.Host),
 			},
 		})
 		return nil
@@ -67,7 +62,7 @@ func Codes(results *models.CodeResults, codeListID string, edition string) dpbol
 }
 
 //Code returns a dpbolt.ResultMapper which converts a dpbolt.Result to models.Code
-func Code(codeModel *models.Code, codeListID string, edition string) dpbolt.ResultMapper {
+func (m *Mapper) Code(codeModel *models.Code, codeListID string, edition string) dpbolt.ResultMapper {
 	return func(r *dpbolt.Result) error {
 		if len(r.Data) == 0 {
 			return errCodeNotFound
@@ -100,15 +95,9 @@ func Code(codeModel *models.Code, codeListID string, edition string) dpbolt.Resu
 		codeModel.Code = codeVal
 		codeModel.Label = codeLabel
 		codeModel.Links = models.CodeLinks{
-			Self: models.Link{
-				Href: fmt.Sprintf(codeURI, codeListID, edition, codeVal),
-			},
-			Datasets: models.Link{
-				Href: fmt.Sprintf(datasetsURI, codeListID, edition, codeVal),
-			},
-			CodeList: models.Link{
-				Href: fmt.Sprintf(codeListURI, codeListID),
-			},
+			Self:     *models.CreateLink("", fmt.Sprintf(codeURI, codeListID, edition, codeVal), m.Host),
+			Datasets: *models.CreateLink("", fmt.Sprintf(datasetsURI, codeListID, edition, codeVal), m.Host),
+			CodeList: *models.CreateLink("", fmt.Sprintf(codeListURI, codeListID), m.Host),
 		}
 		return nil
 	}

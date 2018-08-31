@@ -3,10 +3,11 @@ package store
 import (
 	"context"
 	"fmt"
+	"testing"
+
 	dpbolt "github.com/ONSdigital/dp-bolt/bolt"
 	"github.com/ONSdigital/dp-bolt/boltmock"
 	. "github.com/smartystreets/goconvey/convey"
-	"testing"
 )
 
 func TestNeoDataStore_EditionExistsSuccess(t *testing.T) {
@@ -22,7 +23,8 @@ func TestNeoDataStore_EditionExistsSuccess(t *testing.T) {
 			},
 		}
 
-		store := &NeoDataStore{bolt: db, codeListLabel: codeListLabel}
+		store := testStore
+		store.bolt = db
 
 		Convey("then EditionExists should return exists true and no error", func() {
 			exists, err := store.EditionExists(context.Background(), testCodeListID, testEdition)
@@ -48,7 +50,8 @@ func TestNeoDataStore_EditionExistsMoreThanOneResult(t *testing.T) {
 			},
 		}
 
-		store := &NeoDataStore{bolt: db, codeListLabel: codeListLabel}
+		store := testStore
+		store.bolt = db
 
 		Convey("then EditionExists should return exists true and no error", func() {
 			exists, err := store.EditionExists(context.Background(), testCodeListID, testEdition)
@@ -69,7 +72,8 @@ func TestNeoDataStore_EditionExistsQueryForResultError(t *testing.T) {
 			},
 		}
 
-		store := &NeoDataStore{bolt: db, codeListLabel: codeListLabel}
+		store := testStore
+		store.bolt = db
 
 		Convey("then EditionExists should return exists false and the expected error", func() {
 			exists, err := store.EditionExists(context.Background(), testCodeListID, testEdition)

@@ -2,13 +2,14 @@ package mapper
 
 import (
 	"fmt"
+	"strconv"
+	"testing"
+
 	dpbolt "github.com/ONSdigital/dp-bolt/bolt"
 	"github.com/ONSdigital/dp-code-list-api/models"
 	"github.com/johnnadratowski/golang-neo4j-bolt-driver/structures/graph"
 	"github.com/pkg/errors"
 	. "github.com/smartystreets/goconvey/convey"
-	"strconv"
-	"testing"
 )
 
 var (
@@ -17,7 +18,7 @@ var (
 	testCode              = "99"
 	errTest               = errors.New("error happened yo")
 	testNodeIdentity      = int64(666) // the number of the best \m/
-	testNodeValue         = "node value"
+	testNodeValue         = "node-value"
 	testRelationshipLabel = "relationship label"
 )
 
@@ -33,7 +34,8 @@ func TestCodeResultExtractor_Success(t *testing.T) {
 		}
 
 		actual := &models.Code{}
-		extractor := Code(actual, testCodeListID, testEdition)
+		m := Mapper{}
+		extractor := m.Code(actual, testCodeListID, testEdition)
 
 		Convey("when extractor is called", func() {
 			err := extractor(
@@ -78,7 +80,8 @@ func TestCodeResultExtractor_BadTypes(t *testing.T) {
 
 	Convey("given data.0 is not type graph.Node", t, func() {
 		actual := &models.Code{}
-		extractor := Code(actual, testCodeListID, testEdition)
+		m := Mapper{}
+		extractor := m.Code(actual, testCodeListID, testEdition)
 
 		Convey("when extractor is called", func() {
 			err := extractor(
@@ -101,7 +104,8 @@ func TestCodeResultExtractor_BadTypes(t *testing.T) {
 
 	Convey("given node.Properties.value is not type string", t, func() {
 		actual := &models.Code{}
-		extractor := Code(actual, testCodeListID, testEdition)
+		m := Mapper{}
+		extractor := m.Code(actual, testCodeListID, testEdition)
 
 		Convey("when extractor is called", func() {
 			err := extractor(
@@ -124,7 +128,8 @@ func TestCodeResultExtractor_BadTypes(t *testing.T) {
 
 	Convey("given data.1 is not type graph.Relationship", t, func() {
 		actual := &models.Code{}
-		extractor := Code(actual, testCodeListID, testEdition)
+		m := Mapper{}
+		extractor := m.Code(actual, testCodeListID, testEdition)
 
 		Convey("when extractor is called", func() {
 			err := extractor(
@@ -147,7 +152,8 @@ func TestCodeResultExtractor_BadTypes(t *testing.T) {
 
 	Convey("given relationship.Properties.label is not type string", t, func() {
 		actual := &models.Code{}
-		extractor := Code(actual, testCodeListID, testEdition)
+		m := Mapper{}
+		extractor := m.Code(actual, testCodeListID, testEdition)
 
 		Convey("when extractor is called", func() {
 			err := extractor(

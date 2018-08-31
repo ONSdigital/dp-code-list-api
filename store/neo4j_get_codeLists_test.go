@@ -3,12 +3,14 @@ package store
 import (
 	"context"
 	"fmt"
+	"testing"
+
 	"github.com/ONSdigital/dp-bolt/bolt"
 	"github.com/ONSdigital/dp-bolt/boltmock"
 	"github.com/ONSdigital/dp-code-list-api/datastore"
 	"github.com/ONSdigital/dp-code-list-api/models"
+	"github.com/ONSdigital/dp-code-list-api/store/mapper"
 	. "github.com/smartystreets/goconvey/convey"
-	"testing"
 )
 
 func TestNeoDataStore_GetCodeListsSuccess(t *testing.T) {
@@ -59,7 +61,8 @@ func TestNeoDataStore_GetCodeListsSuccess(t *testing.T) {
 			},
 		}
 
-		store := NeoDataStore{codeListLabel: codeListLabel, bolt: db}
+		store := testStore
+		store.bolt = db
 
 		Convey("when getCodeLists is called", func() {
 			actual, err := store.GetCodeLists(context.Background(), "")
@@ -83,7 +86,7 @@ func TestNeoDataStore_GetCodeListsNoResults(t *testing.T) {
 			},
 		}
 
-		store := NeoDataStore{codeListLabel: "666", bolt: db}
+		store := NeoDataStore{codeListLabel: "666", bolt: db, mapper: &mapper.Mapper{Host: ""}}
 
 		Convey("when get codeList is caleld", func() {
 			res, err := store.GetCodeLists(context.Background(), "")
@@ -104,7 +107,7 @@ func TestNeoDataStore_GetCodeListsError(t *testing.T) {
 			},
 		}
 
-		store := NeoDataStore{codeListLabel: "666", bolt: db}
+		store := NeoDataStore{codeListLabel: "666", bolt: db, mapper: &mapper.Mapper{Host: ""}}
 
 		Convey("when get codeList is caleld", func() {
 			res, err := store.GetCodeLists(context.Background(), "")

@@ -3,14 +3,16 @@ package store
 import (
 	"context"
 	"fmt"
+	"strconv"
+	"testing"
+
 	dpbolt "github.com/ONSdigital/dp-bolt/bolt"
 	"github.com/ONSdigital/dp-bolt/boltmock"
 	"github.com/ONSdigital/dp-code-list-api/datastore"
 	"github.com/ONSdigital/dp-code-list-api/models"
+	"github.com/ONSdigital/dp-code-list-api/store/mapper"
 	"github.com/johnnadratowski/golang-neo4j-bolt-driver/structures/graph"
 	. "github.com/smartystreets/goconvey/convey"
-	"strconv"
-	"testing"
 )
 
 var (
@@ -18,9 +20,11 @@ var (
 	testEdition           = "2018"
 	testCode              = "99"
 	testNodeIdentity      = int64(666) // the number of the best \m/
-	testNodeValue         = "node value"
+	testNodeValue         = "node-value"
 	testRelationshipLabel = "relationship label"
 )
+
+var testStore = NeoDataStore{codeListLabel: codeListLabel, mapper: &mapper.Mapper{Host: ""}}
 
 func TestNeoDataStore_GetCodeEditionExistsErrors(t *testing.T) {
 	Convey("given edition exists return an error", t, func() {
@@ -30,7 +34,9 @@ func TestNeoDataStore_GetCodeEditionExistsErrors(t *testing.T) {
 			},
 		}
 
-		neoStore := NeoDataStore{bolt: db, codeListLabel: codeListLabel}
+		neoStore := testStore
+		neoStore.bolt = db
+
 		code, err := neoStore.GetCode(context.Background(), testCodeListID, testEdition, testCode)
 
 		Convey("then the expected error is returned", func() {
@@ -63,7 +69,8 @@ func TestNeoDataStore_GetCodeEditionExistsErrors(t *testing.T) {
 			},
 		}
 
-		neoStore := NeoDataStore{bolt: db, codeListLabel: codeListLabel}
+		neoStore := testStore
+		neoStore.bolt = db
 
 		code, err := neoStore.GetCode(context.Background(), testCodeListID, testEdition, testCode)
 
@@ -94,7 +101,8 @@ func TestNeoDataStore_GetCodeEditionExistsErrors(t *testing.T) {
 			},
 		}
 
-		neoStore := NeoDataStore{bolt: db, codeListLabel: codeListLabel}
+		neoStore := testStore
+		neoStore.bolt = db
 
 		code, err := neoStore.GetCode(context.Background(), testCodeListID, testEdition, testCode)
 
@@ -125,7 +133,8 @@ func TestNeoDataStore_GetCodeEditionExistsErrors(t *testing.T) {
 			},
 		}
 
-		neoStore := NeoDataStore{bolt: db, codeListLabel: codeListLabel}
+		neoStore := testStore
+		neoStore.bolt = db
 
 		code, err := neoStore.GetCode(context.Background(), testCodeListID, testEdition, testCode)
 
@@ -158,7 +167,9 @@ func TestNeoDataStore_GetCodeErrors(t *testing.T) {
 			},
 		}
 
-		neoStore := NeoDataStore{bolt: db, codeListLabel: codeListLabel}
+		neoStore := testStore
+		neoStore.bolt = db
+
 		code, err := neoStore.GetCode(context.Background(), testCodeListID, testEdition, testCode)
 
 		Convey("then the expected error is returned", func() {
@@ -193,7 +204,9 @@ func TestNeoDataStore_GetCodeNotFound(t *testing.T) {
 			},
 		}
 
-		neoStore := NeoDataStore{bolt: db, codeListLabel: codeListLabel}
+		neoStore := testStore
+		neoStore.bolt = db
+
 		code, err := neoStore.GetCode(context.Background(), testCodeListID, testEdition, testCode)
 
 		Convey("then the expected error is returned", func() {
@@ -241,7 +254,9 @@ func TestNeoDataStore_GetCodeSuccess(t *testing.T) {
 			},
 		}
 
-		neoStore := NeoDataStore{bolt: db, codeListLabel: codeListLabel}
+		neoStore := testStore
+		neoStore.bolt = db
+
 		code, err := neoStore.GetCode(context.Background(), testCodeListID, testEdition, testCode)
 
 		Convey("then the expected code is return and error is nil", func() {

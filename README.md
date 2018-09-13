@@ -14,7 +14,9 @@ An API used to navigate code lists
 
 #### Getting started
 
-Run `make debug` (or `make acceptance` when running acceptance tests)
+1) Import the relevant code-list data using the [code list scripts](https://github.com/ONSdigital/dp-code-list-scripts).
+
+2) Run `make debug` (or `make acceptance` when running acceptance tests)
 
 ### Healthcheck
 

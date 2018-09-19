@@ -9,6 +9,7 @@ import (
 type Configuration struct {
 	BindAddr                string        `envconfig:"BIND_ADDR"`
 	CodeListAPIURL          string        `envconfig:"CODE_LIST_API_URL"`
+	DatasetAPIURL           string        `envconfig:"DATASET_API_URL"`
 	GracefulShutdownTimeout time.Duration `envconfig:"GRACEFUL_SHUTDOWN_TIMEOUT"`
 	Neo4jDatabaseAddress    string        `envconfig:"NEO4J_ADDR"`
 	Neo4jPoolSize           int           `envconfig:"NEO4J_POOL_SIZE"`
@@ -26,6 +27,7 @@ func Get() (*Configuration, error) {
 	cfg = &Configuration{
 		BindAddr:                ":22400",
 		CodeListAPIURL:          "http://localhost:22400",
+		DatasetAPIURL:           "http://localhost:22000",
 		GracefulShutdownTimeout: time.Second * 5,
 		Neo4jDatabaseAddress:    "bolt://localhost:7687",
 		Neo4jPoolSize:           30,

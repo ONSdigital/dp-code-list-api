@@ -1,5 +1,6 @@
 package mapper
 
 type Mapper struct {
-	Host string
+	Host           string
+	DatasetAPIHost string
 }

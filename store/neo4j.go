@@ -47,12 +47,13 @@ func (n *NeoDataStore) Close() error {
 }
 
 // CreateNeoDataStore allows the creation of a NeoDataStore
-func CreateNeoDataStore(boltDB BoltDB, codelistLabel, apiURL string) (n *NeoDataStore, err error) {
+func CreateNeoDataStore(boltDB BoltDB, codelistLabel, apiURL, datasetAPIurl string) (n *NeoDataStore, err error) {
 	n = &NeoDataStore{
 		codeListLabel: codelistLabel,
 		bolt:          boltDB,
 		mapper: &mapper.Mapper{
-			Host: apiURL,
+			Host:           apiURL,
+			DatasetAPIHost: datasetAPIurl,
 		},
 	}
 
@@ -253,7 +254,7 @@ func (n *NeoDataStore) GetCodeDatasets(ctx context.Context, codeListID, edition,
 		return nil, err
 	}
 
-	datasetsModel := createDatasetsResponseModel(datasets, n.mapper.Host, codeListID)
+	datasetsModel := createDatasetsResponseModel(datasets, n.mapper.DatasetAPIHost, codeListID)
 
 	datasetsModel.TotalCount = len(datasetsModel.Items)
 	datasetsModel.Count = len(datasetsModel.Items)

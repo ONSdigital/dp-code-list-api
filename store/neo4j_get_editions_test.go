@@ -3,13 +3,15 @@ package store
 import (
 	"context"
 	"fmt"
+	"testing"
+
 	"github.com/ONSdigital/dp-bolt/bolt"
 	"github.com/ONSdigital/dp-bolt/boltmock"
 	"github.com/ONSdigital/dp-code-list-api/datastore"
 	"github.com/ONSdigital/dp-code-list-api/models"
+	"github.com/ONSdigital/dp-code-list-api/store/mapper"
 	"github.com/johnnadratowski/golang-neo4j-bolt-driver/structures/graph"
 	. "github.com/smartystreets/goconvey/convey"
-	"testing"
 )
 
 func TestNeoDataStore_GetEditionsSuccess(t *testing.T) {
@@ -36,7 +38,7 @@ func TestNeoDataStore_GetEditionsSuccess(t *testing.T) {
 			},
 		}
 
-		store := NeoDataStore{bolt: db, codeListLabel: "xxx"}
+		store := NeoDataStore{bolt: db, codeListLabel: "xxx", mapper: &mapper.Mapper{Host: ""}}
 
 		expected := &models.Editions{
 			Items: []models.Edition{
@@ -102,7 +104,7 @@ func TestNeoDataStore_GetEditionsQueryForResultsError(t *testing.T) {
 			},
 		}
 
-		store := NeoDataStore{bolt: db, codeListLabel: "666"}
+		store := NeoDataStore{bolt: db, codeListLabel: "666", mapper: &mapper.Mapper{Host: ""}}
 
 		Convey("when get editions is called", func() {
 			eds, err := store.GetEditions(context.Background(), testCodeListID)
@@ -127,7 +129,7 @@ func TestNeoDataStore_GetEditionsNoResults(t *testing.T) {
 			},
 		}
 
-		store := NeoDataStore{bolt: db, codeListLabel: "666"}
+		store := NeoDataStore{bolt: db, codeListLabel: "666", mapper: &mapper.Mapper{Host: ""}}
 
 		Convey("when get editions is called", func() {
 			eds, err := store.GetEditions(context.Background(), testCodeListID)

@@ -4,13 +4,14 @@ import (
 	"context"
 	"fmt"
 
+	"strconv"
+
 	dpbolt "github.com/ONSdigital/dp-bolt/bolt"
 	"github.com/ONSdigital/dp-code-list-api/datastore"
 	"github.com/ONSdigital/dp-code-list-api/models"
 	"github.com/ONSdigital/dp-code-list-api/store/mapper"
 	"github.com/ONSdigital/go-ns/log"
 	"github.com/pkg/errors"
-	"strconv"
 )
 
 const (
@@ -36,6 +37,7 @@ type BoltDB interface {
 type NeoDataStore struct {
 	codeListLabel string
 	bolt          BoltDB
+	mapper        *mapper.Mapper
 }
 
 // Close is a wrapper for the neo pool close
@@ -45,10 +47,14 @@ func (n *NeoDataStore) Close() error {
 }
 
 // CreateNeoDataStore allows the creation of a NeoDataStore
-func CreateNeoDataStore(boltDB BoltDB, codelistLabel string) (n *NeoDataStore, err error) {
+func CreateNeoDataStore(boltDB BoltDB, codelistLabel, apiURL, datasetAPIurl string) (n *NeoDataStore, err error) {
 	n = &NeoDataStore{
 		codeListLabel: codelistLabel,
 		bolt:          boltDB,
+		mapper: &mapper.Mapper{
+			Host:           apiURL,
+			DatasetAPIHost: datasetAPIurl,
+		},
 	}
 
 	return
@@ -67,7 +73,7 @@ func (n *NeoDataStore) GetCodeLists(ctx context.Context, filterBy string) (*mode
 	codeListResults := &models.CodeListResults{}
 
 	prefix := "_" + n.codeListLabel + "_"
-	err := n.bolt.QueryForResults(query, nil, mapper.CodeLists(codeListResults, prefix))
+	err := n.bolt.QueryForResults(query, nil, n.mapper.CodeLists(codeListResults, prefix))
 	if err != nil && err == dpbolt.ErrNoResults {
 		return nil, datastore.ErrCodeListsNotFound
 	}
@@ -103,10 +109,10 @@ func (n *NeoDataStore) GetCodeList(ctx context.Context, code string) (*models.Co
 		Links: models.CodeListLink{
 			Self: &models.Link{
 				ID:   code,
-				Href: fmt.Sprintf("/code-lists/%s", code),
+				Href: fmt.Sprintf("%s/code-lists/%s", n.mapper.Host, code),
 			},
 			Editions: &models.Link{
-				Href: fmt.Sprintf("/code-lists/%s/editions", code),
+				Href: fmt.Sprintf("%s/code-lists/%s/editions", n.mapper.Host, code),
 			},
 		},
 	}, nil
@@ -119,7 +125,7 @@ func (n *NeoDataStore) GetEditions(ctx context.Context, codeListID string) (*mod
 	query := fmt.Sprintf(getCodeListQuery, n.codeListLabel, codeListID)
 
 	editions := &models.Editions{}
-	err := n.bolt.QueryForResults(query, nil, mapper.Editions(editions, codeListID))
+	err := n.bolt.QueryForResults(query, nil, n.mapper.Editions(editions, codeListID))
 	if err != nil && err == dpbolt.ErrNoResults {
 		return nil, datastore.ErrEditionsNotFound
 	}
@@ -141,7 +147,7 @@ func (n *NeoDataStore) GetEdition(ctx context.Context, codeListID, edition strin
 	query := fmt.Sprintf(getCodeListEditionQuery, n.codeListLabel, codeListID, edition)
 
 	editionModel := &models.Edition{}
-	err := n.bolt.QueryForResult(query, nil, mapper.Edition(editionModel, codeListID, edition))
+	err := n.bolt.QueryForResult(query, nil, n.mapper.Edition(editionModel, codeListID, edition))
 	if err != nil && err == dpbolt.ErrNoResults {
 		return nil, datastore.ErrEditionNotFound
 	}
@@ -166,7 +172,7 @@ func (n *NeoDataStore) GetCodes(ctx context.Context, codeListID, edition string)
 	codeResults := &models.CodeResults{}
 	query := fmt.Sprintf(getCodesQuery, n.codeListLabel, codeListID, edition)
 
-	err = n.bolt.QueryForResults(query, nil, mapper.Codes(codeResults, codeListID, edition))
+	err = n.bolt.QueryForResults(query, nil, n.mapper.Codes(codeResults, codeListID, edition))
 	if err != nil && err == dpbolt.ErrNoResults {
 		return nil, datastore.ErrCodesNotFound
 	}
@@ -195,7 +201,7 @@ func (n *NeoDataStore) GetCode(ctx context.Context, codeListID, edition string, 
 	codeModel := &models.Code{}
 	query := fmt.Sprintf(getCodeQuery, n.codeListLabel, codeListID, edition, code)
 
-	err = n.bolt.QueryForResult(query, nil, mapper.Code(codeModel, codeListID, edition))
+	err = n.bolt.QueryForResult(query, nil, n.mapper.Code(codeModel, codeListID, edition))
 	if err != nil && err == dpbolt.ErrNoResults {
 		return nil, datastore.ErrCodeNotFound
 	}
@@ -241,14 +247,14 @@ func (n *NeoDataStore) GetCodeDatasets(ctx context.Context, codeListID, edition,
 	query := fmt.Sprintf(getCodeDatasets, codeListID, edition, code)
 	datasets := make(mapper.Datasets, 0)
 
-	err = n.bolt.QueryForResults(query, nil, mapper.CodesDatasets(datasets))
+	err = n.bolt.QueryForResults(query, nil, n.mapper.CodesDatasets(datasets))
 	if err != nil && err == dpbolt.ErrNoResults {
 		return nil, datastore.ErrDatasetsNotFound
 	} else if err != nil {
 		return nil, err
 	}
 
-	datasetsModel := createDatasetsResponseModel(datasets, codeListID)
+	datasetsModel := createDatasetsResponseModel(datasets, n.mapper.DatasetAPIHost, codeListID)
 
 	datasetsModel.TotalCount = len(datasetsModel.Items)
 	datasetsModel.Count = len(datasetsModel.Items)
@@ -257,7 +263,7 @@ func (n *NeoDataStore) GetCodeDatasets(ctx context.Context, codeListID, edition,
 	return datasetsModel, err
 }
 
-func createDatasetsResponseModel(datasets mapper.Datasets, codeListID string) *models.Datasets {
+func createDatasetsResponseModel(datasets mapper.Datasets, host, codeListID string) *models.Datasets {
 	datasetsModel := &models.Datasets{}
 	for datasetID, dataset := range datasets {
 		var editions []models.DatasetEdition
@@ -270,15 +276,15 @@ func createDatasetsResponseModel(datasets mapper.Datasets, codeListID string) *m
 				Links: models.DatasetEditionLinks{
 					Self: models.Link{
 						ID:   editionID,
-						Href: fmt.Sprintf("/datasets/%s/editions/%s", datasetID, editionID),
+						Href: fmt.Sprintf("%s/datasets/%s/editions/%s", host, datasetID, editionID),
 					},
 					LatestVersion: models.Link{
 						ID:   latestVersion,
-						Href: fmt.Sprintf("/datasets/%s/editions/%s/versions/%s", datasetID, editionID, latestVersion),
+						Href: fmt.Sprintf("%s/datasets/%s/editions/%s/versions/%s", host, datasetID, editionID, latestVersion),
 					},
 					DatasetDimension: models.Link{
 						ID:   codeListID,
-						Href: fmt.Sprintf("/datasets/%s/editions/%s/versions/%s/dimensions/%s", datasetID, editionID, latestVersion, codeListID),
+						Href: fmt.Sprintf("%s/datasets/%s/editions/%s/versions/%s/dimensions/%s", host, datasetID, editionID, latestVersion, codeListID),
 					},
 				},
 			})
@@ -290,7 +296,7 @@ func createDatasetsResponseModel(datasets mapper.Datasets, codeListID string) *m
 			Links: models.DatasetLinks{
 				Self: models.Link{
 					ID:   datasetID,
-					Href: fmt.Sprintf("/datasets/%s", datasetID),
+					Href: fmt.Sprintf("%s/datasets/%s", host, datasetID),
 				},
 			},
 			Editions: editions,

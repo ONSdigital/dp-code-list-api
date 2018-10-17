@@ -2,6 +2,14 @@ job "dp-code-list-api" {
   datacenters = ["eu-west-1"]
   region      = "eu"
   type        = "service"
+  
+  update {
+    stagger          = "60s"
+    min_healthy_time = "30s"
+    healthy_deadline = "2m"
+    max_parallel     = 1
+    auto_revert      = true
+  }
 
   group "web" {
     count = "{{WEB_TASK_COUNT}}"
@@ -9,6 +17,13 @@ job "dp-code-list-api" {
     constraint {
       attribute = "${node.class}"
       value     = "web"
+    }
+
+    restart {
+      attempts = 3
+      delay    = "15s"
+      interval = "1m"
+      mode     = "delay"
     }
 
     task "dp-code-list-api" {
@@ -61,6 +76,13 @@ job "dp-code-list-api" {
     constraint {
       attribute = "${node.class}"
       value     = "publishing"
+    }
+
+    restart {
+      attempts = 3
+      delay    = "15s"
+      interval = "1m"
+      mode     = "delay"
     }
 
     task "dp-code-list-api" {

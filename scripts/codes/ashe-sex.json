@@ -1,3 +1,0 @@
-{"_id":"c350943f-4c2a-4cbe-8feb-86b2c6e990e0","code":"female","label":"Female","links":{"code_list":{"id":"ashe-sex","href":"http://localhost:22400/code-lists/ashe-sex"},"self":{"id":"female","href":"http://localhost:22400/code-lists/ashe-sex/codes/female"}}}
-{"_id":"f4bfac7e-1722-43d5-8ba6-7a04a98dfc49","code":"male","label":"Male","links":{"code_list":{"id":"ashe-sex","href":"http://localhost:22400/code-lists/ashe-sex"},"self":{"id":"male","href":"http://localhost:22400/code-lists/ashe-sex/codes/male"}}}
-{"_id":"2599a737-ac59-4ab6-8b97-5f7aae69e1c1","code":"all","label":"All","links":{"code_list":{"id":"ashe-sex","href":"http://localhost:22400/code-lists/ashe-sex"},"self":{"id":"all","href":"http://localhost:22400/code-lists/ashe-sex/codes/all"}}}

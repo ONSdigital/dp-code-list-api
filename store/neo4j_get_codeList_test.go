@@ -3,12 +3,13 @@ package store
 import (
 	"context"
 	"fmt"
+	"testing"
+
 	"github.com/ONSdigital/dp-bolt/bolt"
 	"github.com/ONSdigital/dp-bolt/boltmock"
 	"github.com/ONSdigital/dp-code-list-api/datastore"
 	"github.com/ONSdigital/dp-code-list-api/models"
 	. "github.com/smartystreets/goconvey/convey"
-	"testing"
 )
 
 func TestNeoDataStore_GetCodeListSuccess(t *testing.T) {
@@ -24,7 +25,8 @@ func TestNeoDataStore_GetCodeListSuccess(t *testing.T) {
 			},
 		}
 
-		store := NeoDataStore{codeListLabel: codeListLabel, bolt: db}
+		store := testStore
+		store.bolt = db
 
 		Convey("when get code list is called", func() {
 			cl, err := store.GetCodeList(context.Background(), testCodeListID)
@@ -59,7 +61,8 @@ func TestNeoDataStore_GetCodeListNoResults(t *testing.T) {
 			},
 		}
 
-		store := NeoDataStore{codeListLabel: codeListLabel, bolt: db}
+		store := testStore
+		store.bolt = db
 
 		Convey("when get code list is called", func() {
 			cl, err := store.GetCodeList(context.Background(), testCodeListID)
@@ -84,7 +87,8 @@ func TestNeoDataStore_GetCodeListQueryForResultError(t *testing.T) {
 			},
 		}
 
-		store := NeoDataStore{codeListLabel: codeListLabel, bolt: db}
+		store := testStore
+		store.bolt = db
 
 		Convey("when get code list is called", func() {
 			cl, err := store.GetCodeList(context.Background(), testCodeListID)

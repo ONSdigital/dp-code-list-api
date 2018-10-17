@@ -2,9 +2,10 @@ package mapper
 
 import (
 	"reflect"
-	"github.com/pkg/errors"
-	"github.com/johnnadratowski/golang-neo4j-bolt-driver/structures/graph"
+
 	dpbolt "github.com/ONSdigital/dp-bolt/bolt"
+	"github.com/johnnadratowski/golang-neo4j-bolt-driver/structures/graph"
+	"github.com/pkg/errors"
 )
 
 var ErrInputNil = errors.New("expected input value but was nil")

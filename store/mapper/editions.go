@@ -2,9 +2,10 @@ package mapper
 
 import (
 	"fmt"
+
 	dpbolt "github.com/ONSdigital/dp-bolt/bolt"
 	"github.com/ONSdigital/dp-code-list-api/models"
-		"github.com/johnnadratowski/golang-neo4j-bolt-driver/structures/graph"
+	"github.com/johnnadratowski/golang-neo4j-bolt-driver/structures/graph"
 )
 
 const (
@@ -12,7 +13,7 @@ const (
 	editionURI  = "/code-lists/%s/editions/%s"
 )
 
-func Editions(editions *models.Editions, codeListID string) dpbolt.ResultMapper {
+func (m *Mapper) Editions(editions *models.Editions, codeListID string) dpbolt.ResultMapper {
 	return func(r *dpbolt.Result) error {
 		var err error
 		var node graph.Node
@@ -38,16 +39,9 @@ func Editions(editions *models.Editions, codeListID string) dpbolt.ResultMapper 
 			Edition: edition,
 			Label:   label,
 			Links: models.EditionLinks{
-				Self: models.Link{
-					Href: fmt.Sprintf(editionURI, codeListID, edition),
-					ID:   edition,
-				},
-				Editions: models.Link{
-					Href: fmt.Sprintf(editionsURI, codeListID),
-				},
-				Codes: models.Link{
-					Href: fmt.Sprintf(codesURI, codeListID, edition),
-				},
+				Self:     *models.CreateLink(edition, fmt.Sprintf(editionURI, codeListID, edition), m.Host),
+				Editions: *models.CreateLink("", fmt.Sprintf(editionsURI, codeListID), m.Host),
+				Codes:    *models.CreateLink("", fmt.Sprintf(codesURI, codeListID, edition), m.Host),
 			},
 		}
 
@@ -56,7 +50,7 @@ func Editions(editions *models.Editions, codeListID string) dpbolt.ResultMapper 
 	}
 }
 
-func Edition(editionModel *models.Edition, codeListID string, edition string) dpbolt.ResultMapper {
+func (m *Mapper) Edition(editionModel *models.Edition, codeListID string, edition string) dpbolt.ResultMapper {
 	return func(r *dpbolt.Result) error {
 		node, err := getNode(r.Data[0])
 		if err != nil {
@@ -72,16 +66,9 @@ func Edition(editionModel *models.Edition, codeListID string, edition string) dp
 		editionModel.Edition = edition
 		editionModel.Label = label
 		editionModel.Links = models.EditionLinks{
-			Self: models.Link{
-				Href: fmt.Sprintf(editionURI, codeListID, edition),
-				ID:   edition,
-			},
-			Editions: models.Link{
-				Href: fmt.Sprintf(editionsURI, codeListID),
-			},
-			Codes: models.Link{
-				Href: fmt.Sprintf(codesURI, codeListID, edition),
-			},
+			Self:     *models.CreateLink(edition, fmt.Sprintf(editionURI, codeListID, edition), m.Host),
+			Editions: *models.CreateLink("", fmt.Sprintf(editionsURI, codeListID), m.Host),
+			Codes:    *models.CreateLink("", fmt.Sprintf(codesURI, codeListID, edition), m.Host),
 		}
 		return nil
 	}

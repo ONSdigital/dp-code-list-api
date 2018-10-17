@@ -40,7 +40,7 @@ func main() {
 
 	boltDB := dpbolt.New(pool)
 
-	datastore, err := store.CreateNeoDataStore(boltDB, cfg.Neo4jCodeListLabel)
+	datastore, err := store.CreateNeoDataStore(boltDB, cfg.Neo4jCodeListLabel, cfg.CodeListAPIURL, cfg.DatasetAPIURL)
 	if err != nil {
 		log.Error(err, nil)
 		os.Exit(1)

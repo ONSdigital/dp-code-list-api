@@ -3,13 +3,14 @@ package store
 import (
 	"context"
 	"fmt"
+	"testing"
+
 	dpbolt "github.com/ONSdigital/dp-bolt/bolt"
 	"github.com/ONSdigital/dp-bolt/boltmock"
 	"github.com/ONSdigital/dp-code-list-api/datastore"
 	"github.com/ONSdigital/dp-code-list-api/models"
 	"github.com/johnnadratowski/golang-neo4j-bolt-driver/structures/graph"
 	. "github.com/smartystreets/goconvey/convey"
-	"testing"
 )
 
 var (
@@ -90,7 +91,8 @@ func TestNeoDataStore_GetCodesSuccess(t *testing.T) {
 				},
 			},
 		}
-		store := NeoDataStore{bolt: db, codeListLabel: codeListLabel}
+		store := testStore
+		store.bolt = db
 
 		result, err := store.GetCodes(context.Background(), testCodeListID, testEdition)
 
@@ -123,7 +125,8 @@ func TestNeoDataStore_GetCodesEditionExitsError(t *testing.T) {
 				boltmock.ErrQueryFunc,
 			},
 		}
-		store := NeoDataStore{bolt: db, codeListLabel: codeListLabel}
+		store := testStore
+		store.bolt = db
 
 		result, err := store.GetCodes(context.Background(), testCodeListID, testEdition)
 
@@ -153,7 +156,8 @@ func TestNeoDataStore_GetCodesEditionExitsFalse(t *testing.T) {
 				},
 			},
 		}
-		store := NeoDataStore{bolt: db, codeListLabel: codeListLabel}
+		store := testStore
+		store.bolt = db
 
 		result, err := store.GetCodes(context.Background(), testCodeListID, testEdition)
 
@@ -186,7 +190,8 @@ func TestNeoDataStore_GetCodesResultMapperError(t *testing.T) {
 				boltmock.ErrQueryFunc,
 			},
 		}
-		store := NeoDataStore{bolt: db, codeListLabel: codeListLabel}
+		store := testStore
+		store.bolt = db
 
 		result, err := store.GetCodes(context.Background(), testCodeListID, testEdition)
 
@@ -221,7 +226,8 @@ func TestNeoDataStore_GetCodesNoResults(t *testing.T) {
 				boltmock.NoResultFunc,
 			},
 		}
-		store := NeoDataStore{bolt: db, codeListLabel: codeListLabel}
+		store := testStore
+		store.bolt = db
 
 		result, err := store.GetCodes(context.Background(), testCodeListID, testEdition)
 

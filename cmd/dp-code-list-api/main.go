@@ -10,14 +10,13 @@ import (
 	"os/signal"
 	"syscall"
 
-	dpbolt "github.com/ONSdigital/dp-bolt/bolt"
 	"github.com/ONSdigital/dp-code-list-api/api"
 	"github.com/ONSdigital/dp-code-list-api/config"
-	"github.com/ONSdigital/dp-code-list-api/store"
+	"github.com/ONSdigital/dp-graph/graph"
 	"github.com/ONSdigital/go-ns/log"
 	"github.com/ONSdigital/go-ns/server"
+	//	bolt "github.com/ONSdigital/golang-neo4j-bolt-driver"
 	"github.com/gorilla/mux"
-	bolt "github.com/johnnadratowski/golang-neo4j-bolt-driver"
 )
 
 func main() {
@@ -32,22 +31,29 @@ func main() {
 		os.Exit(1)
 	}
 
-	pool, err := bolt.NewClosableDriverPool(cfg.Neo4jDatabaseAddress, cfg.Neo4jPoolSize)
+	// pool, err := bolt.NewClosableDriverPool(cfg.Neo4jDatabaseAddress, cfg.Neo4jPoolSize)
+	// if err != nil {
+	// 	log.Error(err, nil)
+	// 	os.Exit(1)
+	// }
+	//
+	// boltDB := dpbolt.New(pool)
+	//
+	// datastore, err := store.CreateNeoDataStore(boltDB, cfg.Neo4jCodeListLabel, cfg.CodeListAPIURL, cfg.DatasetAPIURL)
+	// if err != nil {
+	// 	log.Error(err, nil)
+	// 	os.Exit(1)
+	// }
+
+	datastore, err := graph.New()
 	if err != nil {
 		log.Error(err, nil)
 		os.Exit(1)
 	}
 
-	boltDB := dpbolt.New(pool)
-
-	datastore, err := store.CreateNeoDataStore(boltDB, cfg.Neo4jCodeListLabel, cfg.CodeListAPIURL, cfg.DatasetAPIURL)
-	if err != nil {
-		log.Error(err, nil)
-		os.Exit(1)
-	}
 	router := mux.NewRouter()
 	httpErrChannel := make(chan error)
-	_ = api.CreateCodeListAPI(router, datastore)
+	_ = api.CreateCodeListAPI(router, datastore, cfg.CodeListAPIURL, cfg.DatasetAPIURL)
 	httpServer := server.New(cfg.BindAddr, router)
 	httpServer.HandleOSSignals = false
 

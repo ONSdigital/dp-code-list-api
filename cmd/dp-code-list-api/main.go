@@ -15,7 +15,6 @@ import (
 	"github.com/ONSdigital/dp-graph/graph"
 	"github.com/ONSdigital/go-ns/log"
 	"github.com/ONSdigital/go-ns/server"
-	//	bolt "github.com/ONSdigital/golang-neo4j-bolt-driver"
 	"github.com/gorilla/mux"
 )
 
@@ -30,20 +29,6 @@ func main() {
 		log.Error(err, nil)
 		os.Exit(1)
 	}
-
-	// pool, err := bolt.NewClosableDriverPool(cfg.Neo4jDatabaseAddress, cfg.Neo4jPoolSize)
-	// if err != nil {
-	// 	log.Error(err, nil)
-	// 	os.Exit(1)
-	// }
-	//
-	// boltDB := dpbolt.New(pool)
-	//
-	// datastore, err := store.CreateNeoDataStore(boltDB, cfg.Neo4jCodeListLabel, cfg.CodeListAPIURL, cfg.DatasetAPIURL)
-	// if err != nil {
-	// 	log.Error(err, nil)
-	// 	os.Exit(1)
-	// }
 
 	datastore, err := graph.New()
 	if err != nil {
@@ -68,9 +53,9 @@ func main() {
 			}
 		}
 
-		if err = datastore.Close(); err != nil {
-			log.Error(err, nil)
-		}
+		// if err = datastore.; err != nil {
+		// 	log.Error(err, nil)
+		// }
 
 		log.Info("shutdown complete", nil)
 

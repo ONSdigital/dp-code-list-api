@@ -24,7 +24,9 @@ func (c *CodeListAPI) getCodeDatasets(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	b, err := json.Marshal(datasets)
+	list := datasets.UpdateLinks(c.apiURL, c.datasetAPIURL, codeListID)
+
+	b, err := json.Marshal(list)
 	if err != nil {
 		handleError(ctx, w, err, logData)
 		return

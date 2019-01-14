@@ -2,11 +2,12 @@ package api
 
 import (
 	"encoding/json"
+	"net/http"
+
 	"github.com/ONSdigital/dp-code-list-api/datastore"
 	"github.com/ONSdigital/go-ns/log"
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
-	"net/http"
 )
 
 var codesNotFoundErrors = map[error]bool{
@@ -27,13 +28,23 @@ func (c *CodeListAPI) getCodes(w http.ResponseWriter, r *http.Request) {
 	codes, err := c.store.GetCodes(ctx, id, edition)
 	if err != nil {
 		log.ErrorCtx(ctx, errors.WithMessage(err, "getCodes endpoint: store.GetCode returned an error"), data)
-		if codesNotFoundErrors[err] {
-			http.Error(w, err.Error(), http.StatusNotFound)
-		} else {
-			http.Error(w, internalServerErr, http.StatusInternalServerError)
-		}
+		handleError(ctx, w, err, data)
 		return
 	}
+
+	for _, item := range codes.Items {
+		if err := item.UpdateLinks(c.apiURL, id, edition); err != nil {
+			log.ErrorCtx(ctx, errors.WithMessage(err, "getEditions endpoint: links could not be created"), nil)
+			http.Error(w, internalServerErr, http.StatusInternalServerError)
+			return
+		}
+	}
+
+	count := len(codes.Items)
+	codes.Count = count
+	codes.Limit = count
+	codes.TotalCount = count
+
 	b, err := json.Marshal(codes)
 	if err != nil {
 		log.ErrorCtx(ctx, errors.WithMessage(err, "getCodes endpoint: failed to marshal codes to json bytes"), data)
@@ -61,13 +72,10 @@ func (c *CodeListAPI) getCode(w http.ResponseWriter, r *http.Request) {
 	result, err := c.store.GetCode(ctx, id, edition, code)
 	if err != nil {
 		log.ErrorCtx(ctx, errors.WithMessage(err, "getCode endpoint: store.GetCode returned an error"), data)
-		if codesNotFoundErrors[err] {
-			http.Error(w, err.Error(), http.StatusNotFound)
-		} else {
-			http.Error(w, internalServerErr, http.StatusInternalServerError)
-		}
+		handleError(ctx, w, err, data)
 		return
 	}
+
 	b, err := json.Marshal(result)
 	if err != nil {
 		log.ErrorCtx(ctx, errors.WithMessage(err, "getCode endpoint: error attempting to marshal result to JSON"), data)

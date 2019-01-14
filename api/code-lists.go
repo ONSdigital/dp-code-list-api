@@ -9,33 +9,41 @@ import (
 	"github.com/pkg/errors"
 )
 
-// func (c *CodeListAPI) getCodeLists(w http.ResponseWriter, r *http.Request) {
-// 	ctx := r.Context()
-// 	filterBy := r.URL.Query().Get("type")
-//
-// 	codeLists, err := c.store.GetCodeLists(r.Context(), filterBy)
-// 	if err != nil {
-// 		handleError(ctx, w, err, nil)
-// 		return
-// 	}
-//
-// 	count := len(codeLists.Items)
-// 	codeLists.Count = count
-// 	codeLists.Limit = count
-// 	codeLists.TotalCount = count
-//
-// 	b, err := json.Marshal(codeLists)
-// 	if err != nil {
-// 		handleError(ctx, w, err, nil)
-// 		return
-// 	}
-//
-// 	if err := c.writeBody(w, b); err != nil {
-// 		log.ErrorCtx(ctx, errors.WithMessage(err, "getCodeLists endpoint: failed to write bytes to response"), nil)
-// 		return
-// 	}
-// 	log.InfoCtx(ctx, "retrieved all codelists", nil)
-// }
+func (c *CodeListAPI) getCodeLists(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	filterBy := r.URL.Query().Get("type")
+
+	codeLists, err := c.store.GetCodeLists(r.Context(), filterBy)
+	if err != nil {
+		handleError(ctx, w, err, nil)
+		return
+	}
+
+	for _, item := range codeLists.Items {
+		if err := item.UpdateLinks(c.apiURL); err != nil {
+			log.ErrorCtx(ctx, errors.WithMessage(err, "getCodeLists endpoint: links could not be created"), nil)
+			http.Error(w, internalServerErr, http.StatusInternalServerError)
+			return
+		}
+	}
+
+	count := len(codeLists.Items)
+	codeLists.Count = count
+	codeLists.Limit = count
+	codeLists.TotalCount = count
+
+	b, err := json.Marshal(codeLists)
+	if err != nil {
+		handleError(ctx, w, err, nil)
+		return
+	}
+
+	if err := c.writeBody(w, b); err != nil {
+		log.ErrorCtx(ctx, errors.WithMessage(err, "getCodeLists endpoint: failed to write bytes to response"), nil)
+		return
+	}
+	log.InfoCtx(ctx, "retrieved all codelists", nil)
+}
 
 func (c *CodeListAPI) getCodeList(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
@@ -43,10 +51,16 @@ func (c *CodeListAPI) getCodeList(w http.ResponseWriter, r *http.Request) {
 	id := vars["id"]
 	data := log.Data{"code_list_id": id}
 
-	codeList, err := c.store.GetCodeList(ctx, c.host, id)
+	codeList, err := c.store.GetCodeList(ctx, id)
 	if err != nil {
 		log.ErrorCtx(ctx, errors.WithMessage(err, "getCodeList endpoint: store.GetCodeList returned an error"), data)
 		handleError(ctx, w, err, nil)
+		return
+	}
+
+	if err := codeList.UpdateLinks(c.apiURL); err != nil {
+		log.ErrorCtx(ctx, errors.WithMessage(err, "getCodeLists endpoint: links could not be created"), nil)
+		http.Error(w, internalServerErr, http.StatusInternalServerError)
 		return
 	}
 

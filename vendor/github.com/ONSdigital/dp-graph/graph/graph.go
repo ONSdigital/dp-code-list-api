@@ -11,6 +11,10 @@ type DB struct {
 	driver driver.Driver
 }
 
+func (db *DB) Close() error {
+	return db.driver.Close()
+}
+
 func New() (*DB, error) {
 	cfg, err := config.Get()
 	if err != nil {

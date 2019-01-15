@@ -19,8 +19,9 @@ func Editions(editions *models.Editions) ResultMapper {
 
 func Edition(editionModel *models.Edition) ResultMapper {
 	return func(r *Result) error {
-		var err error
-		editionModel, err = edition(r)
+		ed, err := edition(r)
+		*editionModel = *ed
+
 		return err
 	}
 }

@@ -24,8 +24,9 @@ func Codes(results *models.CodeResults, codeListID string, edition string) Resul
 //Code returns a dpbolt.ResultMapper which converts a dpbolt.Result to models.Code
 func Code(codeModel *models.Code, codeListID string, edition string) ResultMapper {
 	return func(r *Result) error {
-		var err error
-		codeModel, err = code(r)
+		co, err := code(r)
+		*codeModel = *co
+
 		return err
 	}
 }

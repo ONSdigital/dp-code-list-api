@@ -9,6 +9,7 @@ import (
 	"github.com/ONSdigital/dp-graph/graph/driver"
 	"github.com/ONSdigital/dp-graph/neo4j/mapper"
 	"github.com/ONSdigital/go-ns/log"
+	"github.com/davecgh/go-spew/spew"
 )
 
 const (
@@ -133,6 +134,9 @@ func (n *Neo4j) GetCodeDatasets(ctx context.Context, codeListID, edition string,
 		return nil, err
 	}
 
+	fmt.Println("was there anything useful from the database?")
+	spew.Dump(datasets)
+
 	response := &models.Datasets{
 		Items: []models.Dataset{},
 	}
@@ -165,6 +169,9 @@ func (n *Neo4j) GetCodeDatasets(ctx context.Context, codeListID, edition string,
 
 		response.Items = append(response.Items, dataset)
 	}
+
+	fmt.Println("did anything get assigned to the response?")
+	spew.Dump(response)
 
 	return response, nil
 }

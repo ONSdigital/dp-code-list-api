@@ -15,25 +15,25 @@
 			"revisionTime": "2019-01-14T17:28:25Z"
 		},
 		{
-			"checksumSHA1": "GAsHE/xdDEuuaVF2s1rdLDZJ4f4=",
+			"checksumSHA1": "EMv3B9pDQcS+/WvAyHnGCj4Vnk0=",
 			"path": "github.com/ONSdigital/dp-graph/graph",
 			"revision": "890b9c418bc5f9df39f65a7674a383ca1ee32fce",
 			"revisionTime": "2019-01-14T17:28:25Z"
 		},
 		{
-			"checksumSHA1": "GY5OcfyluVwl1xuqv/X50ANxnQs=",
+			"checksumSHA1": "+cYV/ycrH+AUgFEww9nMY9G/CMU=",
 			"path": "github.com/ONSdigital/dp-graph/graph/driver",
 			"revision": "890b9c418bc5f9df39f65a7674a383ca1ee32fce",
 			"revisionTime": "2019-01-14T17:28:25Z"
 		},
 		{
-			"checksumSHA1": "i2SiPWiJm390FZQIyhg67slOjy8=",
+			"checksumSHA1": "LWV2UgOkkCTtaniPMAJ5AJh015I=",
 			"path": "github.com/ONSdigital/dp-graph/neo4j",
 			"revision": "890b9c418bc5f9df39f65a7674a383ca1ee32fce",
 			"revisionTime": "2019-01-14T17:28:25Z"
 		},
 		{
-			"checksumSHA1": "3A7AWinPL2qwlaDDqRtgjc5xEDs=",
+			"checksumSHA1": "qt/QdNE8sdPn2FD21SO2qeJbY6U=",
 			"path": "github.com/ONSdigital/dp-graph/neo4j/mapper",
 			"revision": "890b9c418bc5f9df39f65a7674a383ca1ee32fce",
 			"revisionTime": "2019-01-14T17:28:25Z"

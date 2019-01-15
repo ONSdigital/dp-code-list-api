@@ -53,9 +53,9 @@ func main() {
 			}
 		}
 
-		// if err = datastore.; err != nil {
-		// 	log.Error(err, nil)
-		// }
+		if err = datastore.Close(); err != nil {
+			log.Error(err, nil)
+		}
 
 		log.Info("shutdown complete", nil)
 

@@ -37,14 +37,17 @@ type DatasetLinks struct {
 	Self *Link `json:"self"`
 }
 
-func (ds *Datasets) UpdateLinks(host, datasetAPIhost, codeListID string) error {
+func (ds *Datasets) UpdateLinks(host, datasetAPIhost, codeListID, editionID, codeID string) error {
 	for i, dataset := range ds.Items {
 		if dataset.Links == nil || dataset.Links.Self == nil || dataset.Links.Self.ID == "" {
 			return errors.New("invalid dataset provided")
 		}
 
 		id := dataset.Links.Self.ID
-		dataset.Links.Self = CreateLink(id, datasetsURI, host)
+		l := CreateLink(id, fmt.Sprintf(datasetsURI, codeListID, editionID, codeID), host)
+		dataset.Links.Self = &Link{
+			Href: l.Href,
+		}
 
 		var editions []DatasetEdition
 		for _, edition := range dataset.Editions {

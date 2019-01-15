@@ -76,6 +76,12 @@ func (c *CodeListAPI) getCode(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if err := result.UpdateLinks(c.apiURL, id, edition); err != nil {
+		log.ErrorCtx(ctx, errors.WithMessage(err, "getCode endpoint: links could not be created"), nil)
+		http.Error(w, internalServerErr, http.StatusInternalServerError)
+		return
+	}
+
 	b, err := json.Marshal(result)
 	if err != nil {
 		log.ErrorCtx(ctx, errors.WithMessage(err, "getCode endpoint: error attempting to marshal result to JSON"), data)

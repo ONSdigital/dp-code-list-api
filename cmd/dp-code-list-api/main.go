@@ -30,7 +30,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	datastore, err := graph.New()
+	datastore, err := graph.New(context.Background())
 	if err != nil {
 		log.Error(err, nil)
 		os.Exit(1)
@@ -53,7 +53,7 @@ func main() {
 			}
 		}
 
-		if err = datastore.Close(); err != nil {
+		if err = datastore.Close(ctx); err != nil {
 			log.Error(err, nil)
 		}
 

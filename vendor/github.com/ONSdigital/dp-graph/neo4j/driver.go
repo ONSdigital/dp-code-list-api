@@ -1,6 +1,7 @@
 package neo4j
 
 import (
+	"context"
 	"io"
 
 	"github.com/ONSdigital/dp-graph/graph/driver"
@@ -28,7 +29,7 @@ func New(dbAddr string, size int) (d *Neo4j, err error) {
 	}, nil
 }
 
-func (n *Neo4j) Close() error {
+func (n *Neo4j) Close(ctx context.Context) error {
 	return n.pool.Close()
 }
 

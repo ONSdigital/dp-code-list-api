@@ -10,11 +10,8 @@ import (
 var ErrNotFound = errors.New("not found")
 
 type Driver interface {
-	Close() error
-	codelist
-}
+	Close(ctx context.Context) error
 
-type codelist interface {
 	GetCodeLists(ctx context.Context, filterBy string) (*models.CodeListResults, error)
 	GetCodeList(ctx context.Context, codeListID string) (*models.CodeList, error)
 	GetEditions(ctx context.Context, codeListID string) (*models.Editions, error)
@@ -23,5 +20,3 @@ type codelist interface {
 	GetCode(ctx context.Context, codeListID, edition string, code string) (*models.Code, error)
 	GetCodeDatasets(ctx context.Context, codeListID, edition string, code string) (*models.Datasets, error)
 }
-
-var ErrBadConn = errors.New("driver: bad connection")

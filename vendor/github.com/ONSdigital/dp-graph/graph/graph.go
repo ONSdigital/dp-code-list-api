@@ -1,21 +1,19 @@
 package graph
 
 import (
+	"context"
 	"errors"
 
 	"github.com/ONSdigital/dp-graph/config"
 	"github.com/ONSdigital/dp-graph/graph/driver"
+	"github.com/ONSdigital/dp-graph/mock"
 )
 
 type DB struct {
-	driver driver.Driver
+	driver.Driver
 }
 
-func (db *DB) Close() error {
-	return db.driver.Close()
-}
-
-func New() (*DB, error) {
+func New(ctx context.Context) (*DB, error) {
 	cfg, err := config.Get()
 	if err != nil {
 		return nil, err
@@ -26,6 +24,15 @@ func New() (*DB, error) {
 	}
 
 	return &DB{
-		driver: cfg.Driver,
+		cfg.Driver,
 	}, nil
+}
+
+//Test sets flags for managing responses from the Mock driver
+func Test(backend, query, content bool) *mock.Mock {
+	return &mock.Mock{
+		IsBackendUnreachable: backend,
+		IsQueryInvalid:       query,
+		IsContentNotFound:    content,
+	}
 }

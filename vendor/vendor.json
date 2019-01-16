@@ -9,34 +9,40 @@
 			"revisionTime": "2018-07-11T08:29:42Z"
 		},
 		{
-			"checksumSHA1": "ToydXrdD/ImIlO5SYuby4vMy4p8=",
+			"checksumSHA1": "KdFOKEUQGpx48YFLnM60G2O2cRw=",
 			"path": "github.com/ONSdigital/dp-graph/config",
-			"revision": "890b9c418bc5f9df39f65a7674a383ca1ee32fce",
-			"revisionTime": "2019-01-14T17:28:25Z"
+			"revision": "8094f20fc826c466a4952121021a50ce31fe702d",
+			"revisionTime": "2019-01-15T15:55:54Z"
 		},
 		{
-			"checksumSHA1": "EMv3B9pDQcS+/WvAyHnGCj4Vnk0=",
+			"checksumSHA1": "yMr7PFdrOwlM75ENZF9RWJEp5d0=",
 			"path": "github.com/ONSdigital/dp-graph/graph",
-			"revision": "890b9c418bc5f9df39f65a7674a383ca1ee32fce",
-			"revisionTime": "2019-01-14T17:28:25Z"
+			"revision": "8094f20fc826c466a4952121021a50ce31fe702d",
+			"revisionTime": "2019-01-15T15:55:54Z"
 		},
 		{
-			"checksumSHA1": "+cYV/ycrH+AUgFEww9nMY9G/CMU=",
+			"checksumSHA1": "JsYIlpZLbOfDNGYT80WNPhvJSxc=",
 			"path": "github.com/ONSdigital/dp-graph/graph/driver",
-			"revision": "890b9c418bc5f9df39f65a7674a383ca1ee32fce",
-			"revisionTime": "2019-01-14T17:28:25Z"
+			"revision": "8094f20fc826c466a4952121021a50ce31fe702d",
+			"revisionTime": "2019-01-15T15:55:54Z"
 		},
 		{
-			"checksumSHA1": "LWV2UgOkkCTtaniPMAJ5AJh015I=",
+			"checksumSHA1": "5O+w5ZGgIUnenu3hYzScPb8+mps=",
+			"path": "github.com/ONSdigital/dp-graph/mock",
+			"revision": "8094f20fc826c466a4952121021a50ce31fe702d",
+			"revisionTime": "2019-01-15T15:55:54Z"
+		},
+		{
+			"checksumSHA1": "s+AdV2xmA4SOsD4xTTO3HUe2LG4=",
 			"path": "github.com/ONSdigital/dp-graph/neo4j",
-			"revision": "890b9c418bc5f9df39f65a7674a383ca1ee32fce",
-			"revisionTime": "2019-01-14T17:28:25Z"
+			"revision": "8094f20fc826c466a4952121021a50ce31fe702d",
+			"revisionTime": "2019-01-15T15:55:54Z"
 		},
 		{
 			"checksumSHA1": "qt/QdNE8sdPn2FD21SO2qeJbY6U=",
 			"path": "github.com/ONSdigital/dp-graph/neo4j/mapper",
-			"revision": "890b9c418bc5f9df39f65a7674a383ca1ee32fce",
-			"revisionTime": "2019-01-14T17:28:25Z"
+			"revision": "8094f20fc826c466a4952121021a50ce31fe702d",
+			"revisionTime": "2019-01-15T15:55:54Z"
 		},
 		{
 			"checksumSHA1": "8GX4z3tt4e6rXHJtJv8q8YZrFwk=",

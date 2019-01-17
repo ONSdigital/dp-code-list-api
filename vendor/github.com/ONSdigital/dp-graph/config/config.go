@@ -6,14 +6,11 @@ import (
 	"github.com/ONSdigital/dp-graph/graph/driver"
 	"github.com/ONSdigital/dp-graph/mock"
 	"github.com/ONSdigital/dp-graph/neo4j"
-	"github.com/ONSdigital/go-ns/log"
 	"github.com/kelseyhightower/envconfig"
-	// "dp-graph/gremgo"
-	// "dp-graph/mock"
 )
 
 type Configuration struct {
-	DriverChoice            string        `envconfig:"GRAPH_DRIVER"` // - driver has to be chosen by the import in the using pacakge
+	DriverChoice            string        `envconfig:"GRAPH_DRIVER"`
 	GracefulShutdownTimeout time.Duration `envconfig:"GRACEFUL_SHUTDOWN_TIMEOUT"`
 	DatabaseAddress         string        `envconfig:"GRAPH_ADDR"`
 	PoolSize                int           `envconfig:"GRAPH_POOL_SIZE"`
@@ -31,8 +28,6 @@ func Get() (*Configuration, error) {
 
 	cfg = &Configuration{
 		GracefulShutdownTimeout: time.Second * 5,
-		DatabaseAddress:         "bolt://localhost:7687",
-		PoolSize:                30,
 		DriverChoice:            "mock",
 	}
 
@@ -52,9 +47,6 @@ func Get() (*Configuration, error) {
 	default:
 		d = &mock.Mock{}
 	}
-
-	log.Info("driver choice:", log.Data{"cfg": cfg.DriverChoice})
-	log.Info("what driver was assigned?", log.Data{"driver": d})
 
 	cfg.Driver = d
 

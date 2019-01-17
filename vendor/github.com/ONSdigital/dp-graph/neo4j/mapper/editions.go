@@ -20,9 +20,12 @@ func Editions(editions *models.Editions) ResultMapper {
 func Edition(editionModel *models.Edition) ResultMapper {
 	return func(r *Result) error {
 		ed, err := edition(r)
-		*editionModel = *ed
+		if err != nil {
+			return err
+		}
 
-		return err
+		*editionModel = *ed
+		return nil
 	}
 }
 

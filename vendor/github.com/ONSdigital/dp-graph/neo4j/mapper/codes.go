@@ -25,9 +25,12 @@ func Codes(results *models.CodeResults, codeListID string, edition string) Resul
 func Code(codeModel *models.Code, codeListID string, edition string) ResultMapper {
 	return func(r *Result) error {
 		co, err := code(r)
-		*codeModel = *co
+		if err != nil {
+			return err
+		}
 
-		return err
+		*codeModel = *co
+		return nil
 	}
 }
 

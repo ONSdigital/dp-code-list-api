@@ -9,40 +9,40 @@
 			"revisionTime": "2018-07-11T08:29:42Z"
 		},
 		{
-			"checksumSHA1": "KdFOKEUQGpx48YFLnM60G2O2cRw=",
+			"checksumSHA1": "4RlIGJ3wW6uuh7MYoM4/PdKXOds=",
 			"path": "github.com/ONSdigital/dp-graph/config",
-			"revision": "8094f20fc826c466a4952121021a50ce31fe702d",
-			"revisionTime": "2019-01-15T15:55:54Z"
+			"revision": "7f87c0ad535a389adaa7ae73da4560e83b7a1bf9",
+			"revisionTime": "2019-01-17T09:32:22Z"
 		},
 		{
 			"checksumSHA1": "yMr7PFdrOwlM75ENZF9RWJEp5d0=",
 			"path": "github.com/ONSdigital/dp-graph/graph",
-			"revision": "8094f20fc826c466a4952121021a50ce31fe702d",
-			"revisionTime": "2019-01-15T15:55:54Z"
+			"revision": "7f87c0ad535a389adaa7ae73da4560e83b7a1bf9",
+			"revisionTime": "2019-01-17T09:32:22Z"
 		},
 		{
 			"checksumSHA1": "JsYIlpZLbOfDNGYT80WNPhvJSxc=",
 			"path": "github.com/ONSdigital/dp-graph/graph/driver",
-			"revision": "8094f20fc826c466a4952121021a50ce31fe702d",
-			"revisionTime": "2019-01-15T15:55:54Z"
+			"revision": "7f87c0ad535a389adaa7ae73da4560e83b7a1bf9",
+			"revisionTime": "2019-01-17T09:32:22Z"
 		},
 		{
 			"checksumSHA1": "5O+w5ZGgIUnenu3hYzScPb8+mps=",
 			"path": "github.com/ONSdigital/dp-graph/mock",
-			"revision": "8094f20fc826c466a4952121021a50ce31fe702d",
-			"revisionTime": "2019-01-15T15:55:54Z"
+			"revision": "7f87c0ad535a389adaa7ae73da4560e83b7a1bf9",
+			"revisionTime": "2019-01-17T09:32:22Z"
 		},
 		{
 			"checksumSHA1": "s+AdV2xmA4SOsD4xTTO3HUe2LG4=",
 			"path": "github.com/ONSdigital/dp-graph/neo4j",
-			"revision": "8094f20fc826c466a4952121021a50ce31fe702d",
-			"revisionTime": "2019-01-15T15:55:54Z"
+			"revision": "7f87c0ad535a389adaa7ae73da4560e83b7a1bf9",
+			"revisionTime": "2019-01-17T09:32:22Z"
 		},
 		{
-			"checksumSHA1": "qt/QdNE8sdPn2FD21SO2qeJbY6U=",
+			"checksumSHA1": "n55qenqydqG+UOMRYZQUTigI9Tg=",
 			"path": "github.com/ONSdigital/dp-graph/neo4j/mapper",
-			"revision": "8094f20fc826c466a4952121021a50ce31fe702d",
-			"revisionTime": "2019-01-15T15:55:54Z"
+			"revision": "7f87c0ad535a389adaa7ae73da4560e83b7a1bf9",
+			"revisionTime": "2019-01-17T09:32:22Z"
 		},
 		{
 			"checksumSHA1": "8GX4z3tt4e6rXHJtJv8q8YZrFwk=",

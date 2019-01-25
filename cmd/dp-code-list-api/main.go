@@ -30,7 +30,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	datastore, err := graph.New(context.Background())
+	datastore, err := graph.NewCodeListStore(context.Background())
 	if err != nil {
 		log.Error(err, nil)
 		os.Exit(1)

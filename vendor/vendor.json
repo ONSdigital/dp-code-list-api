@@ -9,46 +9,58 @@
 			"revisionTime": "2018-07-11T08:29:42Z"
 		},
 		{
-			"checksumSHA1": "4RlIGJ3wW6uuh7MYoM4/PdKXOds=",
+			"checksumSHA1": "6FId8lqODvXRJ0aPZCsPG7kUuUs=",
 			"path": "github.com/ONSdigital/dp-graph/config",
 			"revision": "7f87c0ad535a389adaa7ae73da4560e83b7a1bf9",
 			"revisionTime": "2019-01-17T09:32:22Z"
 		},
 		{
-			"checksumSHA1": "yMr7PFdrOwlM75ENZF9RWJEp5d0=",
+			"checksumSHA1": "HYYBUiNB8lhJtwhMNuNzB1E+DwY=",
 			"path": "github.com/ONSdigital/dp-graph/graph",
 			"revision": "7f87c0ad535a389adaa7ae73da4560e83b7a1bf9",
 			"revisionTime": "2019-01-17T09:32:22Z"
 		},
 		{
-			"checksumSHA1": "JsYIlpZLbOfDNGYT80WNPhvJSxc=",
+			"checksumSHA1": "W26LFeyLGVzwpC3NJvEUkyivoPQ=",
 			"path": "github.com/ONSdigital/dp-graph/graph/driver",
 			"revision": "7f87c0ad535a389adaa7ae73da4560e83b7a1bf9",
 			"revisionTime": "2019-01-17T09:32:22Z"
 		},
 		{
-			"checksumSHA1": "5O+w5ZGgIUnenu3hYzScPb8+mps=",
+			"checksumSHA1": "3PgEUBXHfETwayRhBN6VrjtMeeA=",
 			"path": "github.com/ONSdigital/dp-graph/mock",
 			"revision": "7f87c0ad535a389adaa7ae73da4560e83b7a1bf9",
 			"revisionTime": "2019-01-17T09:32:22Z"
 		},
 		{
-			"checksumSHA1": "s+AdV2xmA4SOsD4xTTO3HUe2LG4=",
+			"checksumSHA1": "tm86ahTrYFWFWtC98F2Zs75vCkU=",
 			"path": "github.com/ONSdigital/dp-graph/neo4j",
 			"revision": "7f87c0ad535a389adaa7ae73da4560e83b7a1bf9",
 			"revisionTime": "2019-01-17T09:32:22Z"
 		},
 		{
-			"checksumSHA1": "n55qenqydqG+UOMRYZQUTigI9Tg=",
+			"checksumSHA1": "5RWOnSnym+RdbxdZBbkr2AJJYaE=",
+			"path": "github.com/ONSdigital/dp-graph/neo4j/driver",
+			"revision": "7f87c0ad535a389adaa7ae73da4560e83b7a1bf9",
+			"revisionTime": "2019-01-17T09:32:22Z"
+		},
+		{
+			"checksumSHA1": "517gBDBjgLh/EoxpwLZ3I9RmXFc=",
 			"path": "github.com/ONSdigital/dp-graph/neo4j/mapper",
 			"revision": "7f87c0ad535a389adaa7ae73da4560e83b7a1bf9",
 			"revisionTime": "2019-01-17T09:32:22Z"
 		},
 		{
-			"checksumSHA1": "8GX4z3tt4e6rXHJtJv8q8YZrFwk=",
+			"checksumSHA1": "UP39h3Ch+XJqD63dnXL06J80mOE=",
+			"path": "github.com/ONSdigital/dp-graph/neo4j/query",
+			"revision": "7f87c0ad535a389adaa7ae73da4560e83b7a1bf9",
+			"revisionTime": "2019-01-17T09:32:22Z"
+		},
+		{
+			"checksumSHA1": "WSj2jaJp2epEer5qSp1QnTCJuTg=",
 			"path": "github.com/ONSdigital/go-ns/common",
-			"revision": "40bd7a2162e3296b504c5540899bb3a13ef15936",
-			"revisionTime": "2018-06-21T10:26:04Z"
+			"revision": "d4b924d6564d5c010fedf94fa8c44b77719216c3",
+			"revisionTime": "2018-10-08T17:19:40Z"
 		},
 		{
 			"checksumSHA1": "Vjyl/gfY0qx2lW9te3Ieb5HV3/s=",
@@ -57,10 +69,10 @@
 			"revisionTime": "2018-07-05T18:19:58Z"
 		},
 		{
-			"checksumSHA1": "2DNGNtbblBXMJYttuAlhVT7XCKY=",
+			"checksumSHA1": "g9flYl+PBs6cYflFY3EpG6IcJGM=",
 			"path": "github.com/ONSdigital/go-ns/log",
-			"revision": "40bd7a2162e3296b504c5540899bb3a13ef15936",
-			"revisionTime": "2018-06-21T10:26:04Z"
+			"revision": "d4b924d6564d5c010fedf94fa8c44b77719216c3",
+			"revisionTime": "2018-10-08T17:19:40Z"
 		},
 		{
 			"checksumSHA1": "Wc0l6IlAATaN3qFb2ECwcjcHH4I=",
@@ -142,17 +154,17 @@
 			"revisionTime": "2017-09-25T15:05:00Z"
 		},
 		{
-			"checksumSHA1": "Jrjxy16tD9mUgr/jbhXwbHVeSa0=",
+			"checksumSHA1": "WYgvNuGj5g1sej4dJWBHF5bSKGE=",
 			"path": "github.com/kelseyhightower/envconfig",
-			"revision": "462fda1f11d8cad3660e52737b8beefd27acfb3f",
-			"revisionTime": "2017-09-18T16:15:10Z"
+			"revision": "dd1402a4d99de9ac2f396cd6fcb957bc2c695ec1",
+			"revisionTime": "2018-05-17T19:45:57Z"
 		},
 		{
 			"checksumSHA1": "hBgLmZ/4mCxmnH88mqFKBkpJFUY=",
 			"origin": "github.com/ONSdigital/go-ns/vendor/github.com/mgutz/ansi",
 			"path": "github.com/mgutz/ansi",
-			"revision": "e605c8457f659ef94b6affa56903315e650ac82a",
-			"revisionTime": "2017-09-25T15:05:00Z"
+			"revision": "d4b924d6564d5c010fedf94fa8c44b77719216c3",
+			"revisionTime": "2018-10-08T17:19:40Z"
 		},
 		{
 			"checksumSHA1": "ljd3FhYRJ91cLZz3wsH9BQQ2JbA=",

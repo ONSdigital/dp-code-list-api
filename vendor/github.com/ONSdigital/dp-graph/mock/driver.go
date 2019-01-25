@@ -5,9 +5,9 @@ import (
 )
 
 type Mock struct {
-	IsBackendUnreachable bool
-	IsQueryInvalid       bool
-	IsContentNotFound    bool
+	IsBackendReachable bool
+	IsQueryValid       bool
+	IsContentFound     bool
 }
 
 func (m *Mock) Close(ctx context.Context) error {

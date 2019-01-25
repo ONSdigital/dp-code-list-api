@@ -1,8 +1,6 @@
 package config
 
 import (
-	"time"
-
 	"github.com/ONSdigital/dp-graph/graph/driver"
 	"github.com/ONSdigital/dp-graph/mock"
 	"github.com/ONSdigital/dp-graph/neo4j"
@@ -10,10 +8,11 @@ import (
 )
 
 type Configuration struct {
-	DriverChoice            string        `envconfig:"GRAPH_DRIVER"`
-	GracefulShutdownTimeout time.Duration `envconfig:"GRACEFUL_SHUTDOWN_TIMEOUT"`
-	DatabaseAddress         string        `envconfig:"GRAPH_ADDR"`
-	PoolSize                int           `envconfig:"GRAPH_POOL_SIZE"`
+	DriverChoice    string `envconfig:"GRAPH_DRIVER"`
+	DatabaseAddress string `envconfig:"GRAPH_ADDR"`
+	PoolSize        int    `envconfig:"GRAPH_POOL_SIZE"`
+	MaxRetries      int    `envconfig:"MAX_RETRIES"`
+	QueryTimeout    int    `envconfig:"QUERY_TIMEOUT"`
 
 	Driver driver.Driver
 }
@@ -27,8 +26,7 @@ func Get() (*Configuration, error) {
 	}
 
 	cfg = &Configuration{
-		GracefulShutdownTimeout: time.Second * 5,
-		DriverChoice:            "mock",
+		DriverChoice: "",
 	}
 
 	err := envconfig.Process("", cfg)
@@ -37,13 +35,13 @@ func Get() (*Configuration, error) {
 
 	switch cfg.DriverChoice {
 	case "neo4j":
-		d, err = neo4j.New(cfg.DatabaseAddress, cfg.PoolSize)
+		d, err = neo4j.New(cfg.DatabaseAddress, cfg.PoolSize, cfg.QueryTimeout, cfg.MaxRetries)
 		if err != nil {
-			panic(err)
+			return nil, err
 		}
-	//
-	// case "gremgo":
-	// 	d = gremgo.Driver{}
+		//
+		// case "gremgo":
+		// 	d = gremgo.Driver{}
 	default:
 		d = &mock.Mock{}
 	}

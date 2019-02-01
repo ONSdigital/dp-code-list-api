@@ -34,7 +34,7 @@ func (c *CodeListAPI) getCodes(w http.ResponseWriter, r *http.Request) {
 
 	for _, item := range codes.Items {
 		if err := item.UpdateLinks(c.apiURL, id, edition); err != nil {
-			log.ErrorCtx(ctx, errors.WithMessage(err, "getEditions endpoint: links could not be created"), nil)
+			log.ErrorCtx(ctx, errors.WithMessage(err, "getCodes endpoint: links could not be created"), nil)
 			http.Error(w, internalServerErr, http.StatusInternalServerError)
 			return
 		}

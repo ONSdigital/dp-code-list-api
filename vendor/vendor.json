@@ -39,7 +39,7 @@
 			"revisionTime": "2019-02-01T09:44:09Z"
 		},
 		{
-			"checksumSHA1": "qSUW0EAnaTxTLLyNKlRryjP21Kw=",
+			"checksumSHA1": "OLvnsDUDfUS23mJzewm3vTQHJDg=",
 			"path": "github.com/ONSdigital/dp-graph/neo4j/driver",
 			"revision": "965e61b685a875146a35f57977a2a9cfc6500941",
 			"revisionTime": "2019-02-01T09:44:09Z"
@@ -87,10 +87,10 @@
 			"revisionTime": "2019-01-17T11:52:14Z"
 		},
 		{
-			"checksumSHA1": "Wc0l6IlAATaN3qFb2ECwcjcHH4I=",
+			"checksumSHA1": "GQdzMpAMb42KQQ/GsJFSRU5dj1Y=",
 			"path": "github.com/ONSdigital/go-ns/server",
-			"revision": "e605c8457f659ef94b6affa56903315e650ac82a",
-			"revisionTime": "2017-09-25T15:05:00Z"
+			"revision": "1c0a788c5b8e666c674540fc0881960857d73b3b",
+			"revisionTime": "2019-01-17T11:52:14Z"
 		},
 		{
 			"checksumSHA1": "XuX+fvTCTujj5TRdUSec2DbEWuA=",

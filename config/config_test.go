@@ -16,5 +16,6 @@ func TestGetReturnsDefaultValues(t *testing.T) {
 		So(cfg.CodeListAPIURL, ShouldEqual, "http://localhost:22400")
 		So(cfg.GracefulShutdownTimeout, ShouldEqual, time.Second*5)
 		So(cfg.HealthCheckInterval, ShouldEqual, time.Second*30)
+		So(cfg.HealthCheckRecovery, ShouldEqual, time.Second*5)
 	})
 }

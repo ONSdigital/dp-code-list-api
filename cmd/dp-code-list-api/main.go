@@ -38,6 +38,7 @@ func main() {
 	}
 
 	router := mux.NewRouter()
+	router.Path("/healthcheck").HandlerFunc(healthcheck.Do)
 	httpErrChannel := make(chan error)
 	_ = api.CreateCodeListAPI(router, datastore, cfg.CodeListAPIURL, cfg.DatasetAPIURL)
 	httpServer := server.New(cfg.BindAddr, router)
@@ -45,7 +46,8 @@ func main() {
 
 	healthTicker := healthcheck.NewTicker(
 		cfg.HealthCheckInterval,
-		graph.Healthcheck(),
+		cfg.HealthCheckRecovery,
+		datastore,
 	)
 
 	shutdown := func(httpShutdown bool) {

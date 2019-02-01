@@ -13,6 +13,7 @@ import (
 	"github.com/ONSdigital/dp-code-list-api/api"
 	"github.com/ONSdigital/dp-code-list-api/config"
 	"github.com/ONSdigital/dp-graph/graph"
+	"github.com/ONSdigital/go-ns/healthcheck"
 	"github.com/ONSdigital/go-ns/log"
 	"github.com/ONSdigital/go-ns/server"
 	"github.com/gorilla/mux"
@@ -42,6 +43,11 @@ func main() {
 	httpServer := server.New(cfg.BindAddr, router)
 	httpServer.HandleOSSignals = false
 
+	healthTicker := healthcheck.NewTicker(
+		cfg.HealthCheckInterval,
+		graph.Healthcheck(),
+	)
+
 	shutdown := func(httpShutdown bool) {
 		log.Info(fmt.Sprintf("shutdown with timeout: %d", cfg.GracefulShutdownTimeout), nil)
 		ctx, cancel := context.WithTimeout(context.Background(), cfg.GracefulShutdownTimeout)
@@ -52,6 +58,8 @@ func main() {
 				log.Error(err, nil)
 			}
 		}
+
+		healthTicker.Close()
 
 		if err = datastore.Close(ctx); err != nil {
 			log.Error(err, nil)

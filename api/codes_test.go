@@ -8,9 +8,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ONSdigital/dp-code-list-api/datastore"
 	"github.com/ONSdigital/dp-code-list-api/datastore/datastoretest"
 	"github.com/ONSdigital/dp-code-list-api/models"
+	"github.com/ONSdigital/dp-graph/graph/driver"
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
 	. "github.com/smartystreets/goconvey/convey"
@@ -70,7 +70,7 @@ func TestGetCodes_EditionNotFound(t *testing.T) {
 	Convey("Given datastore.GetCodes returns an edition not found error", t, func() {
 		mockDatastore := &storetest.DataStoreMock{
 			GetCodesFunc: func(ctx context.Context, codeListID string, edition string) (*models.CodeResults, error) {
-				return nil, datastore.ErrEditionNotFound
+				return nil, driver.ErrNotFound
 			},
 		}
 
@@ -84,7 +84,7 @@ func TestGetCodes_EditionNotFound(t *testing.T) {
 
 			Convey("then a 404 status is returned", func() {
 				So(w.Code, ShouldEqual, http.StatusNotFound)
-				So(strings.TrimSpace(w.Body.String()), ShouldEqual, datastore.ErrEditionNotFound.Error())
+				So(strings.TrimSpace(w.Body.String()), ShouldEqual, driver.ErrNotFound.Error())
 
 				So(mockDatastore.GetCodesCalls(), ShouldHaveLength, 1)
 				So(mockDatastore.GetCodesCalls()[0].CodeListID, ShouldEqual, testCodelistID)
@@ -234,7 +234,7 @@ func TestGetCode_EditionNotFound(t *testing.T) {
 	Convey("Given datastore.GetCode returns edition not found error", t, func() {
 		mockDatastore := &storetest.DataStoreMock{
 			GetCodeFunc: func(ctx context.Context, codeListID string, edition string, code string) (*models.Code, error) {
-				return nil, datastore.ErrEditionNotFound
+				return nil, driver.ErrNotFound
 			},
 		}
 
@@ -248,7 +248,7 @@ func TestGetCode_EditionNotFound(t *testing.T) {
 
 			Convey("then a 404 status is returned", func() {
 				So(w.Code, ShouldEqual, http.StatusNotFound)
-				So(strings.TrimSpace(w.Body.String()), ShouldEqual, datastore.ErrEditionNotFound.Error())
+				So(strings.TrimSpace(w.Body.String()), ShouldEqual, driver.ErrNotFound.Error())
 
 				So(mockDatastore.GetCodeCalls(), ShouldHaveLength, 1)
 				So(mockDatastore.GetCodeCalls()[0].CodeListID, ShouldEqual, testCodelistID)

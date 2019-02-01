@@ -7,9 +7,9 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/ONSdigital/dp-code-list-api/datastore"
 	"github.com/ONSdigital/dp-code-list-api/datastore/datastoretest"
 	"github.com/ONSdigital/dp-code-list-api/models"
+	"github.com/ONSdigital/dp-graph/graph/driver"
 	"github.com/gorilla/mux"
 	. "github.com/smartystreets/goconvey/convey"
 )
@@ -76,7 +76,7 @@ func TestGetCodeList(t *testing.T) {
 
 		mockDatastore := &storetest.DataStoreMock{
 			GetCodeListFunc: func(ctx context.Context, id string) (*models.CodeList, error) {
-				return nil, datastore.ErrCodeListNotFound
+				return nil, driver.ErrNotFound
 			},
 		}
 
@@ -121,7 +121,7 @@ func TestGetEditions(t *testing.T) {
 
 		mockDatastore := &storetest.DataStoreMock{
 			GetEditionsFunc: func(ctx context.Context, f string) (*models.Editions, error) {
-				return &models.Editions{}, datastore.ErrEditionsNotFound
+				return &models.Editions{}, driver.ErrNotFound
 			},
 		}
 
@@ -173,7 +173,7 @@ func TestGetEdition(t *testing.T) {
 
 		mockDatastore := &storetest.DataStoreMock{
 			GetEditionFunc: func(ctx context.Context, f, e string) (*models.Edition, error) {
-				return &models.Edition{}, datastore.ErrEditionNotFound
+				return &models.Edition{}, driver.ErrNotFound
 			},
 		}
 

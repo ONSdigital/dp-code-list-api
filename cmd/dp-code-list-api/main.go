@@ -38,7 +38,7 @@ func main() {
 
 	router := mux.NewRouter()
 	httpErrChannel := make(chan error)
-	_ = api.CreateCodeListAPI(router, datastore, cfg.CodeListAPIURL, cfg.DatasetAPIURL)
+	api.CreateCodeListAPI(router, datastore, cfg.CodeListAPIURL, cfg.DatasetAPIURL)
 	httpServer := server.New(cfg.BindAddr, router)
 	httpServer.HandleOSSignals = false
 

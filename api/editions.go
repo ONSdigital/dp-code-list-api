@@ -21,6 +21,19 @@ func (c *CodeListAPI) getEditions(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	for _, item := range editions.Items {
+		if err := item.UpdateLinks(id, c.apiURL); err != nil {
+			log.ErrorCtx(ctx, errors.WithMessage(err, "getEditions endpoint: links could not be created"), nil)
+			http.Error(w, internalServerErr, http.StatusInternalServerError)
+			return
+		}
+	}
+
+	count := len(editions.Items)
+	editions.Count = count
+	editions.Limit = count
+	editions.TotalCount = count
+
 	b, err := json.Marshal(editions)
 	if err != nil {
 		handleError(ctx, w, err, data)
@@ -44,6 +57,12 @@ func (c *CodeListAPI) getEdition(w http.ResponseWriter, r *http.Request) {
 	editionModel, err := c.store.GetEdition(r.Context(), id, edition)
 	if err != nil {
 		handleError(ctx, w, err, data)
+		return
+	}
+
+	if err := editionModel.UpdateLinks(id, c.apiURL); err != nil {
+		log.ErrorCtx(ctx, errors.WithMessage(err, "getEdition endpoint: links could not be created"), nil)
+		http.Error(w, internalServerErr, http.StatusInternalServerError)
 		return
 	}
 

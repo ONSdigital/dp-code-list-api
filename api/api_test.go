@@ -28,7 +28,7 @@ func TestGetCodeLists(t *testing.T) {
 			},
 		}
 
-		api := CreateCodeListAPI(mux.NewRouter(), mockDatastore)
+		api := CreateCodeListAPI(mux.NewRouter(), mockDatastore, "", "")
 		api.router.ServeHTTP(w, r)
 		So(w.Code, ShouldEqual, http.StatusOK)
 	})
@@ -42,7 +42,7 @@ func TestGetCodeLists(t *testing.T) {
 			},
 		}
 
-		api := CreateCodeListAPI(mux.NewRouter(), mockDatastore)
+		api := CreateCodeListAPI(mux.NewRouter(), mockDatastore, "", "")
 		api.router.ServeHTTP(w, r)
 		So(w.Code, ShouldEqual, http.StatusInternalServerError)
 	})
@@ -56,11 +56,17 @@ func TestGetCodeList(t *testing.T) {
 
 		mockDatastore := &storetest.DataStoreMock{
 			GetCodeListFunc: func(ctx context.Context, id string) (*models.CodeList, error) {
-				return &models.CodeList{}, nil
+				return &models.CodeList{
+					Links: &models.CodeListLink{
+						Self: &models.Link{
+							ID: id,
+						},
+					},
+				}, nil
 			},
 		}
 
-		api := CreateCodeListAPI(mux.NewRouter(), mockDatastore)
+		api := CreateCodeListAPI(mux.NewRouter(), mockDatastore, "", "")
 		api.router.ServeHTTP(w, r)
 		So(w.Code, ShouldEqual, http.StatusOK)
 	})
@@ -74,7 +80,7 @@ func TestGetCodeList(t *testing.T) {
 			},
 		}
 
-		api := CreateCodeListAPI(mux.NewRouter(), mockDatastore)
+		api := CreateCodeListAPI(mux.NewRouter(), mockDatastore, "", "")
 		api.router.ServeHTTP(w, r)
 		So(w.Code, ShouldEqual, http.StatusNotFound)
 	})
@@ -88,7 +94,7 @@ func TestGetCodeList(t *testing.T) {
 			},
 		}
 
-		api := CreateCodeListAPI(mux.NewRouter(), mockDatastore)
+		api := CreateCodeListAPI(mux.NewRouter(), mockDatastore, "", "")
 		api.router.ServeHTTP(w, r)
 		So(w.Code, ShouldEqual, http.StatusInternalServerError)
 	})
@@ -105,7 +111,7 @@ func TestGetEditions(t *testing.T) {
 			},
 		}
 
-		api := CreateCodeListAPI(mux.NewRouter(), mockDatastore)
+		api := CreateCodeListAPI(mux.NewRouter(), mockDatastore, "", "")
 		api.router.ServeHTTP(w, r)
 		So(w.Code, ShouldEqual, http.StatusOK)
 	})
@@ -119,7 +125,7 @@ func TestGetEditions(t *testing.T) {
 			},
 		}
 
-		api := CreateCodeListAPI(mux.NewRouter(), mockDatastore)
+		api := CreateCodeListAPI(mux.NewRouter(), mockDatastore, "", "")
 		api.router.ServeHTTP(w, r)
 		So(w.Code, ShouldEqual, http.StatusNotFound)
 	})
@@ -133,7 +139,7 @@ func TestGetEditions(t *testing.T) {
 			},
 		}
 
-		api := CreateCodeListAPI(mux.NewRouter(), mockDatastore)
+		api := CreateCodeListAPI(mux.NewRouter(), mockDatastore, "", "")
 		api.router.ServeHTTP(w, r)
 		So(w.Code, ShouldEqual, http.StatusInternalServerError)
 	})
@@ -146,11 +152,18 @@ func TestGetEdition(t *testing.T) {
 
 		mockDatastore := &storetest.DataStoreMock{
 			GetEditionFunc: func(ctx context.Context, f, e string) (*models.Edition, error) {
-				return &models.Edition{}, nil
+				return &models.Edition{
+					Edition: "edition",
+					Label:   "label",
+					Links: &models.EditionLinks{
+						Self: &models.Link{
+							ID: "edition",
+						},
+					}}, nil
 			},
 		}
 
-		api := CreateCodeListAPI(mux.NewRouter(), mockDatastore)
+		api := CreateCodeListAPI(mux.NewRouter(), mockDatastore, "", "")
 		api.router.ServeHTTP(w, r)
 		So(w.Code, ShouldEqual, http.StatusOK)
 	})
@@ -164,7 +177,7 @@ func TestGetEdition(t *testing.T) {
 			},
 		}
 
-		api := CreateCodeListAPI(mux.NewRouter(), mockDatastore)
+		api := CreateCodeListAPI(mux.NewRouter(), mockDatastore, "", "")
 		api.router.ServeHTTP(w, r)
 		So(w.Code, ShouldEqual, http.StatusNotFound)
 	})
@@ -178,7 +191,7 @@ func TestGetEdition(t *testing.T) {
 			},
 		}
 
-		api := CreateCodeListAPI(mux.NewRouter(), mockDatastore)
+		api := CreateCodeListAPI(mux.NewRouter(), mockDatastore, "", "")
 		api.router.ServeHTTP(w, r)
 		So(w.Code, ShouldEqual, http.StatusInternalServerError)
 	})

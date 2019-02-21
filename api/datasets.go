@@ -6,6 +6,7 @@ import (
 
 	"github.com/ONSdigital/go-ns/log"
 	"github.com/gorilla/mux"
+	"github.com/pkg/errors"
 )
 
 func (c *CodeListAPI) getCodeDatasets(w http.ResponseWriter, r *http.Request) {
@@ -23,6 +24,17 @@ func (c *CodeListAPI) getCodeDatasets(w http.ResponseWriter, r *http.Request) {
 		handleError(ctx, w, err, logData)
 		return
 	}
+
+	if err := datasets.UpdateLinks(c.apiURL, c.datasetAPIURL, codeListID, edition, code); err != nil {
+		log.ErrorCtx(ctx, errors.WithMessage(err, "getCodeDatasets endpoint: links could not be created"), nil)
+		http.Error(w, internalServerErr, http.StatusInternalServerError)
+		return
+	}
+
+	count := len(datasets.Items)
+	datasets.Count = count
+	datasets.Limit = count
+	datasets.TotalCount = count
 
 	b, err := json.Marshal(datasets)
 	if err != nil {

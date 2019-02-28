@@ -13,6 +13,7 @@ import (
 	"github.com/ONSdigital/dp-code-list-api/api"
 	"github.com/ONSdigital/dp-code-list-api/config"
 	"github.com/ONSdigital/dp-graph/graph"
+	"github.com/ONSdigital/go-ns/healthcheck"
 	"github.com/ONSdigital/go-ns/log"
 	"github.com/ONSdigital/go-ns/server"
 	"github.com/gorilla/mux"
@@ -37,10 +38,17 @@ func main() {
 	}
 
 	router := mux.NewRouter()
+	router.Path("/healthcheck").HandlerFunc(healthcheck.Do)
 	httpErrChannel := make(chan error)
 	api.CreateCodeListAPI(router, datastore, cfg.CodeListAPIURL, cfg.DatasetAPIURL)
 	httpServer := server.New(cfg.BindAddr, router)
 	httpServer.HandleOSSignals = false
+
+	healthTicker := healthcheck.NewTicker(
+		cfg.HealthCheckInterval,
+		cfg.HealthCheckRecovery,
+		datastore,
+	)
 
 	shutdown := func(httpShutdown bool) {
 		log.Info(fmt.Sprintf("shutdown with timeout: %d", cfg.GracefulShutdownTimeout), nil)
@@ -52,6 +60,8 @@ func main() {
 				log.Error(err, nil)
 			}
 		}
+
+		healthTicker.Close()
 
 		if err = datastore.Close(ctx); err != nil {
 			log.Error(err, nil)

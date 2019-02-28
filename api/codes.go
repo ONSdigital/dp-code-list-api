@@ -4,17 +4,10 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/ONSdigital/dp-code-list-api/datastore"
 	"github.com/ONSdigital/go-ns/log"
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
 )
-
-var codesNotFoundErrors = map[error]bool{
-	datastore.ErrEditionNotFound: true,
-	datastore.ErrCodeNotFound:    true,
-	datastore.ErrCodesNotFound:   true,
-}
 
 func (c *CodeListAPI) getCodes(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()

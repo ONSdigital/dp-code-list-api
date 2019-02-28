@@ -11,6 +11,8 @@ type Configuration struct {
 	CodeListAPIURL          string        `envconfig:"CODE_LIST_API_URL"`
 	DatasetAPIURL           string        `envconfig:"DATASET_API_URL"`
 	GracefulShutdownTimeout time.Duration `envconfig:"GRACEFUL_SHUTDOWN_TIMEOUT"`
+	HealthCheckInterval     time.Duration `envconfig:"HEALTHCHECK_INTERVAL"`
+	HealthCheckRecovery     time.Duration `envconfig:"HEALTHCHECK_RECOVERY_INTERVAL"`
 }
 
 var cfg *Configuration
@@ -26,6 +28,8 @@ func Get() (*Configuration, error) {
 		CodeListAPIURL:          "http://localhost:22400",
 		DatasetAPIURL:           "http://localhost:22000",
 		GracefulShutdownTimeout: time.Second * 5,
+		HealthCheckInterval:     30 * time.Second,
+		HealthCheckRecovery:     5 * time.Second,
 	}
 
 	return cfg, envconfig.Process("", cfg)

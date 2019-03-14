@@ -2,11 +2,12 @@ package api
 
 import (
 	"encoding/json"
+	"net/http"
+
 	"github.com/ONSdigital/dp-code-list-api/datastore"
 	"github.com/ONSdigital/go-ns/log"
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
-	"net/http"
 )
 
 var codesNotFoundErrors = map[error]bool{
@@ -34,6 +35,7 @@ func (c *CodeListAPI) getCodes(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
+
 	b, err := json.Marshal(codes)
 	if err != nil {
 		log.ErrorCtx(ctx, errors.WithMessage(err, "getCodes endpoint: failed to marshal codes to json bytes"), data)
@@ -45,6 +47,7 @@ func (c *CodeListAPI) getCodes(w http.ResponseWriter, r *http.Request) {
 		log.ErrorCtx(ctx, errors.WithMessage(err, "getCodes endpoint: failed to write bytes to response"), nil)
 		return
 	}
+
 	log.InfoCtx(ctx, "getCodes endpoint: request successful", data)
 }
 
@@ -68,6 +71,7 @@ func (c *CodeListAPI) getCode(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
+
 	b, err := json.Marshal(result)
 	if err != nil {
 		log.ErrorCtx(ctx, errors.WithMessage(err, "getCode endpoint: error attempting to marshal result to JSON"), data)
@@ -79,5 +83,6 @@ func (c *CodeListAPI) getCode(w http.ResponseWriter, r *http.Request) {
 		log.ErrorCtx(ctx, errors.WithMessage(err, "getCode endpoint: failed to write bytes to response"), nil)
 		return
 	}
+
 	log.InfoCtx(ctx, "getCode endpoint: request successful", data)
 }

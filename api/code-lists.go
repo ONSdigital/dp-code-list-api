@@ -13,8 +13,11 @@ func (c *CodeListAPI) getCodeLists(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	filterBy := r.URL.Query().Get("type")
 
+	log.InfoCtx(ctx, "attempting to get code lists", log.Data{"type": filterBy})
+
 	codeLists, err := c.store.GetCodeLists(r.Context(), filterBy)
 	if err != nil {
+		log.InfoCtx(ctx, "failed to get code lists from graph", log.Data{"err": err, "type": filterBy})
 		handleError(ctx, w, err, nil)
 		return
 	}
@@ -26,6 +29,7 @@ func (c *CodeListAPI) getCodeLists(w http.ResponseWriter, r *http.Request) {
 
 	b, err := json.Marshal(codeLists)
 	if err != nil {
+		log.InfoCtx(ctx, "failed to marshal code lists", log.Data{"err": err})
 		handleError(ctx, w, err, nil)
 		return
 	}
@@ -52,6 +56,7 @@ func (c *CodeListAPI) getCodeList(w http.ResponseWriter, r *http.Request) {
 
 	b, err := json.Marshal(codeList)
 	if err != nil {
+		log.InfoCtx(ctx, "failed to marshal code list", log.Data{"err": err})
 		handleError(ctx, w, err, nil)
 		return
 	}

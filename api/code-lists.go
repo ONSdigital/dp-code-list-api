@@ -22,6 +22,14 @@ func (c *CodeListAPI) getCodeLists(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	for _, item := range codeLists.Items {
+		if err := item.UpdateLinks(c.apiURL); err != nil {
+			log.ErrorCtx(ctx, errors.WithMessage(err, "getCodeLists endpoint: links could not be created"), nil)
+			http.Error(w, internalServerErr, http.StatusInternalServerError)
+			return
+		}
+	}
+
 	count := len(codeLists.Items)
 	codeLists.Count = count
 	codeLists.Limit = count
@@ -51,6 +59,12 @@ func (c *CodeListAPI) getCodeList(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.ErrorCtx(ctx, errors.WithMessage(err, "getCodeList endpoint: store.GetCodeList returned an error"), data)
 		handleError(ctx, w, err, nil)
+		return
+	}
+
+	if err := codeList.UpdateLinks(c.apiURL); err != nil {
+		log.ErrorCtx(ctx, errors.WithMessage(err, "getCodeList endpoint: links could not be created"), nil)
+		http.Error(w, internalServerErr, http.StatusInternalServerError)
 		return
 	}
 

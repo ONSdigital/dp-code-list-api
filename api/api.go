@@ -6,6 +6,7 @@ import (
 	"context"
 
 	"github.com/ONSdigital/dp-code-list-api/datastore"
+	"github.com/ONSdigital/dp-graph/graph/driver"
 	"github.com/ONSdigital/go-ns/log"
 	"github.com/gorilla/mux"
 )
@@ -18,16 +19,20 @@ const (
 
 // CodeListAPI holds all endpoints which are used to access the code list resources
 type CodeListAPI struct {
-	router    *mux.Router
-	store     datastore.DataStore
-	writeBody func(w http.ResponseWriter, bytes []byte) error
+	router        *mux.Router
+	store         datastore.DataStore
+	writeBody     func(w http.ResponseWriter, bytes []byte) error
+	apiURL        string
+	datasetAPIURL string
 }
 
 // CreateCodeListAPI returns a constructed code list api
-func CreateCodeListAPI(route *mux.Router, store datastore.DataStore) *CodeListAPI {
+func CreateCodeListAPI(route *mux.Router, store datastore.DataStore, apiURL, datasetAPIURL string) *CodeListAPI {
 	api := CodeListAPI{
-		router: route,
-		store:  store,
+		router:        route,
+		store:         store,
+		apiURL:        apiURL,
+		datasetAPIURL: datasetAPIURL,
 		writeBody: func(w http.ResponseWriter, bytes []byte) error {
 			w.Header().Set(contentTypeHeader, contentTypeJSON)
 			if _, err := w.Write(bytes); err != nil {
@@ -50,13 +55,7 @@ func CreateCodeListAPI(route *mux.Router, store datastore.DataStore) *CodeListAP
 
 func handleError(ctx context.Context, w http.ResponseWriter, err error, data log.Data) {
 	log.ErrorCtx(ctx, err, data)
-	if datastore.ErrCodeListsNotFound == err ||
-		datastore.ErrCodeListNotFound == err ||
-		datastore.ErrEditionNotFound == err ||
-		datastore.ErrEditionsNotFound == err ||
-		datastore.ErrCodeNotFound == err ||
-		datastore.ErrCodesNotFound == err ||
-		datastore.ErrDatasetsNotFound == err {
+	if err == driver.ErrNotFound {
 		http.Error(w, err.Error(), http.StatusNotFound)
 	} else {
 		http.Error(w, internalServerErr, http.StatusInternalServerError)

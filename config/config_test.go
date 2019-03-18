@@ -15,8 +15,7 @@ func TestGetReturnsDefaultValues(t *testing.T) {
 		So(cfg.BindAddr, ShouldEqual, ":22400")
 		So(cfg.CodeListAPIURL, ShouldEqual, "http://localhost:22400")
 		So(cfg.GracefulShutdownTimeout, ShouldEqual, time.Second*5)
-		So(cfg.Neo4jDatabaseAddress, ShouldEqual, "bolt://localhost:7687")
-		So(cfg.Neo4jPoolSize, ShouldEqual, 30)
-		So(cfg.Neo4jCodeListLabel, ShouldEqual, "code_list")
+		So(cfg.HealthCheckInterval, ShouldEqual, time.Second*30)
+		So(cfg.HealthCheckRecovery, ShouldEqual, time.Second*5)
 	})
 }

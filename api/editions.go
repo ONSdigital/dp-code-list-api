@@ -15,8 +15,12 @@ func (c *CodeListAPI) getEditions(w http.ResponseWriter, r *http.Request) {
 	id := vars["id"]
 	data := log.Data{"codelist_id": id}
 
+	log.InfoCtx(ctx, "getEditions endpoint: attempting to find editions", data)
+
 	editions, err := c.store.GetEditions(r.Context(), id)
 	if err != nil {
+		data["err"] = err
+		log.InfoCtx(ctx, "failed to get editions", data)
 		handleError(ctx, w, err, data)
 		return
 	}
@@ -36,6 +40,8 @@ func (c *CodeListAPI) getEditions(w http.ResponseWriter, r *http.Request) {
 
 	b, err := json.Marshal(editions)
 	if err != nil {
+		data["err"] = err
+		log.InfoCtx(ctx, "failed to marshal editions", data)
 		handleError(ctx, w, err, data)
 		return
 	}
@@ -54,8 +60,12 @@ func (c *CodeListAPI) getEdition(w http.ResponseWriter, r *http.Request) {
 	edition := vars["edition"]
 	data := log.Data{"codelist_id": id, "edition": edition}
 
+	log.InfoCtx(ctx, "getEdition endpoint: attempting to find edition", data)
+
 	editionModel, err := c.store.GetEdition(r.Context(), id, edition)
 	if err != nil {
+		data["err"] = err
+		log.InfoCtx(ctx, "failed to get edition", data)
 		handleError(ctx, w, err, data)
 		return
 	}
@@ -68,6 +78,8 @@ func (c *CodeListAPI) getEdition(w http.ResponseWriter, r *http.Request) {
 
 	b, err := json.Marshal(editionModel)
 	if err != nil {
+		data["err"] = err
+		log.InfoCtx(ctx, "failed to marshal editions", data)
 		handleError(ctx, w, err, data)
 		return
 	}

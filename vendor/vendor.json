@@ -11,8 +11,8 @@
 		{
 			"checksumSHA1": "o+ldH+dr4mTedWWPnV580F3l2hM=",
 			"path": "github.com/ONSdigital/dp-dimension-importer/model",
-			"revision": "221f2ea9e3719581eb8f75f9e936f31c0de53bb7",
-			"revisionTime": "2019-03-22T12:13:12Z"
+			"revision": "d7b290e2740084b8961f68a6a3ee905c3b296267",
+			"revisionTime": "2019-03-29T14:55:15Z"
 		},
 		{
 			"checksumSHA1": "leH/fyl/KmShljBp5TdSsQr9xyc=",
@@ -39,7 +39,7 @@
 			"revisionTime": "2019-03-25T17:53:13Z"
 		},
 		{
-			"checksumSHA1": "bljN5KJ5+Mijg+yvE+ZZQIuJNyw=",
+			"checksumSHA1": "3SdJz5op0MRfZNZe/prYdKN+KnU=",
 			"path": "github.com/ONSdigital/dp-graph/neo4j",
 			"revision": "455120c204d33ab78d5663486630583373856e41",
 			"revisionTime": "2019-03-25T17:53:13Z"
@@ -57,7 +57,7 @@
 			"revisionTime": "2019-03-25T17:53:13Z"
 		},
 		{
-			"checksumSHA1": "e2tM4AYGw5b9ZZjEh8eSw0yzGyA=",
+			"checksumSHA1": "QV5LGj4rOKWT5tvkZdzixj4D2OM=",
 			"path": "github.com/ONSdigital/dp-graph/neo4j/query",
 			"revision": "455120c204d33ab78d5663486630583373856e41",
 			"revisionTime": "2019-03-25T17:53:13Z"
@@ -71,14 +71,14 @@
 		{
 			"checksumSHA1": "sX7Krcb3Xi+QkzybgFfBj6hJ81A=",
 			"path": "github.com/ONSdigital/dp-hierarchy-api/models",
-			"revision": "64ca752d215c28872375f428d10d0d4bd1b84e66",
-			"revisionTime": "2019-03-22T15:22:53Z"
+			"revision": "36bece6c3aae81245e395ab97bf691c24ad7ff52",
+			"revisionTime": "2019-04-01T09:54:11Z"
 		},
 		{
 			"checksumSHA1": "VETtCYCwbZOldq+GK7vzoMWFyng=",
 			"path": "github.com/ONSdigital/dp-observation-importer/models",
-			"revision": "17a25a1d914f591cbd349e79dbea06193fa3e8ce",
-			"revisionTime": "2019-03-22T12:14:13Z"
+			"revision": "28d0fa806f7fd46af4ee7ce7f7af24e88daf75ad",
+			"revisionTime": "2019-03-29T14:46:39Z"
 		},
 		{
 			"checksumSHA1": "WIzknz1rbQWUgVG7KwwElO7DajY=",

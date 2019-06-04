@@ -7,6 +7,10 @@ BIN_DIR?=.
 export GOOS?=$(shell go env GOOS)
 export GOARCH?=$(shell go env GOARCH)
 
+#export GRAPH_ADDR?=bolt://localhost:7687
+export GRAPH_ADDR?=ws://localhost:8182/gremlin
+export GRAPH_DRIVER_TYPE?=neptune
+
 build:
 	@mkdir -p $(BUILD_ARCH)/$(BIN_DIR)
 	go build -o $(BUILD_ARCH)/$(BIN_DIR)/dp-code-list-api cmd/dp-code-list-api/main.go
@@ -14,7 +18,7 @@ test:
 	go test -cover $(shell go list ./... | grep -v /vendor/)
 
 debug:
-	HUMAN_LOG=1 GRAPH_DRIVER_TYPE=neo4j GRAPH_ADDR="bolt://localhost:7687" go run -race cmd/dp-code-list-api/main.go
+	HUMAN_LOG=1 go run -race cmd/dp-code-list-api/main.go
 
 acceptance:
 	HUMAN_LOG=1 go run -race cmd/dp-code-list-api/main.go

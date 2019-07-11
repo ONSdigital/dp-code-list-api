@@ -7,7 +7,6 @@ BIN_DIR?=.
 export GOOS?=$(shell go env GOOS)
 export GOARCH?=$(shell go env GOARCH)
 
-#export GRAPH_ADDR?=bolt://localhost:7687
 export GRAPH_ADDR?=ws://localhost:8182/gremlin
 export GRAPH_DRIVER_TYPE?=neptune
 

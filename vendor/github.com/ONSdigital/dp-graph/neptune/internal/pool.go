@@ -4,8 +4,9 @@
 package internal
 
 import (
+	"context"
 	"github.com/ONSdigital/dp-graph/neptune/driver"
-	"github.com/gedge/gremgo-neptune"
+	"github.com/ONSdigital/gremgo-neptune"
 	"sync"
 )
 
@@ -16,6 +17,7 @@ var (
 	lockNeptunePoolMockGetCount      sync.RWMutex
 	lockNeptunePoolMockGetE          sync.RWMutex
 	lockNeptunePoolMockGetStringList sync.RWMutex
+	lockNeptunePoolMockOpenCursorCtx sync.RWMutex
 )
 
 // Ensure, that NeptunePoolMock does implement NeptunePool.
@@ -46,6 +48,9 @@ var _ driver.NeptunePool = &NeptunePoolMock{}
 //             GetStringListFunc: func(query string, bindings map[string]string, rebindings map[string]string) ([]string, error) {
 // 	               panic("mock out the GetStringList method")
 //             },
+//             OpenCursorCtxFunc: func(ctx context.Context, query string, bindings map[string]string, rebindings map[string]string) (*gremgo.Cursor, error) {
+// 	               panic("mock out the OpenCursorCtx method")
+//             },
 //         }
 //
 //         // use mockedNeptunePool in code that requires NeptunePool
@@ -70,6 +75,9 @@ type NeptunePoolMock struct {
 
 	// GetStringListFunc mocks the GetStringList method.
 	GetStringListFunc func(query string, bindings map[string]string, rebindings map[string]string) ([]string, error)
+
+	// OpenCursorCtxFunc mocks the OpenCursorCtx method.
+	OpenCursorCtxFunc func(ctx context.Context, query string, bindings map[string]string, rebindings map[string]string) (*gremgo.Cursor, error)
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -114,6 +122,17 @@ type NeptunePoolMock struct {
 		}
 		// GetStringList holds details about calls to the GetStringList method.
 		GetStringList []struct {
+			// Query is the query argument value.
+			Query string
+			// Bindings is the bindings argument value.
+			Bindings map[string]string
+			// Rebindings is the rebindings argument value.
+			Rebindings map[string]string
+		}
+		// OpenCursorCtx holds details about calls to the OpenCursorCtx method.
+		OpenCursorCtx []struct {
+			// Ctx is the ctx argument value.
+			Ctx context.Context
 			// Query is the query argument value.
 			Query string
 			// Bindings is the bindings argument value.
@@ -342,5 +361,48 @@ func (mock *NeptunePoolMock) GetStringListCalls() []struct {
 	lockNeptunePoolMockGetStringList.RLock()
 	calls = mock.calls.GetStringList
 	lockNeptunePoolMockGetStringList.RUnlock()
+	return calls
+}
+
+// OpenCursorCtx calls OpenCursorCtxFunc.
+func (mock *NeptunePoolMock) OpenCursorCtx(ctx context.Context, query string, bindings map[string]string, rebindings map[string]string) (*gremgo.Cursor, error) {
+	if mock.OpenCursorCtxFunc == nil {
+		panic("NeptunePoolMock.OpenCursorCtxFunc: method is nil but NeptunePool.OpenCursorCtx was just called")
+	}
+	callInfo := struct {
+		Ctx        context.Context
+		Query      string
+		Bindings   map[string]string
+		Rebindings map[string]string
+	}{
+		Ctx:        ctx,
+		Query:      query,
+		Bindings:   bindings,
+		Rebindings: rebindings,
+	}
+	lockNeptunePoolMockOpenCursorCtx.Lock()
+	mock.calls.OpenCursorCtx = append(mock.calls.OpenCursorCtx, callInfo)
+	lockNeptunePoolMockOpenCursorCtx.Unlock()
+	return mock.OpenCursorCtxFunc(ctx, query, bindings, rebindings)
+}
+
+// OpenCursorCtxCalls gets all the calls that were made to OpenCursorCtx.
+// Check the length with:
+//     len(mockedNeptunePool.OpenCursorCtxCalls())
+func (mock *NeptunePoolMock) OpenCursorCtxCalls() []struct {
+	Ctx        context.Context
+	Query      string
+	Bindings   map[string]string
+	Rebindings map[string]string
+} {
+	var calls []struct {
+		Ctx        context.Context
+		Query      string
+		Bindings   map[string]string
+		Rebindings map[string]string
+	}
+	lockNeptunePoolMockOpenCursorCtx.RLock()
+	calls = mock.calls.OpenCursorCtx
+	lockNeptunePoolMockOpenCursorCtx.RUnlock()
 	return calls
 }

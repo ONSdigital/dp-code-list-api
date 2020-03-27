@@ -12,10 +12,13 @@ func TestGetReturnsDefaultValues(t *testing.T) {
 	Convey("When a loading a configuration, default values are return", t, func() {
 		cfg, err := Get()
 		So(err, ShouldBeNil)
-		So(cfg.BindAddr, ShouldEqual, ":22400")
-		So(cfg.CodeListAPIURL, ShouldEqual, "http://localhost:22400")
-		So(cfg.GracefulShutdownTimeout, ShouldEqual, time.Second*5)
-		So(cfg.HealthCheckInterval, ShouldEqual, time.Second*30)
-		So(cfg.HealthCheckRecovery, ShouldEqual, time.Second*5)
+		So(cfg, ShouldResemble, &Configuration{
+			BindAddr:                   ":22400",
+			CodeListAPIURL:             "http://localhost:22400",
+			DatasetAPIURL:              "http://localhost:22000",
+			GracefulShutdownTimeout:    time.Second * 5,
+			HealthCheckInterval:        time.Second * 10,
+			HealthCheckCriticalTimeout: time.Minute,
+		})
 	})
 }

@@ -8,9 +8,11 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ONSdigital/dp-code-list-api/datastore/datastoretest"
+	storetest "github.com/ONSdigital/dp-code-list-api/datastore/datastoretest"
+	dbmodels "github.com/ONSdigital/dp-graph/v2/models"
+
 	"github.com/ONSdigital/dp-code-list-api/models"
-	"github.com/ONSdigital/dp-graph/graph/driver"
+	"github.com/ONSdigital/dp-graph/v2/graph/driver"
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
 	. "github.com/smartystreets/goconvey/convey"
@@ -27,6 +29,11 @@ var (
 		return getCodesErr
 	}
 
+	codeDbModel = dbmodels.Code{
+		Code:  "666",
+		Label: "test",
+	}
+
 	codeModel = models.Code{
 		Code:  "666", // number of the beast \m/
 		Label: "test",
@@ -41,7 +48,7 @@ var (
 func TestGetCodes_DatastoreError(t *testing.T) {
 	Convey("Given datastore.GetCodes returns an error", t, func() {
 		mockDatastore := &storetest.DataStoreMock{
-			GetCodesFunc: func(ctx context.Context, codeListID string, edition string) (*models.CodeResults, error) {
+			GetCodesFunc: func(ctx context.Context, codeListID string, editionID string) (*dbmodels.CodeResults, error) {
 				return nil, getCodesErr
 			},
 		}
@@ -60,7 +67,7 @@ func TestGetCodes_DatastoreError(t *testing.T) {
 
 				So(mockDatastore.GetCodesCalls(), ShouldHaveLength, 1)
 				So(mockDatastore.GetCodesCalls()[0].CodeListID, ShouldEqual, testCodelistID)
-				So(mockDatastore.GetCodesCalls()[0].Edition, ShouldEqual, testEdition)
+				So(mockDatastore.GetCodesCalls()[0].EditionID, ShouldEqual, testEdition)
 			})
 		})
 	})
@@ -69,7 +76,7 @@ func TestGetCodes_DatastoreError(t *testing.T) {
 func TestGetCodes_EditionNotFound(t *testing.T) {
 	Convey("Given datastore.GetCodes returns an edition not found error", t, func() {
 		mockDatastore := &storetest.DataStoreMock{
-			GetCodesFunc: func(ctx context.Context, codeListID string, edition string) (*models.CodeResults, error) {
+			GetCodesFunc: func(ctx context.Context, codeListID string, editionID string) (*dbmodels.CodeResults, error) {
 				return nil, driver.ErrNotFound
 			},
 		}
@@ -88,7 +95,7 @@ func TestGetCodes_EditionNotFound(t *testing.T) {
 
 				So(mockDatastore.GetCodesCalls(), ShouldHaveLength, 1)
 				So(mockDatastore.GetCodesCalls()[0].CodeListID, ShouldEqual, testCodelistID)
-				So(mockDatastore.GetCodesCalls()[0].Edition, ShouldEqual, testEdition)
+				So(mockDatastore.GetCodesCalls()[0].EditionID, ShouldEqual, testEdition)
 			})
 		})
 	})
@@ -97,8 +104,8 @@ func TestGetCodes_EditionNotFound(t *testing.T) {
 func TestGetCodes_WriteBodyError(t *testing.T) {
 	Convey("Given write response body returns an error ", t, func() {
 		mockDatastore := &storetest.DataStoreMock{
-			GetCodesFunc: func(ctx context.Context, codeListID string, edition string) (*models.CodeResults, error) {
-				return &models.CodeResults{}, nil
+			GetCodesFunc: func(ctx context.Context, codeListID string, editionID string) (*dbmodels.CodeResults, error) {
+				return &dbmodels.CodeResults{}, nil
 			},
 		}
 
@@ -119,7 +126,7 @@ func TestGetCodes_WriteBodyError(t *testing.T) {
 
 				So(mockDatastore.GetCodesCalls(), ShouldHaveLength, 1)
 				So(mockDatastore.GetCodesCalls()[0].CodeListID, ShouldEqual, testCodelistID)
-				So(mockDatastore.GetCodesCalls()[0].Edition, ShouldEqual, testEdition)
+				So(mockDatastore.GetCodesCalls()[0].EditionID, ShouldEqual, testEdition)
 			})
 		})
 	})
@@ -127,14 +134,17 @@ func TestGetCodes_WriteBodyError(t *testing.T) {
 
 func TestGetCodes_Success(t *testing.T) {
 	Convey("Given a valid request", t, func() {
+		dbResult := dbmodels.CodeResults{
+			Items: []dbmodels.Code{codeDbModel},
+		}
 		expectedResult := &models.CodeResults{
 			Count: 1,
 			Items: []models.Code{codeModel},
 		}
 
 		mockDatastore := &storetest.DataStoreMock{
-			GetCodesFunc: func(ctx context.Context, codeListID string, edition string) (*models.CodeResults, error) {
-				return expectedResult, nil
+			GetCodesFunc: func(ctx context.Context, codeListID string, editionID string) (*dbmodels.CodeResults, error) {
+				return &dbResult, nil
 			},
 		}
 
@@ -159,7 +169,7 @@ func TestGetCodes_Success(t *testing.T) {
 
 				So(mockDatastore.GetCodesCalls(), ShouldHaveLength, 1)
 				So(mockDatastore.GetCodesCalls()[0].CodeListID, ShouldEqual, testCodelistID)
-				So(mockDatastore.GetCodesCalls()[0].Edition, ShouldEqual, testEdition)
+				So(mockDatastore.GetCodesCalls()[0].EditionID, ShouldEqual, testEdition)
 			})
 		})
 	})
@@ -168,8 +178,8 @@ func TestGetCodes_Success(t *testing.T) {
 func TestGetCode_Success(t *testing.T) {
 	Convey("Given a valid request", t, func() {
 		mockDatastore := &storetest.DataStoreMock{
-			GetCodeFunc: func(ctx context.Context, codeListID string, edition string, code string) (*models.Code, error) {
-				return &codeModel, nil
+			GetCodeFunc: func(ctx context.Context, codeListID string, editionID string, codeID string) (*dbmodels.Code, error) {
+				return &codeDbModel, nil
 			},
 		}
 
@@ -194,8 +204,8 @@ func TestGetCode_Success(t *testing.T) {
 
 				So(mockDatastore.GetCodeCalls(), ShouldHaveLength, 1)
 				So(mockDatastore.GetCodeCalls()[0].CodeListID, ShouldEqual, testCodelistID)
-				So(mockDatastore.GetCodeCalls()[0].Edition, ShouldEqual, testEdition)
-				So(mockDatastore.GetCodeCalls()[0].Code, ShouldEqual, testCode)
+				So(mockDatastore.GetCodeCalls()[0].EditionID, ShouldEqual, testEdition)
+				So(mockDatastore.GetCodeCalls()[0].CodeID, ShouldEqual, testCode)
 			})
 		})
 	})
@@ -204,7 +214,7 @@ func TestGetCode_Success(t *testing.T) {
 func TestGetCode_DatastoreError(t *testing.T) {
 	Convey("Given datastore.GetCode returns an error", t, func() {
 		mockDatastore := &storetest.DataStoreMock{
-			GetCodeFunc: func(ctx context.Context, codeListID string, edition string, code string) (*models.Code, error) {
+			GetCodeFunc: func(ctx context.Context, codeListID string, editionID string, codeID string) (*dbmodels.Code, error) {
 				return nil, getCodesErr
 			},
 		}
@@ -223,8 +233,8 @@ func TestGetCode_DatastoreError(t *testing.T) {
 
 				So(mockDatastore.GetCodeCalls(), ShouldHaveLength, 1)
 				So(mockDatastore.GetCodeCalls()[0].CodeListID, ShouldEqual, testCodelistID)
-				So(mockDatastore.GetCodeCalls()[0].Edition, ShouldEqual, testEdition)
-				So(mockDatastore.GetCodeCalls()[0].Code, ShouldEqual, testCode)
+				So(mockDatastore.GetCodeCalls()[0].EditionID, ShouldEqual, testEdition)
+				So(mockDatastore.GetCodeCalls()[0].CodeID, ShouldEqual, testCode)
 			})
 		})
 	})
@@ -233,7 +243,7 @@ func TestGetCode_DatastoreError(t *testing.T) {
 func TestGetCode_EditionNotFound(t *testing.T) {
 	Convey("Given datastore.GetCode returns edition not found error", t, func() {
 		mockDatastore := &storetest.DataStoreMock{
-			GetCodeFunc: func(ctx context.Context, codeListID string, edition string, code string) (*models.Code, error) {
+			GetCodeFunc: func(ctx context.Context, codeListID string, editionID string, codeID string) (*dbmodels.Code, error) {
 				return nil, driver.ErrNotFound
 			},
 		}
@@ -252,8 +262,8 @@ func TestGetCode_EditionNotFound(t *testing.T) {
 
 				So(mockDatastore.GetCodeCalls(), ShouldHaveLength, 1)
 				So(mockDatastore.GetCodeCalls()[0].CodeListID, ShouldEqual, testCodelistID)
-				So(mockDatastore.GetCodeCalls()[0].Edition, ShouldEqual, testEdition)
-				So(mockDatastore.GetCodeCalls()[0].Code, ShouldEqual, testCode)
+				So(mockDatastore.GetCodeCalls()[0].EditionID, ShouldEqual, testEdition)
+				So(mockDatastore.GetCodeCalls()[0].CodeID, ShouldEqual, testCode)
 			})
 		})
 	})
@@ -262,8 +272,8 @@ func TestGetCode_EditionNotFound(t *testing.T) {
 func TestGetCode_WriteBodyError(t *testing.T) {
 	Convey("Given datastore.GetCode returns an error", t, func() {
 		mockDatastore := &storetest.DataStoreMock{
-			GetCodeFunc: func(ctx context.Context, codeListID string, edition string, code string) (*models.Code, error) {
-				return &codeModel, nil
+			GetCodeFunc: func(ctx context.Context, codeListID string, editionID string, codeID string) (*dbmodels.Code, error) {
+				return &codeDbModel, nil
 			},
 		}
 
@@ -283,8 +293,8 @@ func TestGetCode_WriteBodyError(t *testing.T) {
 
 				So(mockDatastore.GetCodeCalls(), ShouldHaveLength, 1)
 				So(mockDatastore.GetCodeCalls()[0].CodeListID, ShouldEqual, testCodelistID)
-				So(mockDatastore.GetCodeCalls()[0].Edition, ShouldEqual, testEdition)
-				So(mockDatastore.GetCodeCalls()[0].Code, ShouldEqual, testCode)
+				So(mockDatastore.GetCodeCalls()[0].EditionID, ShouldEqual, testEdition)
+				So(mockDatastore.GetCodeCalls()[0].CodeID, ShouldEqual, testCode)
 			})
 		})
 	})

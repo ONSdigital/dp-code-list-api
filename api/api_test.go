@@ -7,9 +7,9 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/ONSdigital/dp-code-list-api/datastore/datastoretest"
-	"github.com/ONSdigital/dp-code-list-api/models"
-	"github.com/ONSdigital/dp-graph/graph/driver"
+	storetest "github.com/ONSdigital/dp-code-list-api/datastore/datastoretest"
+	"github.com/ONSdigital/dp-graph/v2/graph/driver"
+	"github.com/ONSdigital/dp-graph/v2/models"
 	"github.com/gorilla/mux"
 	. "github.com/smartystreets/goconvey/convey"
 )
@@ -23,7 +23,7 @@ func TestGetCodeLists(t *testing.T) {
 		w := httptest.NewRecorder()
 
 		mockDatastore := &storetest.DataStoreMock{
-			GetCodeListsFunc: func(ctx context.Context, f string) (*models.CodeListResults, error) {
+			GetCodeListsFunc: func(ctx context.Context, filterBy string) (*models.CodeListResults, error) {
 				return &models.CodeListResults{}, nil
 			},
 		}
@@ -57,11 +57,11 @@ func TestGetCodeList(t *testing.T) {
 		mockDatastore := &storetest.DataStoreMock{
 			GetCodeListFunc: func(ctx context.Context, id string) (*models.CodeList, error) {
 				return &models.CodeList{
-					Links: &models.CodeListLink{
-						Self: &models.Link{
-							ID: id,
-						},
-					},
+					// Links: &models.CodeListLink{
+					// 	Self: &models.Link{
+					// 		ID: id,
+					// 	},
+					// },
 				}, nil
 			},
 		}
@@ -153,13 +153,14 @@ func TestGetEdition(t *testing.T) {
 		mockDatastore := &storetest.DataStoreMock{
 			GetEditionFunc: func(ctx context.Context, f, e string) (*models.Edition, error) {
 				return &models.Edition{
-					Edition: "edition",
-					Label:   "label",
-					Links: &models.EditionLinks{
-						Self: &models.Link{
-							ID: "edition",
-						},
-					}}, nil
+					ID:    "edition",
+					Label: "label",
+					// Links: &models.EditionLinks{
+					// 	Self: &models.Link{
+					// 		ID: "edition",
+					// 	},
+					// },
+				}, nil
 			},
 		}
 

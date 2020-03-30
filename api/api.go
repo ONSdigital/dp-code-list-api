@@ -6,7 +6,7 @@ import (
 	"context"
 
 	"github.com/ONSdigital/dp-code-list-api/datastore"
-	"github.com/ONSdigital/dp-graph/graph/driver"
+	"github.com/ONSdigital/dp-graph/v2/graph/driver"
 	"github.com/ONSdigital/log.go/log"
 	"github.com/gorilla/mux"
 )

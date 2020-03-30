@@ -1,8 +1,9 @@
-package models
+package models_test
 
 import (
 	"testing"
 
+	"github.com/ONSdigital/dp-code-list-api/models"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
@@ -14,7 +15,7 @@ func TestCreateLink(t *testing.T) {
 		url := "http://localhost:22400/code-list/local-authority/codes/E01000064"
 
 		Convey("When the CreateLink function is called", func() {
-			link := CreateLink(id, url, domain)
+			link := models.CreateLink(id, url, domain)
 
 			Convey("Then the returned values should be as expected", func() {
 				So(link.Href, ShouldEqual, "http://api.example.com/v1/code-list/local-authority/codes/E01000064")
@@ -28,7 +29,7 @@ func TestCreateLink(t *testing.T) {
 		url := "http://somedomain/code-list/local-authority/codes/E01000064"
 
 		Convey("When the CreateLink function is called", func() {
-			link := CreateLink(id, url, domain)
+			link := models.CreateLink(id, url, domain)
 
 			Convey("Then the returned values should be as expected", func() {
 				So(link.Href, ShouldEqual, "http://localhost:22400/code-list/local-authority/codes/E01000064")
@@ -42,7 +43,7 @@ func TestCreateLink(t *testing.T) {
 		url := "/code-list/local-authority/codes/E01000064"
 
 		Convey("When the CreateLink function is called", func() {
-			link := CreateLink(id, url, domain)
+			link := models.CreateLink(id, url, domain)
 
 			Convey("Then the returned values should be as expected", func() {
 				So(link.Href, ShouldEqual, "http://localhost:22400/code-list/local-authority/codes/E01000064")

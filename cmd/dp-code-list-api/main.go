@@ -11,7 +11,7 @@ import (
 
 	"github.com/ONSdigital/dp-code-list-api/api"
 	"github.com/ONSdigital/dp-code-list-api/config"
-	"github.com/ONSdigital/dp-graph/graph"
+	"github.com/ONSdigital/dp-graph/v2/graph"
 	"github.com/ONSdigital/dp-healthcheck/healthcheck"
 	"github.com/ONSdigital/go-ns/server"
 	"github.com/ONSdigital/log.go/log"

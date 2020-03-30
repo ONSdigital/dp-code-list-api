@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/ONSdigital/dp-code-list-api/models"
 	"github.com/ONSdigital/log.go/log"
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
@@ -18,12 +19,13 @@ func (c *CodeListAPI) getCodes(w http.ResponseWriter, r *http.Request) {
 
 	log.Event(ctx, "getCodes endpoint: attempting to get edition codes", log.INFO, data)
 
-	codes, err := c.store.GetCodes(ctx, id, edition)
+	dbCodes, err := c.store.GetCodes(ctx, id, edition)
 	if err != nil {
 		log.Event(ctx, "error getting codes", log.ERROR, log.Error(errors.WithMessage(err, "getCodes endpoint: store.GetCode returned an error")), data)
 		handleError(ctx, w, err, data)
 		return
 	}
+	codes := models.NewCodeResults(dbCodes)
 
 	for _, item := range codes.Items {
 		if err := item.UpdateLinks(c.apiURL, id, edition); err != nil {
@@ -63,20 +65,21 @@ func (c *CodeListAPI) getCode(w http.ResponseWriter, r *http.Request) {
 
 	log.Event(ctx, "getCode: attempting to get code list code", log.INFO, data)
 
-	result, err := c.store.GetCode(ctx, id, edition, code)
+	dbCode, err := c.store.GetCode(ctx, id, edition, code)
 	if err != nil {
 		log.Event(ctx, "error getting code", log.ERROR, log.Error(errors.WithMessage(err, "getCode endpoint: store.GetCode returned an error")), data)
 		handleError(ctx, w, err, data)
 		return
 	}
+	apiCode := models.NewCode(dbCode)
 
-	if err := result.UpdateLinks(c.apiURL, id, edition); err != nil {
+	if err := apiCode.UpdateLinks(c.apiURL, id, edition); err != nil {
 		log.Event(ctx, "error updating links", log.ERROR, log.Error(errors.WithMessage(err, "getCode endpoint: links could not be created")))
 		http.Error(w, internalServerErr, http.StatusInternalServerError)
 		return
 	}
 
-	b, err := json.Marshal(result)
+	b, err := json.Marshal(apiCode)
 	if err != nil {
 		log.Event(ctx, "marshal error", log.ERROR, log.Error(errors.WithMessage(err, "getCode endpoint: error attempting to marshal result to JSON")), data)
 		http.Error(w, internalServerErr, http.StatusInternalServerError)

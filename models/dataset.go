@@ -3,6 +3,8 @@ package models
 import (
 	"errors"
 	"fmt"
+
+	dbmodels "github.com/ONSdigital/dp-graph/v2/models"
 )
 
 // Datasets represents the model returned from the api datasets
@@ -17,6 +19,7 @@ type Datasets struct {
 
 // Dataset represents an individual model dataset
 type Dataset struct {
+	ID             string
 	Links          *DatasetLinks    `json:"links"`
 	DimensionLabel string           `json:"dimension_label"`
 	Editions       []DatasetEdition `json:"editions"`
@@ -32,22 +35,26 @@ type DatasetEditionLinks struct {
 	LatestVersion    *Link `json:"latest_version"`
 }
 
-// DatasetLink represents the links returned specifically for a dataset
+// DatasetLinks represents the links returned specifically for a dataset
 type DatasetLinks struct {
 	Self *Link `json:"self"`
 }
 
 func (ds *Datasets) UpdateLinks(host, datasetAPIhost, codeListID, editionID, codeID string) error {
 	for i, dataset := range ds.Items {
-		if dataset.Links == nil || dataset.Links.Self == nil || dataset.Links.Self.ID == "" {
+
+		if dataset.ID == "" {
 			return errors.New("invalid dataset provided")
 		}
 
-		id := dataset.Links.Self.ID
-		l := CreateLink(id, fmt.Sprintf(datasetAPIuri, id), datasetAPIhost)
+		if dataset.Links == nil {
+			dataset.Links = &DatasetLinks{}
+		}
+
+		l := CreateLink(dataset.ID, fmt.Sprintf(datasetAPIuri, dataset.ID), datasetAPIhost)
 		dataset.Links.Self = &Link{
 			Href: l.Href,
-			ID:   id,
+			ID:   dataset.ID,
 		}
 
 		var editions []DatasetEdition
@@ -57,7 +64,7 @@ func (ds *Datasets) UpdateLinks(host, datasetAPIhost, codeListID, editionID, cod
 			}
 
 			editionID := edition.Links.Self.ID
-			edition.Links.Self = CreateLink(editionID, fmt.Sprintf("/datasets/%s/editions/%s", id, editionID), datasetAPIhost)
+			edition.Links.Self = CreateLink(editionID, fmt.Sprintf("/datasets/%s/editions/%s", dataset.ID, editionID), datasetAPIhost)
 			//	latestVersion := strconv.Itoa(max(versions))
 
 			if edition.Links == nil || edition.Links.LatestVersion == nil || edition.Links.LatestVersion.ID == "" {
@@ -65,14 +72,14 @@ func (ds *Datasets) UpdateLinks(host, datasetAPIhost, codeListID, editionID, cod
 			}
 
 			versionID := edition.Links.LatestVersion.ID
-			edition.Links.LatestVersion = CreateLink(versionID, fmt.Sprintf("/datasets/%s/editions/%s/versions/%s", id, editionID, versionID), datasetAPIhost)
+			edition.Links.LatestVersion = CreateLink(versionID, fmt.Sprintf("/datasets/%s/editions/%s/versions/%s", dataset.ID, editionID, versionID), datasetAPIhost)
 
 			if edition.Links == nil || edition.Links.DatasetDimension == nil || edition.Links.DatasetDimension.ID == "" {
 				continue
 			}
 
 			dimensionID := edition.Links.DatasetDimension.ID
-			edition.Links.DatasetDimension = CreateLink(dimensionID, fmt.Sprintf("/datasets/%s/editions/%s/versions/%s/dimensions/%s", id, editionID, versionID, dimensionID), datasetAPIhost)
+			edition.Links.DatasetDimension = CreateLink(dimensionID, fmt.Sprintf("/datasets/%s/editions/%s/versions/%s/dimensions/%s", dataset.ID, editionID, versionID, dimensionID), datasetAPIhost)
 
 			editions = append(editions, edition)
 		}
@@ -81,4 +88,39 @@ func (ds *Datasets) UpdateLinks(host, datasetAPIhost, codeListID, editionID, cod
 		ds.Items[i] = dataset
 	}
 	return nil
+}
+
+// NewDataset creates a new Dataset struct from a database Dataset struct
+func NewDataset(dbDataset *dbmodels.Dataset) *Dataset {
+	if dbDataset == nil {
+		return &Dataset{}
+	}
+	editions := []DatasetEdition{}
+	for _, dbEdition := range dbDataset.Editions {
+		editions = append(editions, *NewDatasetEdition(&dbEdition))
+	}
+	return &Dataset{
+		ID:             dbDataset.ID,
+		DimensionLabel: dbDataset.DimensionLabel,
+		Editions:       editions,
+	}
+}
+
+// NewDatasetEdition creates a new DatasetEdition struct from a database DatasetEdition
+func NewDatasetEdition(dbDatasetEdition *dbmodels.DatasetEdition) *DatasetEdition {
+	return &DatasetEdition{}
+}
+
+// NewDatasets creates a new Datasets struct from a database Datasets
+func NewDatasets(dbDatasets *dbmodels.Datasets) *Datasets {
+	if dbDatasets == nil {
+		return &Datasets{}
+	}
+	items := []Dataset{}
+	for _, dbItem := range dbDatasets.Items {
+		items = append(items, *NewDataset(&dbItem))
+	}
+	return &Datasets{
+		Items: items,
+	}
 }

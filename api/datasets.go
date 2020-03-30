@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/ONSdigital/dp-code-list-api/models"
 	"github.com/ONSdigital/log.go/log"
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
@@ -19,13 +20,14 @@ func (c *CodeListAPI) getCodeDatasets(w http.ResponseWriter, r *http.Request) {
 
 	log.Event(ctx, "getCodeDatasets endpoint: attempting to find datasets related to code", log.INFO, logData)
 
-	datasets, err := c.store.GetCodeDatasets(ctx, codeListID, edition, code)
+	dbDatasets, err := c.store.GetCodeDatasets(ctx, codeListID, edition, code)
 	if err != nil {
 		logData["err"] = err
 		log.Event(ctx, "failed to get datasets list", log.INFO, logData)
 		handleError(ctx, w, err, logData)
 		return
 	}
+	datasets := models.NewDatasets(dbDatasets)
 
 	if err := datasets.UpdateLinks(c.apiURL, c.datasetAPIURL, codeListID, edition, code); err != nil {
 		log.Event(ctx, "error updating links", log.ERROR, log.Error(errors.WithMessage(err, "getCodeDatasets endpoint: links could not be created")))

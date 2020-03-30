@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/ONSdigital/dp-code-list-api/models"
 	"github.com/ONSdigital/log.go/log"
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
@@ -17,13 +18,14 @@ func (c *CodeListAPI) getEditions(w http.ResponseWriter, r *http.Request) {
 
 	log.Event(ctx, "getEditions endpoint: attempting to find editions", log.INFO, data)
 
-	editions, err := c.store.GetEditions(r.Context(), id)
+	dbEditions, err := c.store.GetEditions(r.Context(), id)
 	if err != nil {
 		data["err"] = err
 		log.Event(ctx, "failed to get editions", log.INFO, data)
 		handleError(ctx, w, err, data)
 		return
 	}
+	editions := models.NewEditions(dbEditions)
 
 	for _, item := range editions.Items {
 		if err := item.UpdateLinks(id, c.apiURL); err != nil {
@@ -62,13 +64,14 @@ func (c *CodeListAPI) getEdition(w http.ResponseWriter, r *http.Request) {
 
 	log.Event(ctx, "getEdition endpoint: attempting to find edition", log.INFO, data)
 
-	editionModel, err := c.store.GetEdition(r.Context(), id, edition)
+	dbEditionModel, err := c.store.GetEdition(r.Context(), id, edition)
 	if err != nil {
 		data["err"] = err
 		log.Event(ctx, "failed to get edition", log.INFO, data)
 		handleError(ctx, w, err, data)
 		return
 	}
+	editionModel := models.NewEdition(dbEditionModel)
 
 	if err := editionModel.UpdateLinks(id, c.apiURL); err != nil {
 		log.Event(ctx, "error updating links", log.ERROR, log.Error(errors.WithMessage(err, "getEdition endpoint: links could not be created")))

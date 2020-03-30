@@ -37,14 +37,14 @@ func main() {
 	// Get Config
 	cfg, err := config.Get()
 	if err != nil {
-		log.Event(ctx, "error getting config", log.ERROR, log.Error(err))
+		log.Event(ctx, "error getting config", log.FATAL, log.Error(err))
 		os.Exit(1)
 	}
 
 	// Create CodeList Store
-	datastore, err := graph.NewCodeListStore(context.Background())
+	datastore, err := graph.NewCodeListStore(ctx)
 	if err != nil {
-		log.Event(ctx, "error creating codelist store", log.ERROR, log.Error(err))
+		log.Event(ctx, "error creating codelist store", log.FATAL, log.Error(err))
 		os.Exit(1)
 	}
 

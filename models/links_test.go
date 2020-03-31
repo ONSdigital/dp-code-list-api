@@ -51,4 +51,30 @@ func TestCreateLink(t *testing.T) {
 			})
 		})
 	})
+
+	Convey("Given a malformed url", t, func() {
+		domain := "http://localhost:22400<<"
+		url := "/code-list/local-authority/codes/E01000064"
+
+		Convey("When the CreateLink function is called", func() {
+			link := models.CreateLink(id, url, domain)
+
+			Convey("Then the link is not created, and a nil value is returned", func() {
+				So(link, ShouldBeNil)
+			})
+		})
+	})
+
+	Convey("Given a malformed domain", t, func() {
+		domain := "http://localhost:22400"
+		url := "/code-list/local-authority/codes/=*-+!@£$%^&*()_"
+
+		Convey("When the CreateLink function is called", func() {
+			link := models.CreateLink(id, url, domain)
+
+			Convey("Then the link is not created, and a nil value is returned", func() {
+				So(link, ShouldBeNil)
+			})
+		})
+	})
 }

@@ -8,8 +8,10 @@ import (
 	"testing"
 
 	storetest "github.com/ONSdigital/dp-code-list-api/datastore/datastoretest"
+
+	dbmodels "github.com/ONSdigital/dp-graph/v2/models"
+
 	"github.com/ONSdigital/dp-graph/v2/graph/driver"
-	"github.com/ONSdigital/dp-graph/v2/models"
 	"github.com/gorilla/mux"
 	. "github.com/smartystreets/goconvey/convey"
 )
@@ -23,8 +25,8 @@ func TestGetCodeLists(t *testing.T) {
 		w := httptest.NewRecorder()
 
 		mockDatastore := &storetest.DataStoreMock{
-			GetCodeListsFunc: func(ctx context.Context, filterBy string) (*models.CodeListResults, error) {
-				return &models.CodeListResults{}, nil
+			GetCodeListsFunc: func(ctx context.Context, filterBy string) (*dbmodels.CodeListResults, error) {
+				return &dbmodels.CodeListResults{}, nil
 			},
 		}
 
@@ -37,7 +39,7 @@ func TestGetCodeLists(t *testing.T) {
 		w := httptest.NewRecorder()
 
 		mockDatastore := &storetest.DataStoreMock{
-			GetCodeListsFunc: func(ctx context.Context, f string) (*models.CodeListResults, error) {
+			GetCodeListsFunc: func(ctx context.Context, f string) (*dbmodels.CodeListResults, error) {
 				return nil, INTERNAL_ERROR
 			},
 		}
@@ -55,14 +57,8 @@ func TestGetCodeList(t *testing.T) {
 		w := httptest.NewRecorder()
 
 		mockDatastore := &storetest.DataStoreMock{
-			GetCodeListFunc: func(ctx context.Context, id string) (*models.CodeList, error) {
-				return &models.CodeList{
-					// Links: &models.CodeListLink{
-					// 	Self: &models.Link{
-					// 		ID: id,
-					// 	},
-					// },
-				}, nil
+			GetCodeListFunc: func(ctx context.Context, id string) (*dbmodels.CodeList, error) {
+				return &dbmodels.CodeList{ID: id}, nil
 			},
 		}
 
@@ -75,7 +71,7 @@ func TestGetCodeList(t *testing.T) {
 		w := httptest.NewRecorder()
 
 		mockDatastore := &storetest.DataStoreMock{
-			GetCodeListFunc: func(ctx context.Context, id string) (*models.CodeList, error) {
+			GetCodeListFunc: func(ctx context.Context, id string) (*dbmodels.CodeList, error) {
 				return nil, driver.ErrNotFound
 			},
 		}
@@ -89,7 +85,7 @@ func TestGetCodeList(t *testing.T) {
 		w := httptest.NewRecorder()
 
 		mockDatastore := &storetest.DataStoreMock{
-			GetCodeListFunc: func(ctx context.Context, id string) (*models.CodeList, error) {
+			GetCodeListFunc: func(ctx context.Context, id string) (*dbmodels.CodeList, error) {
 				return nil, INTERNAL_ERROR
 			},
 		}
@@ -106,8 +102,8 @@ func TestGetEditions(t *testing.T) {
 		w := httptest.NewRecorder()
 
 		mockDatastore := &storetest.DataStoreMock{
-			GetEditionsFunc: func(ctx context.Context, f string) (*models.Editions, error) {
-				return &models.Editions{}, nil
+			GetEditionsFunc: func(ctx context.Context, f string) (*dbmodels.Editions, error) {
+				return &dbmodels.Editions{}, nil
 			},
 		}
 
@@ -120,8 +116,8 @@ func TestGetEditions(t *testing.T) {
 		w := httptest.NewRecorder()
 
 		mockDatastore := &storetest.DataStoreMock{
-			GetEditionsFunc: func(ctx context.Context, f string) (*models.Editions, error) {
-				return &models.Editions{}, driver.ErrNotFound
+			GetEditionsFunc: func(ctx context.Context, f string) (*dbmodels.Editions, error) {
+				return &dbmodels.Editions{}, driver.ErrNotFound
 			},
 		}
 
@@ -134,8 +130,8 @@ func TestGetEditions(t *testing.T) {
 		w := httptest.NewRecorder()
 
 		mockDatastore := &storetest.DataStoreMock{
-			GetEditionsFunc: func(ctx context.Context, f string) (*models.Editions, error) {
-				return &models.Editions{}, INTERNAL_ERROR
+			GetEditionsFunc: func(ctx context.Context, f string) (*dbmodels.Editions, error) {
+				return &dbmodels.Editions{}, INTERNAL_ERROR
 			},
 		}
 
@@ -151,15 +147,10 @@ func TestGetEdition(t *testing.T) {
 		w := httptest.NewRecorder()
 
 		mockDatastore := &storetest.DataStoreMock{
-			GetEditionFunc: func(ctx context.Context, f, e string) (*models.Edition, error) {
-				return &models.Edition{
+			GetEditionFunc: func(ctx context.Context, f, e string) (*dbmodels.Edition, error) {
+				return &dbmodels.Edition{
 					ID:    "edition",
 					Label: "label",
-					// Links: &models.EditionLinks{
-					// 	Self: &models.Link{
-					// 		ID: "edition",
-					// 	},
-					// },
 				}, nil
 			},
 		}
@@ -173,8 +164,8 @@ func TestGetEdition(t *testing.T) {
 		w := httptest.NewRecorder()
 
 		mockDatastore := &storetest.DataStoreMock{
-			GetEditionFunc: func(ctx context.Context, f, e string) (*models.Edition, error) {
-				return &models.Edition{}, driver.ErrNotFound
+			GetEditionFunc: func(ctx context.Context, f, e string) (*dbmodels.Edition, error) {
+				return &dbmodels.Edition{}, driver.ErrNotFound
 			},
 		}
 
@@ -187,8 +178,8 @@ func TestGetEdition(t *testing.T) {
 		w := httptest.NewRecorder()
 
 		mockDatastore := &storetest.DataStoreMock{
-			GetEditionFunc: func(ctx context.Context, f, e string) (*models.Edition, error) {
-				return &models.Edition{}, INTERNAL_ERROR
+			GetEditionFunc: func(ctx context.Context, f, e string) (*dbmodels.Edition, error) {
+				return &dbmodels.Edition{}, INTERNAL_ERROR
 			},
 		}
 

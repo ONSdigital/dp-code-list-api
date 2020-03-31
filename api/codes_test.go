@@ -29,17 +29,30 @@ var (
 		return getCodesErr
 	}
 
+	// Code DB model
 	codeDbModel = dbmodels.Code{
+		ID:    "ID666",
 		Code:  "666",
 		Label: "test",
 	}
 
+	// Code API model with updated links
 	codeModel = models.Code{
+		ID:    "ID666",
 		Code:  "666", // number of the beast \m/
 		Label: "test",
 		Links: &models.CodeLinks{
 			Self: &models.Link{
-				ID: "666",
+				ID:   "ID666",
+				Href: "/code-lists/$codelist_id$/editions/$edition$/codes/ID666",
+			},
+			Datasets: &models.Link{
+				ID:   "",
+				Href: "/code-lists/$codelist_id$/editions/$edition$/codes/ID666/datasets",
+			},
+			CodeList: &models.Link{
+				ID:   "",
+				Href: "/code-lists/$codelist_id$",
 			},
 		},
 	}
@@ -138,8 +151,10 @@ func TestGetCodes_Success(t *testing.T) {
 			Items: []dbmodels.Code{codeDbModel},
 		}
 		expectedResult := &models.CodeResults{
-			Count: 1,
-			Items: []models.Code{codeModel},
+			Count:      1,
+			Limit:      1,
+			TotalCount: 1,
+			Items:      []models.Code{codeModel},
 		}
 
 		mockDatastore := &storetest.DataStoreMock{

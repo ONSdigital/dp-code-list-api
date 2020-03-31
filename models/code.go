@@ -18,8 +18,8 @@ type CodeResults struct {
 
 // Code for a single dimensions type
 type Code struct {
-	ID    string     `json:"-"`
-	Code  string     `json:"id"`
+	ID    string     `json:"id"`
+	Code  string     `json:"code"`
 	Label string     `json:"label"`
 	Links *CodeLinks `json:"links"`
 }

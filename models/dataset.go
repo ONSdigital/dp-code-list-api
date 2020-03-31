@@ -3,6 +3,7 @@ package models
 import (
 	"errors"
 	"fmt"
+	"strconv"
 
 	dbmodels "github.com/ONSdigital/dp-graph/v2/models"
 )
@@ -26,7 +27,9 @@ type Dataset struct {
 }
 
 type DatasetEdition struct {
-	Links *DatasetEditionLinks `json:"links"`
+	ID            string
+	LatestVersion int
+	Links         *DatasetEditionLinks `json:"links"`
 }
 
 type DatasetEditionLinks struct {
@@ -40,53 +43,90 @@ type DatasetLinks struct {
 	Self *Link `json:"self"`
 }
 
-func (ds *Datasets) UpdateLinks(host, datasetAPIhost, codeListID, editionID, codeID string) error {
+// UpdateLinks updates the Dataset Links for all datasets in items.
+func (ds *Datasets) UpdateLinks(datasetAPIhost, codeListID string) error {
+
+	hasErrors := false
 	for i, dataset := range ds.Items {
-
-		if dataset.ID == "" {
-			return errors.New("invalid dataset provided")
+		if err := dataset.UpdateLinks(datasetAPIhost, codeListID); err != nil {
+			hasErrors = true
+			continue
 		}
-
-		if dataset.Links == nil {
-			dataset.Links = &DatasetLinks{}
-		}
-
-		l := CreateLink(dataset.ID, fmt.Sprintf(datasetAPIuri, dataset.ID), datasetAPIhost)
-		dataset.Links.Self = &Link{
-			Href: l.Href,
-			ID:   dataset.ID,
-		}
-
-		var editions []DatasetEdition
-		for _, edition := range dataset.Editions {
-			if edition.Links == nil || edition.Links.Self == nil || edition.Links.Self.ID == "" {
-				continue
-			}
-
-			editionID := edition.Links.Self.ID
-			edition.Links.Self = CreateLink(editionID, fmt.Sprintf("/datasets/%s/editions/%s", dataset.ID, editionID), datasetAPIhost)
-			//	latestVersion := strconv.Itoa(max(versions))
-
-			if edition.Links == nil || edition.Links.LatestVersion == nil || edition.Links.LatestVersion.ID == "" {
-				continue
-			}
-
-			versionID := edition.Links.LatestVersion.ID
-			edition.Links.LatestVersion = CreateLink(versionID, fmt.Sprintf("/datasets/%s/editions/%s/versions/%s", dataset.ID, editionID, versionID), datasetAPIhost)
-
-			if edition.Links == nil || edition.Links.DatasetDimension == nil || edition.Links.DatasetDimension.ID == "" {
-				continue
-			}
-
-			dimensionID := edition.Links.DatasetDimension.ID
-			edition.Links.DatasetDimension = CreateLink(dimensionID, fmt.Sprintf("/datasets/%s/editions/%s/versions/%s/dimensions/%s", dataset.ID, editionID, versionID, dimensionID), datasetAPIhost)
-
-			editions = append(editions, edition)
-		}
-
-		dataset.Editions = editions
 		ds.Items[i] = dataset
 	}
+
+	if hasErrors {
+		return errors.New("Error(s) happened updating dataset links")
+	}
+	return nil
+}
+
+// UpdateLinks updates the Dataset Self Link, and all the nested DatasetEdition links.
+func (d *Dataset) UpdateLinks(datasetAPIhost, codeListID string) error {
+
+	if d.Links == nil {
+		d.Links = &DatasetLinks{}
+	}
+
+	if d.ID == "" {
+		return errors.New("invalid dataset provided")
+	}
+
+	// Update Dataset root-level link
+	d.Links.Self = CreateLink(d.ID, fmt.Sprintf(datasetAPIuri, d.ID), datasetAPIhost)
+
+	// Update links in nested Editions
+	hasErrors := false
+	for i, edition := range d.Editions {
+		if err := edition.UpdateLinks(datasetAPIhost, codeListID, d.ID); err != nil {
+			hasErrors = true
+			continue
+		}
+		d.Editions[i] = edition
+	}
+
+	if hasErrors {
+		return errors.New("Error(s) happened updating dataset edition links")
+	}
+	return nil
+}
+
+// UpdateLinks updates the links for the DatasetEdition
+func (e *DatasetEdition) UpdateLinks(datasetAPIhost, codeListID, datasetID string) error {
+
+	if e.Links == nil {
+		e.Links = &DatasetEditionLinks{}
+	}
+
+	// Validate ID (needed by Self, LatestVersion and DatasetDimension links)
+	if e.ID == "" {
+		return errors.New("datasetEdition with empty ID")
+	}
+
+	// Validate datasetID (needed by Self and DatasetDimension links)
+	if datasetID == "" {
+		return errors.New("empty datasetID provided")
+	}
+
+	// Create Self link
+	e.Links.Self = CreateLink(e.ID, fmt.Sprintf("/datasets/%s/editions/%s", datasetID, e.ID), datasetAPIhost)
+
+	// Validate LatestVersion (needed by LatestVersion and DatasetDimension links)
+	if e.LatestVersion < 0 {
+		return errors.New("datasetEdition with invalid LatestVersion")
+	}
+
+	// Create LatestVersion link
+	versionID := strconv.Itoa(e.LatestVersion)
+	e.Links.LatestVersion = CreateLink(versionID, fmt.Sprintf("/datasets/%s/editions/%s/versions/%s", datasetID, e.ID, versionID), datasetAPIhost)
+
+	// Validate codeListID and datasetID (needed by DatasetDimension link)
+	if codeListID == "" {
+		return errors.New("empty codeListID provided")
+	}
+
+	// Create DatasetDimension link
+	e.Links.DatasetDimension = CreateLink(codeListID, fmt.Sprintf("/datasets/%s/editions/%s/versions/%s/dimensions/%s", datasetID, e.ID, versionID, codeListID), datasetAPIhost)
 	return nil
 }
 
@@ -108,7 +148,13 @@ func NewDataset(dbDataset *dbmodels.Dataset) *Dataset {
 
 // NewDatasetEdition creates a new DatasetEdition struct from a database DatasetEdition
 func NewDatasetEdition(dbDatasetEdition *dbmodels.DatasetEdition) *DatasetEdition {
-	return &DatasetEdition{}
+	if dbDatasetEdition == nil {
+		return &DatasetEdition{}
+	}
+	return &DatasetEdition{
+		ID:            dbDatasetEdition.ID,
+		LatestVersion: dbDatasetEdition.LatestVersion,
+	}
 }
 
 // NewDatasets creates a new Datasets struct from a database Datasets

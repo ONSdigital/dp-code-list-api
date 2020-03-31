@@ -24,12 +24,13 @@ func (c *CodeListAPI) getCodeLists(w http.ResponseWriter, r *http.Request) {
 	}
 	codeLists := models.NewCodeListResults(dbCodeLists)
 
-	for _, item := range codeLists.Items {
+	for i, item := range codeLists.Items {
 		if err := item.UpdateLinks(c.apiURL); err != nil {
 			log.Event(ctx, "error updating links", log.ERROR, log.Error(errors.WithMessage(err, "getCodeLists endpoint: links could not be created")))
 			http.Error(w, internalServerErr, http.StatusInternalServerError)
 			return
 		}
+		codeLists.Items[i] = item
 	}
 
 	count := len(codeLists.Items)
@@ -63,6 +64,7 @@ func (c *CodeListAPI) getCodeList(w http.ResponseWriter, r *http.Request) {
 		handleError(ctx, w, err, nil)
 		return
 	}
+
 	codeList := models.NewCodeList(dbCodeList)
 
 	if err := codeList.UpdateLinks(c.apiURL); err != nil {

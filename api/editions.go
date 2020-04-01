@@ -27,12 +27,13 @@ func (c *CodeListAPI) getEditions(w http.ResponseWriter, r *http.Request) {
 	}
 	editions := models.NewEditions(dbEditions)
 
-	for _, item := range editions.Items {
+	for i, item := range editions.Items {
 		if err := item.UpdateLinks(id, c.apiURL); err != nil {
 			log.Event(ctx, "error updating links", log.ERROR, log.Error(errors.WithMessage(err, "getEditions endpoint: links could not be created")))
 			http.Error(w, internalServerErr, http.StatusInternalServerError)
 			return
 		}
+		editions.Items[i] = item
 	}
 
 	count := len(editions.Items)

@@ -18,8 +18,7 @@ type CodeResults struct {
 
 // Code for a single dimensions type
 type Code struct {
-	ID    string     `json:"id"`
-	Code  string     `json:"code"`
+	ID    string     `json:"code"`
 	Label string     `json:"label"`
 	Links *CodeLinks `json:"links"`
 }
@@ -35,7 +34,7 @@ type CodeLinks struct {
 func (c *Code) UpdateLinks(host, codeListID, edition string) error {
 
 	if c.ID == "" {
-		return errors.New("unable to create links - code id not provided")
+		return errors.New("unable to create links - code ID not provided")
 	}
 
 	if c.Links == nil {
@@ -55,8 +54,7 @@ func NewCode(dbCode *dbmodels.Code) *Code {
 		return &Code{}
 	}
 	return &Code{
-		ID:    dbCode.ID,
-		Code:  dbCode.Code,
+		ID:    dbCode.Code,
 		Label: dbCode.Label,
 	}
 }

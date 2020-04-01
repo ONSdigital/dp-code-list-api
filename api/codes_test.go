@@ -31,24 +31,23 @@ var (
 
 	// Code DB model
 	codeDbModel = dbmodels.Code{
-		ID:    "ID666",
+		ID:    "ignored",
 		Code:  "666",
 		Label: "test",
 	}
 
 	// Code API model with updated links
 	codeModel = models.Code{
-		ID:    "ID666",
-		Code:  "666", // number of the beast \m/
+		ID:    "666", // number of the beast \m/
 		Label: "test",
 		Links: &models.CodeLinks{
 			Self: &models.Link{
-				ID:   "ID666",
-				Href: "/code-lists/$codelist_id$/editions/$edition$/codes/ID666",
+				ID:   "666",
+				Href: "/code-lists/$codelist_id$/editions/$edition$/codes/666",
 			},
 			Datasets: &models.Link{
 				ID:   "",
-				Href: "/code-lists/$codelist_id$/editions/$edition$/codes/ID666/datasets",
+				Href: "/code-lists/$codelist_id$/editions/$edition$/codes/666/datasets",
 			},
 			CodeList: &models.Link{
 				ID:   "",

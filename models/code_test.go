@@ -24,12 +24,11 @@ func TestNewCode(t *testing.T) {
 			Code:  "testCode",
 		}
 
-		Convey("NewCode function returns the corresponding API Code model", func() {
+		Convey("NewCode function returns the corresponding API Code model, with ID obtained from DB Code field", func() {
 			code := models.NewCode(dbCode)
 			So(code, ShouldResemble, &models.Code{
-				ID:    "testID",
+				ID:    "testCode",
 				Label: "testLabel",
-				Code:  "testCode",
 			})
 		})
 	})
@@ -67,9 +66,8 @@ func TestNewCodeResults(t *testing.T) {
 			So(codeResults, ShouldResemble, &models.CodeResults{
 				Items: []models.Code{
 					models.Code{
-						ID:    "testID",
+						ID:    "testCode",
 						Label: "testLabel",
-						Code:  "testCode",
 					},
 				},
 			})
@@ -84,33 +82,35 @@ func TestCodeUpdateLinks(t *testing.T) {
 
 		Convey("UpdateLinks fails with the expected error", func() {
 			err := code.UpdateLinks("host1", "codelist1", "edition1")
-			So(err, ShouldResemble, errors.New("unable to create links - code id not provided"))
+			So(err, ShouldResemble, errors.New("unable to create links - code ID not provided"))
 		})
 	})
 
 	Convey("Given a valid Code struct", t, func() {
 
 		code := models.Code{
-			ID: "testID",
+			ID:    "testCode",
+			Label: "testLabel",
 		}
 
 		expectedCodeWithLinks := models.Code{
-			ID: "testID",
+			ID:    "testCode",
+			Label: "testLabel",
 			Links: &models.CodeLinks{
 				Self: &models.Link{
-					ID:   "testID",
-					Href: "host1/code-lists/codelist1/editions/edition1/codes/testID",
+					ID:   "testCode",
+					Href: "host1/code-lists/codelist1/editions/edition1/codes/testCode",
 				},
 				CodeList: &models.Link{
 					Href: "host1/code-lists/codelist1",
 				},
 				Datasets: &models.Link{
-					Href: "host1/code-lists/codelist1/editions/edition1/codes/testID/datasets",
+					Href: "host1/code-lists/codelist1/editions/edition1/codes/testCode/datasets",
 				},
 			},
 		}
 
-		Convey("UpdateLinks generates the expected links", func() {
+		Convey("UpdateLinks generates the expected links using the Code value", func() {
 			err := code.UpdateLinks("host1", "codelist1", "edition1")
 			So(err, ShouldBeNil)
 			So(code, ShouldResemble, expectedCodeWithLinks)

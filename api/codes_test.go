@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -43,15 +44,15 @@ var (
 		Links: &models.CodeLinks{
 			Self: &models.Link{
 				ID:   "666",
-				Href: "/code-lists/$codelist_id$/editions/$edition$/codes/666",
+				Href: fmt.Sprintf("%s/code-lists/$codelist_id$/editions/$edition$/codes/666", codeListURL),
 			},
 			Datasets: &models.Link{
 				ID:   "",
-				Href: "/code-lists/$codelist_id$/editions/$edition$/codes/666/datasets",
+				Href: fmt.Sprintf("%s/code-lists/$codelist_id$/editions/$edition$/codes/666/datasets", codeListURL),
 			},
 			CodeList: &models.Link{
 				ID:   "",
-				Href: "/code-lists/$codelist_id$",
+				Href: fmt.Sprintf("%s/code-lists/$codelist_id$", codeListURL),
 			},
 		},
 	}
@@ -67,7 +68,7 @@ func TestGetCodes_DatastoreError(t *testing.T) {
 
 		Convey("when getCodes is called", func() {
 			router := mux.NewRouter()
-			CreateCodeListAPI(router, mockDatastore, "", "")
+			CreateCodeListAPI(router, mockDatastore, codeListURL, datasetURL)
 			w := httptest.NewRecorder()
 			r := httptest.NewRequest(http.MethodGet, "http://localhost:8080/code-lists/$codelist_id$/editions/$edition$/codes", nil)
 
@@ -95,7 +96,7 @@ func TestGetCodes_EditionNotFound(t *testing.T) {
 
 		Convey("when getCodes is called", func() {
 			router := mux.NewRouter()
-			CreateCodeListAPI(router, mockDatastore, "", "")
+			CreateCodeListAPI(router, mockDatastore, codeListURL, datasetURL)
 			w := httptest.NewRecorder()
 			r := httptest.NewRequest(http.MethodGet, "http://localhost:8080/code-lists/$codelist_id$/editions/$edition$/codes", nil)
 
@@ -124,7 +125,7 @@ func TestGetCodes_WriteBodyError(t *testing.T) {
 		Convey("when getCodes is called", func() {
 			router := mux.NewRouter()
 
-			api := CreateCodeListAPI(router, mockDatastore, "", "")
+			api := CreateCodeListAPI(router, mockDatastore, codeListURL, datasetURL)
 			api.writeBody = failWriteBody
 
 			w := httptest.NewRecorder()
@@ -165,7 +166,7 @@ func TestGetCodes_Success(t *testing.T) {
 		Convey("when getCodes is called", func() {
 			router := mux.NewRouter()
 
-			CreateCodeListAPI(router, mockDatastore, "", "")
+			CreateCodeListAPI(router, mockDatastore, codeListURL, datasetURL)
 
 			w := httptest.NewRecorder()
 			r := httptest.NewRequest(http.MethodGet, "http://localhost:8080/code-lists/$codelist_id$/editions/$edition$/codes", nil)
@@ -200,7 +201,7 @@ func TestGetCode_Success(t *testing.T) {
 		Convey("when getCodes is called", func() {
 			router := mux.NewRouter()
 
-			CreateCodeListAPI(router, mockDatastore, "", "")
+			CreateCodeListAPI(router, mockDatastore, codeListURL, datasetURL)
 
 			w := httptest.NewRecorder()
 			r := httptest.NewRequest(http.MethodGet, "http://localhost:8080/code-lists/$codelist_id$/editions/$edition$/codes/666", nil)
@@ -235,7 +236,7 @@ func TestGetCode_DatastoreError(t *testing.T) {
 
 		Convey("when getCodes is called", func() {
 			router := mux.NewRouter()
-			CreateCodeListAPI(router, mockDatastore, "", "")
+			CreateCodeListAPI(router, mockDatastore, codeListURL, datasetURL)
 			w := httptest.NewRecorder()
 			r := httptest.NewRequest(http.MethodGet, "http://localhost:8080/code-lists/$codelist_id$/editions/$edition$/codes/666", nil)
 
@@ -264,7 +265,7 @@ func TestGetCode_EditionNotFound(t *testing.T) {
 
 		Convey("when getCodes is called", func() {
 			router := mux.NewRouter()
-			CreateCodeListAPI(router, mockDatastore, "", "")
+			CreateCodeListAPI(router, mockDatastore, codeListURL, datasetURL)
 			w := httptest.NewRecorder()
 			r := httptest.NewRequest(http.MethodGet, "http://localhost:8080/code-lists/$codelist_id$/editions/$edition$/codes/666", nil)
 
@@ -293,7 +294,7 @@ func TestGetCode_WriteBodyError(t *testing.T) {
 
 		Convey("when getCodes is called", func() {
 			router := mux.NewRouter()
-			api := CreateCodeListAPI(router, mockDatastore, "", "")
+			api := CreateCodeListAPI(router, mockDatastore, codeListURL, datasetURL)
 			api.writeBody = failWriteBody
 
 			w := httptest.NewRecorder()

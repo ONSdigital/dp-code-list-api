@@ -19,7 +19,7 @@ import (
 	. "github.com/smartystreets/goconvey/convey"
 )
 
-// Code List models for testing
+// CodeList models for testing
 var (
 	dbCodeList        = dbmodels.CodeList{ID: codeListID}
 	dbCodeListResults = dbmodels.CodeListResults{Items: []dbmodels.CodeList{dbCodeList}}
@@ -43,7 +43,7 @@ func TestGetCodeLists(t *testing.T) {
 	t.Parallel()
 
 	Convey("Get code lists returns a status of Ok", t, func() {
-		r := httptest.NewRequest("GET", "http://localhost:8080/code-lists", nil)
+		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists", codeListURL), nil)
 		w := httptest.NewRecorder()
 
 		mockDatastore := &storetest.DataStoreMock{
@@ -64,12 +64,12 @@ func TestGetCodeLists(t *testing.T) {
 	})
 
 	Convey("Get code lists returns a status of internal error", t, func() {
-		r := httptest.NewRequest("GET", "http://localhost:8080/code-lists", nil)
+		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists", codeListURL), nil)
 		w := httptest.NewRecorder()
 
 		mockDatastore := &storetest.DataStoreMock{
 			GetCodeListsFunc: func(ctx context.Context, f string) (*dbmodels.CodeListResults, error) {
-				return nil, InternalError
+				return nil, ErrInternal
 			},
 		}
 
@@ -83,7 +83,7 @@ func TestGetCodeList(t *testing.T) {
 	t.Parallel()
 
 	Convey("Get a code list returns a status of Ok", t, func() {
-		r := httptest.NewRequest("GET", fmt.Sprintf("http://localhost:8080/code-lists/%s", codeListID), nil)
+		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/%s", codeListURL, codeListID), nil)
 		w := httptest.NewRecorder()
 
 		mockDatastore := &storetest.DataStoreMock{
@@ -105,7 +105,7 @@ func TestGetCodeList(t *testing.T) {
 	})
 
 	Convey("Get a code list returns a status of not found", t, func() {
-		r := httptest.NewRequest("GET", "http://localhost:8080/code-lists/123", nil)
+		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/123", codeListURL), nil)
 		w := httptest.NewRecorder()
 
 		mockDatastore := &storetest.DataStoreMock{
@@ -120,12 +120,12 @@ func TestGetCodeList(t *testing.T) {
 	})
 
 	Convey("Get a code list returns a status of internal error", t, func() {
-		r := httptest.NewRequest("GET", "http://localhost:8080/code-lists/123", nil)
+		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/123", codeListURL), nil)
 		w := httptest.NewRecorder()
 
 		mockDatastore := &storetest.DataStoreMock{
 			GetCodeListFunc: func(ctx context.Context, id string) (*dbmodels.CodeList, error) {
-				return nil, InternalError
+				return nil, ErrInternal
 			},
 		}
 

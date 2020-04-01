@@ -15,54 +15,48 @@ import (
 	"github.com/ONSdigital/dp-code-list-api/models"
 	"github.com/ONSdigital/dp-graph/v2/graph/driver"
 	"github.com/gorilla/mux"
-	"github.com/pkg/errors"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
+// Code models for testing
 var (
-	getCodesErr    = errors.New("get codes error")
-	testCodelistID = "$codelist_id$"
-	testEdition    = "$edition$"
-	testCode       = "666"
-
-	failWriteBody = func(w http.ResponseWriter, bytes []byte) error {
-		http.Error(w, internalServerErr, http.StatusInternalServerError)
-		return getCodesErr
-	}
-
-	// Code DB model
-	codeDbModel = dbmodels.Code{
+	dbCode = dbmodels.Code{
 		ID:    "ignored",
-		Code:  "666",
+		Code:  codeID,
 		Label: "test",
 	}
 
-	// Code API model with updated links
-	codeModel = models.Code{
-		ID:    "666", // number of the beast \m/
+	expectedCode = models.Code{
+		ID:    codeID,
 		Label: "test",
 		Links: &models.CodeLinks{
 			Self: &models.Link{
-				ID:   "666",
-				Href: fmt.Sprintf("%s/code-lists/$codelist_id$/editions/$edition$/codes/666", codeListURL),
+				ID:   codeID,
+				Href: fmt.Sprintf("%s/code-lists/%s/editions/%s/codes/%s", codeListURL, codeListID, editionID, codeID),
 			},
 			Datasets: &models.Link{
 				ID:   "",
-				Href: fmt.Sprintf("%s/code-lists/$codelist_id$/editions/$edition$/codes/666/datasets", codeListURL),
+				Href: fmt.Sprintf("%s/code-lists/%s/editions/%s/codes/%s/datasets", codeListURL, codeListID, editionID, codeID),
 			},
 			CodeList: &models.Link{
 				ID:   "",
-				Href: fmt.Sprintf("%s/code-lists/$codelist_id$", codeListURL),
+				Href: fmt.Sprintf("%s/code-lists/%s", codeListURL, codeListID),
 			},
 		},
 	}
 )
 
+var failWriteBody = func(w http.ResponseWriter, bytes []byte) error {
+	http.Error(w, internalServerErr, http.StatusInternalServerError)
+	return ErrInternal
+}
+
 func TestGetCodes_DatastoreError(t *testing.T) {
+
 	Convey("Given datastore.GetCodes returns an error", t, func() {
 		mockDatastore := &storetest.DataStoreMock{
 			GetCodesFunc: func(ctx context.Context, codeListID string, editionID string) (*dbmodels.CodeResults, error) {
-				return nil, getCodesErr
+				return nil, ErrInternal
 			},
 		}
 
@@ -70,7 +64,7 @@ func TestGetCodes_DatastoreError(t *testing.T) {
 			router := mux.NewRouter()
 			CreateCodeListAPI(router, mockDatastore, codeListURL, datasetURL)
 			w := httptest.NewRecorder()
-			r := httptest.NewRequest(http.MethodGet, "http://localhost:8080/code-lists/$codelist_id$/editions/$edition$/codes", nil)
+			r := httptest.NewRequest(http.MethodGet, fmt.Sprintf("%s/code-lists/%s/editions/%s/codes", codeListURL, codeListID, editionID), nil)
 
 			router.ServeHTTP(w, r)
 
@@ -79,8 +73,8 @@ func TestGetCodes_DatastoreError(t *testing.T) {
 				So(strings.TrimSpace(w.Body.String()), ShouldEqual, internalServerErr)
 
 				So(mockDatastore.GetCodesCalls(), ShouldHaveLength, 1)
-				So(mockDatastore.GetCodesCalls()[0].CodeListID, ShouldEqual, testCodelistID)
-				So(mockDatastore.GetCodesCalls()[0].EditionID, ShouldEqual, testEdition)
+				So(mockDatastore.GetCodesCalls()[0].CodeListID, ShouldEqual, codeListID)
+				So(mockDatastore.GetCodesCalls()[0].EditionID, ShouldEqual, editionID)
 			})
 		})
 	})
@@ -98,7 +92,7 @@ func TestGetCodes_EditionNotFound(t *testing.T) {
 			router := mux.NewRouter()
 			CreateCodeListAPI(router, mockDatastore, codeListURL, datasetURL)
 			w := httptest.NewRecorder()
-			r := httptest.NewRequest(http.MethodGet, "http://localhost:8080/code-lists/$codelist_id$/editions/$edition$/codes", nil)
+			r := httptest.NewRequest(http.MethodGet, fmt.Sprintf("%s/code-lists/%s/editions/%s/codes", codeListURL, codeListID, editionID), nil)
 
 			router.ServeHTTP(w, r)
 
@@ -107,8 +101,8 @@ func TestGetCodes_EditionNotFound(t *testing.T) {
 				So(strings.TrimSpace(w.Body.String()), ShouldEqual, driver.ErrNotFound.Error())
 
 				So(mockDatastore.GetCodesCalls(), ShouldHaveLength, 1)
-				So(mockDatastore.GetCodesCalls()[0].CodeListID, ShouldEqual, testCodelistID)
-				So(mockDatastore.GetCodesCalls()[0].EditionID, ShouldEqual, testEdition)
+				So(mockDatastore.GetCodesCalls()[0].CodeListID, ShouldEqual, codeListID)
+				So(mockDatastore.GetCodesCalls()[0].EditionID, ShouldEqual, editionID)
 			})
 		})
 	})
@@ -129,7 +123,7 @@ func TestGetCodes_WriteBodyError(t *testing.T) {
 			api.writeBody = failWriteBody
 
 			w := httptest.NewRecorder()
-			r := httptest.NewRequest(http.MethodGet, "http://localhost:8080/code-lists/$codelist_id$/editions/$edition$/codes", nil)
+			r := httptest.NewRequest(http.MethodGet, fmt.Sprintf("%s/code-lists/%s/editions/%s/codes", codeListURL, codeListID, editionID), nil)
 
 			router.ServeHTTP(w, r)
 
@@ -138,8 +132,8 @@ func TestGetCodes_WriteBodyError(t *testing.T) {
 				So(strings.TrimSpace(w.Body.String()), ShouldEqual, internalServerErr)
 
 				So(mockDatastore.GetCodesCalls(), ShouldHaveLength, 1)
-				So(mockDatastore.GetCodesCalls()[0].CodeListID, ShouldEqual, testCodelistID)
-				So(mockDatastore.GetCodesCalls()[0].EditionID, ShouldEqual, testEdition)
+				So(mockDatastore.GetCodesCalls()[0].CodeListID, ShouldEqual, codeListID)
+				So(mockDatastore.GetCodesCalls()[0].EditionID, ShouldEqual, editionID)
 			})
 		})
 	})
@@ -148,13 +142,13 @@ func TestGetCodes_WriteBodyError(t *testing.T) {
 func TestGetCodes_Success(t *testing.T) {
 	Convey("Given a valid request", t, func() {
 		dbResult := dbmodels.CodeResults{
-			Items: []dbmodels.Code{codeDbModel},
+			Items: []dbmodels.Code{dbCode},
 		}
 		expectedResult := &models.CodeResults{
 			Count:      1,
 			Limit:      1,
 			TotalCount: 1,
-			Items:      []models.Code{codeModel},
+			Items:      []models.Code{expectedCode},
 		}
 
 		mockDatastore := &storetest.DataStoreMock{
@@ -169,7 +163,7 @@ func TestGetCodes_Success(t *testing.T) {
 			CreateCodeListAPI(router, mockDatastore, codeListURL, datasetURL)
 
 			w := httptest.NewRecorder()
-			r := httptest.NewRequest(http.MethodGet, "http://localhost:8080/code-lists/$codelist_id$/editions/$edition$/codes", nil)
+			r := httptest.NewRequest(http.MethodGet, fmt.Sprintf("%s/code-lists/%s/editions/%s/codes", codeListURL, codeListID, editionID), nil)
 
 			router.ServeHTTP(w, r)
 
@@ -183,8 +177,8 @@ func TestGetCodes_Success(t *testing.T) {
 				So(&res, ShouldResemble, expectedResult)
 
 				So(mockDatastore.GetCodesCalls(), ShouldHaveLength, 1)
-				So(mockDatastore.GetCodesCalls()[0].CodeListID, ShouldEqual, testCodelistID)
-				So(mockDatastore.GetCodesCalls()[0].EditionID, ShouldEqual, testEdition)
+				So(mockDatastore.GetCodesCalls()[0].CodeListID, ShouldEqual, codeListID)
+				So(mockDatastore.GetCodesCalls()[0].EditionID, ShouldEqual, editionID)
 			})
 		})
 	})
@@ -194,7 +188,7 @@ func TestGetCode_Success(t *testing.T) {
 	Convey("Given a valid request", t, func() {
 		mockDatastore := &storetest.DataStoreMock{
 			GetCodeFunc: func(ctx context.Context, codeListID string, editionID string, codeID string) (*dbmodels.Code, error) {
-				return &codeDbModel, nil
+				return &dbCode, nil
 			},
 		}
 
@@ -204,7 +198,7 @@ func TestGetCode_Success(t *testing.T) {
 			CreateCodeListAPI(router, mockDatastore, codeListURL, datasetURL)
 
 			w := httptest.NewRecorder()
-			r := httptest.NewRequest(http.MethodGet, "http://localhost:8080/code-lists/$codelist_id$/editions/$edition$/codes/666", nil)
+			r := httptest.NewRequest(http.MethodGet, fmt.Sprintf("%s/code-lists/%s/editions/%s/codes/%s", codeListURL, codeListID, editionID, codeID), nil)
 
 			router.ServeHTTP(w, r)
 
@@ -215,12 +209,12 @@ func TestGetCode_Success(t *testing.T) {
 				err := json.Unmarshal(w.Body.Bytes(), &res)
 				So(err, ShouldBeNil)
 
-				So(res, ShouldResemble, codeModel)
+				So(res, ShouldResemble, expectedCode)
 
 				So(mockDatastore.GetCodeCalls(), ShouldHaveLength, 1)
-				So(mockDatastore.GetCodeCalls()[0].CodeListID, ShouldEqual, testCodelistID)
-				So(mockDatastore.GetCodeCalls()[0].EditionID, ShouldEqual, testEdition)
-				So(mockDatastore.GetCodeCalls()[0].CodeID, ShouldEqual, testCode)
+				So(mockDatastore.GetCodeCalls()[0].CodeListID, ShouldEqual, codeListID)
+				So(mockDatastore.GetCodeCalls()[0].EditionID, ShouldEqual, editionID)
+				So(mockDatastore.GetCodeCalls()[0].CodeID, ShouldEqual, codeID)
 			})
 		})
 	})
@@ -230,7 +224,7 @@ func TestGetCode_DatastoreError(t *testing.T) {
 	Convey("Given datastore.GetCode returns an error", t, func() {
 		mockDatastore := &storetest.DataStoreMock{
 			GetCodeFunc: func(ctx context.Context, codeListID string, editionID string, codeID string) (*dbmodels.Code, error) {
-				return nil, getCodesErr
+				return nil, ErrInternal
 			},
 		}
 
@@ -238,7 +232,7 @@ func TestGetCode_DatastoreError(t *testing.T) {
 			router := mux.NewRouter()
 			CreateCodeListAPI(router, mockDatastore, codeListURL, datasetURL)
 			w := httptest.NewRecorder()
-			r := httptest.NewRequest(http.MethodGet, "http://localhost:8080/code-lists/$codelist_id$/editions/$edition$/codes/666", nil)
+			r := httptest.NewRequest(http.MethodGet, fmt.Sprintf("%s/code-lists/%s/editions/%s/codes/%s", codeListURL, codeListID, editionID, codeID), nil)
 
 			router.ServeHTTP(w, r)
 
@@ -247,9 +241,9 @@ func TestGetCode_DatastoreError(t *testing.T) {
 				So(strings.TrimSpace(w.Body.String()), ShouldEqual, internalServerErr)
 
 				So(mockDatastore.GetCodeCalls(), ShouldHaveLength, 1)
-				So(mockDatastore.GetCodeCalls()[0].CodeListID, ShouldEqual, testCodelistID)
-				So(mockDatastore.GetCodeCalls()[0].EditionID, ShouldEqual, testEdition)
-				So(mockDatastore.GetCodeCalls()[0].CodeID, ShouldEqual, testCode)
+				So(mockDatastore.GetCodeCalls()[0].CodeListID, ShouldEqual, codeListID)
+				So(mockDatastore.GetCodeCalls()[0].EditionID, ShouldEqual, editionID)
+				So(mockDatastore.GetCodeCalls()[0].CodeID, ShouldEqual, codeID)
 			})
 		})
 	})
@@ -267,7 +261,7 @@ func TestGetCode_EditionNotFound(t *testing.T) {
 			router := mux.NewRouter()
 			CreateCodeListAPI(router, mockDatastore, codeListURL, datasetURL)
 			w := httptest.NewRecorder()
-			r := httptest.NewRequest(http.MethodGet, "http://localhost:8080/code-lists/$codelist_id$/editions/$edition$/codes/666", nil)
+			r := httptest.NewRequest(http.MethodGet, fmt.Sprintf("%s/code-lists/%s/editions/%s/codes/%s", codeListURL, codeListID, editionID, codeID), nil)
 
 			router.ServeHTTP(w, r)
 
@@ -276,9 +270,9 @@ func TestGetCode_EditionNotFound(t *testing.T) {
 				So(strings.TrimSpace(w.Body.String()), ShouldEqual, driver.ErrNotFound.Error())
 
 				So(mockDatastore.GetCodeCalls(), ShouldHaveLength, 1)
-				So(mockDatastore.GetCodeCalls()[0].CodeListID, ShouldEqual, testCodelistID)
-				So(mockDatastore.GetCodeCalls()[0].EditionID, ShouldEqual, testEdition)
-				So(mockDatastore.GetCodeCalls()[0].CodeID, ShouldEqual, testCode)
+				So(mockDatastore.GetCodeCalls()[0].CodeListID, ShouldEqual, codeListID)
+				So(mockDatastore.GetCodeCalls()[0].EditionID, ShouldEqual, editionID)
+				So(mockDatastore.GetCodeCalls()[0].CodeID, ShouldEqual, codeID)
 			})
 		})
 	})
@@ -288,7 +282,7 @@ func TestGetCode_WriteBodyError(t *testing.T) {
 	Convey("Given datastore.GetCode returns an error", t, func() {
 		mockDatastore := &storetest.DataStoreMock{
 			GetCodeFunc: func(ctx context.Context, codeListID string, editionID string, codeID string) (*dbmodels.Code, error) {
-				return &codeDbModel, nil
+				return &dbCode, nil
 			},
 		}
 
@@ -298,7 +292,7 @@ func TestGetCode_WriteBodyError(t *testing.T) {
 			api.writeBody = failWriteBody
 
 			w := httptest.NewRecorder()
-			r := httptest.NewRequest(http.MethodGet, "http://localhost:8080/code-lists/$codelist_id$/editions/$edition$/codes/666", nil)
+			r := httptest.NewRequest(http.MethodGet, fmt.Sprintf("%s/code-lists/%s/editions/%s/codes/%s", codeListURL, codeListID, editionID, codeID), nil)
 
 			router.ServeHTTP(w, r)
 
@@ -307,9 +301,9 @@ func TestGetCode_WriteBodyError(t *testing.T) {
 				So(strings.TrimSpace(w.Body.String()), ShouldEqual, internalServerErr)
 
 				So(mockDatastore.GetCodeCalls(), ShouldHaveLength, 1)
-				So(mockDatastore.GetCodeCalls()[0].CodeListID, ShouldEqual, testCodelistID)
-				So(mockDatastore.GetCodeCalls()[0].EditionID, ShouldEqual, testEdition)
-				So(mockDatastore.GetCodeCalls()[0].CodeID, ShouldEqual, testCode)
+				So(mockDatastore.GetCodeCalls()[0].CodeListID, ShouldEqual, codeListID)
+				So(mockDatastore.GetCodeCalls()[0].EditionID, ShouldEqual, editionID)
+				So(mockDatastore.GetCodeCalls()[0].CodeID, ShouldEqual, codeID)
 			})
 		})
 	})

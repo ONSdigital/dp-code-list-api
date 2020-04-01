@@ -52,7 +52,7 @@ var (
 func TestGetEditions(t *testing.T) {
 
 	Convey("Get code list editions returns a status of http ok", t, func() {
-		r := httptest.NewRequest("GET", fmt.Sprintf("http://localhost:8080/code-lists/%s/editions", codeListID), nil)
+		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/%s/editions", codeListURL, codeListID), nil)
 		w := httptest.NewRecorder()
 
 		mockDatastore := &storetest.DataStoreMock{
@@ -73,7 +73,7 @@ func TestGetEditions(t *testing.T) {
 	})
 
 	Convey("Get code list editions returns a status of http not found if code list doesn't exist", t, func() {
-		r := httptest.NewRequest("GET", "http://localhost:8080/code-lists/12345/editions", nil)
+		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/12345/editions", codeListURL), nil)
 		w := httptest.NewRecorder()
 
 		mockDatastore := &storetest.DataStoreMock{
@@ -88,12 +88,12 @@ func TestGetEditions(t *testing.T) {
 	})
 
 	Convey("Get code list editions returns a status internal server error if store returns any other error", t, func() {
-		r := httptest.NewRequest("GET", "http://localhost:8080/code-lists/12345/editions", nil)
+		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/12345/editions", codeListURL), nil)
 		w := httptest.NewRecorder()
 
 		mockDatastore := &storetest.DataStoreMock{
 			GetEditionsFunc: func(ctx context.Context, f string) (*dbmodels.Editions, error) {
-				return &dbmodels.Editions{}, InternalError
+				return &dbmodels.Editions{}, ErrInternal
 			},
 		}
 
@@ -105,7 +105,7 @@ func TestGetEditions(t *testing.T) {
 
 func TestGetEdition(t *testing.T) {
 	Convey("Get code list edition returns a status of http ok", t, func() {
-		r := httptest.NewRequest("GET", fmt.Sprintf("http://localhost:8080/code-lists/%s/editions/%s", codeListID, editionID), nil)
+		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/%s/editions/%s", codeListURL, codeListID, editionID), nil)
 		w := httptest.NewRecorder()
 
 		mockDatastore := &storetest.DataStoreMock{
@@ -125,7 +125,7 @@ func TestGetEdition(t *testing.T) {
 		So(apiEdition, ShouldResemble, expectedEdition)
 	})
 	Convey("Get code list edition returns a status of http not found if code list doesn't exist", t, func() {
-		r := httptest.NewRequest("GET", "http://localhost:8080/code-lists/12345/editions/2016", nil)
+		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/12345/editions/2016", codeListURL), nil)
 		w := httptest.NewRecorder()
 
 		mockDatastore := &storetest.DataStoreMock{
@@ -139,12 +139,12 @@ func TestGetEdition(t *testing.T) {
 		So(w.Code, ShouldEqual, http.StatusNotFound)
 	})
 	Convey("Get code list edition returns a status internal server error if store returns any other error", t, func() {
-		r := httptest.NewRequest("GET", "http://localhost:8080/code-lists/12345/editions/2016", nil)
+		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/12345/editions/2016", codeListURL), nil)
 		w := httptest.NewRecorder()
 
 		mockDatastore := &storetest.DataStoreMock{
 			GetEditionFunc: func(ctx context.Context, f, e string) (*dbmodels.Edition, error) {
-				return &dbmodels.Edition{}, InternalError
+				return &dbmodels.Edition{}, ErrInternal
 			},
 		}
 

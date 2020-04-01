@@ -86,12 +86,12 @@ func TestGetCodeDatasets(t *testing.T) {
 	})
 
 	Convey("Get code lists returns a status of internal error", t, func() {
-		r := httptest.NewRequest("GET", "http://localhost:8080/code-lists/567/editions/890/codes/123/datasets", nil)
+		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/567/editions/890/codes/123/datasets", codeListURL), nil)
 		w := httptest.NewRecorder()
 
 		mockDatastore := &storetest.DataStoreMock{
 			GetCodeDatasetsFunc: func(ctx context.Context, codeListID string, edition string, code string) (*dbmodels.Datasets, error) {
-				return nil, InternalError
+				return nil, ErrInternal
 			},
 		}
 

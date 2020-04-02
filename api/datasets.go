@@ -22,9 +22,7 @@ func (c *CodeListAPI) getCodeDatasets(w http.ResponseWriter, r *http.Request) {
 
 	dbDatasets, err := c.store.GetCodeDatasets(ctx, codeListID, edition, code)
 	if err != nil {
-		logData["err"] = err
-		log.Event(ctx, "failed to get datasets list", log.INFO, logData)
-		handleError(ctx, w, err, logData)
+		handleError(ctx, "failed to get datasets list", logData, err, w)
 		return
 	}
 	datasets := models.NewDatasets(dbDatasets)
@@ -42,16 +40,12 @@ func (c *CodeListAPI) getCodeDatasets(w http.ResponseWriter, r *http.Request) {
 
 	b, err := json.Marshal(datasets)
 	if err != nil {
-		logData["err"] = err
-		log.Event(ctx, "failed to marshal datasets list", log.INFO, logData)
-		handleError(ctx, w, err, logData)
+		handleError(ctx, "failed to marshal datasets list", logData, err, w)
 		return
 	}
 
 	if err := c.writeBody(w, b); err != nil {
-		logData["err"] = err
-		log.Event(ctx, "failed to write body", log.INFO, logData)
-		handleError(ctx, w, err, logData)
+		handleError(ctx, "failed to write body", logData, err, w)
 		return
 	}
 

@@ -16,7 +16,7 @@ build:
 	@mkdir -p $(BUILD_ARCH)/$(BIN_DIR)
 	go build $(LDFLAGS) -o $(BUILD_ARCH)/$(BIN_DIR)/dp-code-list-api cmd/dp-code-list-api/main.go
 test:
-	go test -cover $(shell go list ./... | grep -v /vendor/)
+	go test -race -cover ./...
 
 debug:
 	HUMAN_LOG=1 GRAPH_DRIVER_TYPE=neo4j GRAPH_ADDR="bolt://localhost:7687" go run $(LDFLAGS) -race cmd/dp-code-list-api/main.go

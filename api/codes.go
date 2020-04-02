@@ -21,8 +21,7 @@ func (c *CodeListAPI) getCodes(w http.ResponseWriter, r *http.Request) {
 
 	dbCodes, err := c.store.GetCodes(ctx, id, edition)
 	if err != nil {
-		log.Event(ctx, "error getting codes", log.ERROR, log.Error(errors.WithMessage(err, "getCodes endpoint: store.GetCode returned an error")), data)
-		handleError(ctx, w, err, data)
+		handleError(ctx, "getCodes endpoint: store.GetCode returned an error", data, err, w)
 		return
 	}
 	codes := models.NewCodeResults(dbCodes)
@@ -68,8 +67,7 @@ func (c *CodeListAPI) getCode(w http.ResponseWriter, r *http.Request) {
 
 	dbCode, err := c.store.GetCode(ctx, id, edition, code)
 	if err != nil {
-		log.Event(ctx, "error getting code", log.ERROR, log.Error(errors.WithMessage(err, "getCode endpoint: store.GetCode returned an error")), data)
-		handleError(ctx, w, err, data)
+		handleError(ctx, "getCode endpoint: store.GetCode returned an error", data, err, w)
 		return
 	}
 	apiCode := models.NewCode(dbCode)

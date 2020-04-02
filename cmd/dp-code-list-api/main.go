@@ -1,11 +1,11 @@
 package main
 
 import (
+	"net/http"
 	"os"
 
 	"context"
 	"errors"
-	"net/http"
 	"os/signal"
 	"syscall"
 
@@ -64,15 +64,33 @@ func main() {
 	// Create HTTP Server with health endpoint and CodeList API
 	router := mux.NewRouter()
 	router.Path("/health").HandlerFunc(hc.Handler)
-	httpErrChannel := make(chan error)
+
 	api.CreateCodeListAPI(router, datastore, cfg.CodeListAPIURL, cfg.DatasetAPIURL)
 	httpServer := server.New(cfg.BindAddr, router)
 	httpServer.HandleOSSignals = false
 
+	// Start healthcheck ticker
+	hc.Start(ctx)
+
+	// Start HTTP Server
+	go func() {
+		log.Event(ctx, "code list api starting.....", log.INFO, log.Data{"bind_addr": cfg.BindAddr})
+		if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			hc.Stop()
+			log.Event(ctx, "error starting http server", log.ERROR, log.Error(err))
+		}
+	}()
+
+	// wait until we receive a signal
+	<-signals
+	log.Event(ctx, "os signal received", log.INFO)
+
+	// Shutdown context with timeout
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), cfg.GracefulShutdownTimeout)
+
 	// Graceful shutdown function
 	shutdown := func() {
 
-		shutdownCtx, cancel := context.WithTimeout(context.Background(), cfg.GracefulShutdownTimeout)
 		anyError := false
 		log.Event(shutdownCtx, "shutdown with timeout", log.INFO, log.Data{"timeout": cfg.GracefulShutdownTimeout})
 
@@ -85,7 +103,7 @@ func main() {
 			log.Event(shutdownCtx, "http server successful shutdown", log.INFO)
 		}
 
-		// Strop healthcheck
+		// Stop healthcheck
 		hc.Stop()
 		log.Event(shutdownCtx, "healthcheck stopped", log.INFO)
 
@@ -97,49 +115,27 @@ func main() {
 			log.Event(shutdownCtx, "datastore successfully closed", log.INFO)
 		}
 
-		// cancel the timer in the shutdown context.
-		cancel()
-
-		// if any error happened during shutdown, log it and exit with err code
+		// If any error happened during shutdown, log it and exit with err code
 		if anyError {
 			log.Event(ctx, "graceful shutdown had errors", log.WARN)
 			os.Exit(1)
 		}
 
-		// if all dependencies shutted down successfully, log it and exit with success code
-		log.Event(ctx, "graceful shutdown was successful", log.INFO)
-		os.Exit(0)
+		// cancel the timer in the shutdown context once everything is shutted down successfully.
+		cancel()
 	}
 
-	// Start healthcheck ticker
-	hc.Start(ctx)
+	// Perform shutdown in parallel go-routine
+	go shutdown()
 
-	// Start HTTP Server
-	go func() {
-		log.Event(ctx, "code list api starting.....", log.INFO, log.Data{"bind_addr": cfg.BindAddr})
-		if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			hc.Stop()
-			log.Event(ctx, "error starting http server", log.ERROR, log.Error(err))
-			httpErrChannel <- err
-		} else {
-			httpErrChannel <- errors.New("http completed shutdown")
-		}
-	}()
-
-	// log errors
-	go func() {
-		for {
-			select {
-			case err := <-httpErrChannel:
-				log.Event(ctx, "http error received", log.ERROR, log.Error(err))
-			}
-		}
-	}()
-
-	// wait until we receive a signal
-	<-signals
-	log.Event(ctx, "os signal received", log.INFO)
-	shutdown()
+	// Wait for Shutdown timeout or success (via cancel)
+	<-shutdownCtx.Done()
+	if shutdownCtx.Err() == context.DeadlineExceeded {
+		log.Event(shutdownCtx, "shutdown timeout", log.ERROR, log.Error(shutdownCtx.Err()))
+		os.Exit(1)
+	}
+	log.Event(ctx, "graceful shutdown was successful", log.INFO)
+	os.Exit(0)
 }
 
 // RegisterCheckers adds the checkers for the provided clients to the healthcheck object.
@@ -149,7 +145,7 @@ func registerCheckers(ctx context.Context, hc *healthcheck.HealthCheck, db *grap
 
 	if err = hc.AddCheck("Neo4J", db.Checker); err != nil {
 		hasErrors = true
-		log.Event(nil, "error adding check for graph db", log.ERROR, log.Error(err))
+		log.Event(ctx, "error adding check for graph db", log.ERROR, log.Error(err))
 	}
 
 	if hasErrors {

@@ -20,9 +20,7 @@ func (c *CodeListAPI) getEditions(w http.ResponseWriter, r *http.Request) {
 
 	dbEditions, err := c.store.GetEditions(r.Context(), id)
 	if err != nil {
-		data["err"] = err
-		log.Event(ctx, "failed to get editions", log.INFO, data)
-		handleError(ctx, w, err, data)
+		handleError(ctx, "failed to get editions", data, err, w)
 		return
 	}
 	editions := models.NewEditions(dbEditions)
@@ -43,9 +41,7 @@ func (c *CodeListAPI) getEditions(w http.ResponseWriter, r *http.Request) {
 
 	b, err := json.Marshal(editions)
 	if err != nil {
-		data["err"] = err
-		log.Event(ctx, "failed to marshal editions", log.INFO, data)
-		handleError(ctx, w, err, data)
+		handleError(ctx, "failed to marshal editions", data, err, w)
 		return
 	}
 
@@ -67,9 +63,7 @@ func (c *CodeListAPI) getEdition(w http.ResponseWriter, r *http.Request) {
 
 	dbEditionModel, err := c.store.GetEdition(r.Context(), id, edition)
 	if err != nil {
-		data["err"] = err
-		log.Event(ctx, "failed to get edition", log.INFO, data)
-		handleError(ctx, w, err, data)
+		handleError(ctx, "failed to get edition", data, err, w)
 		return
 	}
 	editionModel := models.NewEdition(dbEditionModel)
@@ -82,9 +76,7 @@ func (c *CodeListAPI) getEdition(w http.ResponseWriter, r *http.Request) {
 
 	b, err := json.Marshal(editionModel)
 	if err != nil {
-		data["err"] = err
-		log.Event(ctx, "failed to marshal editions", log.INFO, data)
-		handleError(ctx, w, err, data)
+		handleError(ctx, "failed to marshal editions", data, err, w)
 		return
 	}
 

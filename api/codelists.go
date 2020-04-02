@@ -18,8 +18,7 @@ func (c *CodeListAPI) getCodeLists(w http.ResponseWriter, r *http.Request) {
 
 	dbCodeLists, err := c.store.GetCodeLists(r.Context(), filterBy)
 	if err != nil {
-		log.Event(ctx, "failed to get code lists from graph", log.INFO, log.Data{"err": err, "type": filterBy})
-		handleError(ctx, w, err, nil)
+		handleError(ctx, "failed to get code lists from graph", log.Data{"type": filterBy}, err, w)
 		return
 	}
 	codeLists := models.NewCodeListResults(dbCodeLists)
@@ -40,8 +39,7 @@ func (c *CodeListAPI) getCodeLists(w http.ResponseWriter, r *http.Request) {
 
 	b, err := json.Marshal(codeLists)
 	if err != nil {
-		log.Event(ctx, "failed to marshal code lists", log.INFO, log.Data{"err": err})
-		handleError(ctx, w, err, nil)
+		handleError(ctx, "failed to marshal code lists", log.Data{}, err, w)
 		return
 	}
 
@@ -60,8 +58,7 @@ func (c *CodeListAPI) getCodeList(w http.ResponseWriter, r *http.Request) {
 
 	dbCodeList, err := c.store.GetCodeList(ctx, id)
 	if err != nil {
-		log.Event(ctx, "error getting codelist", log.ERROR, log.Error(errors.WithMessage(err, "getCodeList endpoint: store.GetCodeList returned an error")), data)
-		handleError(ctx, w, err, nil)
+		handleError(ctx, "getCodeList endpoint: store.GetCodeList returned an error", data, err, w)
 		return
 	}
 
@@ -75,8 +72,7 @@ func (c *CodeListAPI) getCodeList(w http.ResponseWriter, r *http.Request) {
 
 	b, err := json.Marshal(codeList)
 	if err != nil {
-		log.Event(ctx, "failed to marshal code list", log.INFO, log.Data{"err": err})
-		handleError(ctx, w, err, nil)
+		handleError(ctx, "failed to marshal code list", log.Data{}, err, w)
 		return
 	}
 

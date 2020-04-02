@@ -2,9 +2,7 @@ package api
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -65,11 +63,7 @@ func TestGetEditions(t *testing.T) {
 		api.router.ServeHTTP(w, r)
 		So(w.Code, ShouldEqual, http.StatusOK)
 
-		payload, err := ioutil.ReadAll(w.Body)
-		So(err, ShouldBeNil)
-		apiEditions := models.Editions{}
-		json.Unmarshal(payload, &apiEditions)
-		So(apiEditions, ShouldResemble, expectedEditions)
+		validateBody(w.Body, &models.Editions{}, &expectedEditions)
 	})
 
 	Convey("Get code list editions returns a status of http not found if code list doesn't exist", t, func() {
@@ -118,12 +112,9 @@ func TestGetEdition(t *testing.T) {
 		api.router.ServeHTTP(w, r)
 		So(w.Code, ShouldEqual, http.StatusOK)
 
-		payload, err := ioutil.ReadAll(w.Body)
-		So(err, ShouldBeNil)
-		apiEdition := models.Edition{}
-		json.Unmarshal(payload, &apiEdition)
-		So(apiEdition, ShouldResemble, expectedEdition)
+		validateBody(w.Body, &models.Edition{}, &expectedEdition)
 	})
+
 	Convey("Get code list edition returns a status of http not found if code list doesn't exist", t, func() {
 		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/12345/editions/2016", codeListURL), nil)
 		w := httptest.NewRecorder()
@@ -138,6 +129,7 @@ func TestGetEdition(t *testing.T) {
 		api.router.ServeHTTP(w, r)
 		So(w.Code, ShouldEqual, http.StatusNotFound)
 	})
+
 	Convey("Get code list edition returns a status internal server error if store returns any other error", t, func() {
 		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/12345/editions/2016", codeListURL), nil)
 		w := httptest.NewRecorder()

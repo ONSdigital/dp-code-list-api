@@ -2,7 +2,6 @@ package api
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -144,7 +143,7 @@ func TestGetCodes_Success(t *testing.T) {
 		dbResult := dbmodels.CodeResults{
 			Items: []dbmodels.Code{dbCode},
 		}
-		expectedResult := &models.CodeResults{
+		expectedResult := models.CodeResults{
 			Count:      1,
 			Limit:      1,
 			TotalCount: 1,
@@ -170,11 +169,7 @@ func TestGetCodes_Success(t *testing.T) {
 			Convey("then a 200 status is returned with the expected body", func() {
 				So(w.Code, ShouldEqual, http.StatusOK)
 
-				var res models.CodeResults
-				err := json.Unmarshal(w.Body.Bytes(), &res)
-				So(err, ShouldBeNil)
-
-				So(&res, ShouldResemble, expectedResult)
+				validateBody(w.Body, &models.CodeResults{}, &expectedResult)
 
 				So(mockDatastore.GetCodesCalls(), ShouldHaveLength, 1)
 				So(mockDatastore.GetCodesCalls()[0].CodeListID, ShouldEqual, codeListID)
@@ -205,11 +200,7 @@ func TestGetCode_Success(t *testing.T) {
 			Convey("then a 200 status is returned with the expected body", func() {
 				So(w.Code, ShouldEqual, http.StatusOK)
 
-				var res models.Code
-				err := json.Unmarshal(w.Body.Bytes(), &res)
-				So(err, ShouldBeNil)
-
-				So(res, ShouldResemble, expectedCode)
+				validateBody(w.Body, &models.Code{}, &expectedCode)
 
 				So(mockDatastore.GetCodeCalls(), ShouldHaveLength, 1)
 				So(mockDatastore.GetCodeCalls()[0].CodeListID, ShouldEqual, codeListID)

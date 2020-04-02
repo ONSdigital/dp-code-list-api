@@ -2,9 +2,7 @@ package api
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -78,11 +76,7 @@ func TestGetCodeDatasets(t *testing.T) {
 		api.router.ServeHTTP(w, r)
 		So(w.Code, ShouldEqual, http.StatusOK)
 
-		payload, err := ioutil.ReadAll(w.Body)
-		So(err, ShouldBeNil)
-		apiDatasets := models.Datasets{}
-		json.Unmarshal(payload, &apiDatasets)
-		So(apiDatasets, ShouldResemble, expectedDatasets)
+		validateBody(w.Body, &models.Datasets{}, &expectedDatasets)
 	})
 
 	Convey("Get code lists returns a status of internal error", t, func() {

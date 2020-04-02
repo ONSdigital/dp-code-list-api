@@ -20,22 +20,22 @@ An API used to navigate code lists
 
 ### Healthcheck
 
-The endpoint `/healthcheck` checks the connection to the database and returns one of:
+The endpoint `/health` checks the connection to the database and returns one of:
 
 - success (200, JSON "status":"OK")
-- failure (500, JSON "status":"error").
+- warning (429, JSON "status":"WARNING")
+- failure (500, JSON "status":"CRITICAL")
 
 ### Configuration
 
 | Environment variable          | Default                                | Description
-| ----------------------------- | ---------------------------------------| -----------
-| BIND_ADDR                     | :22400                                 | The host and port to bind to
-| CODE_LIST_API_URL             | http://localhost:22400                 | The base URL for the code list API
-| DATASET_API_URL               | http://localhost:22000                 | The base URL for the dataset API
-| GRACEFUL_SHUTDOWN_TIMEOUT     | 5s                                     | The graceful shutdown timeout in seconds
-| HEALTHCHECK_INTERVAL          | 30s                                    | Time between calls to healthchecks
-| HEALTHCHECK_RECOVERY_INTERVAL | 5s                                     | Time between calls to healthchecks while failing
-
+| ---------------------------- | ---------------------------------------| -----------
+| BIND_ADDR                    | :22400                                 | The host and port to bind to
+| CODE_LIST_API_URL            | http://localhost:22400                 | The base URL for the code list API
+| DATASET_API_URL              | http://localhost:22000                 | The base URL for the dataset API
+| GRACEFUL_SHUTDOWN_TIMEOUT    | 5s                                     | The graceful shutdown timeout in seconds
+| HEALTHCHECK_INTERVAL         | 10s                                    | Time between calls to healthchecks
+| HEALTHCHECK_CRITICAL_TIMEOUT | 1m                                     | Timeout to consider a failing healthcheck critical
 
 ### License
 

@@ -2,9 +2,7 @@ package api
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -56,11 +54,7 @@ func TestGetCodeLists(t *testing.T) {
 		api.router.ServeHTTP(w, r)
 		So(w.Code, ShouldEqual, http.StatusOK)
 
-		payload, err := ioutil.ReadAll(w.Body)
-		So(err, ShouldBeNil)
-		apiCodeListResults := models.CodeListResults{}
-		json.Unmarshal(payload, &apiCodeListResults)
-		So(apiCodeListResults, ShouldResemble, expectedCodeListResults)
+		validateBody(w.Body, &models.CodeListResults{}, &expectedCodeListResults)
 	})
 
 	Convey("Get code lists returns a status of internal error", t, func() {
@@ -97,11 +91,7 @@ func TestGetCodeList(t *testing.T) {
 		api.router.ServeHTTP(w, r)
 		So(w.Code, ShouldEqual, http.StatusOK)
 
-		payload, err := ioutil.ReadAll(w.Body)
-		So(err, ShouldBeNil)
-		apiCodeList := models.CodeList{}
-		json.Unmarshal(payload, &apiCodeList)
-		So(apiCodeList, ShouldResemble, expectedCodeList)
+		validateBody(w.Body, &models.CodeList{}, &expectedCodeList)
 	})
 
 	Convey("Get a code list returns a status of not found", t, func() {

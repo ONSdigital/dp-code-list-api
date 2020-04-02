@@ -1,6 +1,13 @@
 package api
 
-import "github.com/pkg/errors"
+import (
+	"bytes"
+	"encoding/json"
+	"io/ioutil"
+
+	"github.com/pkg/errors"
+	. "github.com/smartystreets/goconvey/convey"
+)
 
 // Constants used by tests
 const (
@@ -15,3 +22,11 @@ const (
 
 // ErrInternal is the error returned by mocks to emulate an internal service error
 var ErrInternal = errors.New("internal error")
+
+// validateBody is a generic function that un-marshals the body to a provided interface, and validates it against the expected.
+func validateBody(body *bytes.Buffer, apiStruct, expected interface{}) {
+	payload, err := ioutil.ReadAll(body)
+	So(err, ShouldBeNil)
+	json.Unmarshal(payload, apiStruct)
+	So(apiStruct, ShouldResemble, expected)
+}

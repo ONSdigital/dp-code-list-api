@@ -57,7 +57,7 @@ func main() {
 	hc := healthcheck.New(versionInfo, cfg.HealthCheckCriticalTimeout, cfg.HealthCheckInterval)
 
 	// Register checkers
-	if err := registerCheckers(ctx, &hc); err != nil {
+	if err := registerCheckers(ctx, &hc, datastore); err != nil {
 		os.Exit(1)
 	}
 
@@ -143,9 +143,14 @@ func main() {
 }
 
 // RegisterCheckers adds the checkers for the provided clients to the healthcheck object.
-func registerCheckers(ctx context.Context, hc *healthcheck.HealthCheck) (err error) {
+func registerCheckers(ctx context.Context, hc *healthcheck.HealthCheck, db *graph.DB) (err error) {
 
 	hasErrors := false
+
+	if err = hc.AddCheck("Neo4J", db.Checker); err != nil {
+		hasErrors = true
+		log.Event(nil, "error adding check for graph db", log.ERROR, log.Error(err))
+	}
 
 	if hasErrors {
 		return errors.New("Error(s) registering checkers for healthcheck")

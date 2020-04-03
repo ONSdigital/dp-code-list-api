@@ -54,7 +54,7 @@ func CreateCodeListAPI(route *mux.Router, store datastore.DataStore, apiURL, dat
 }
 
 func handleError(ctx context.Context, logMsg string, logData log.Data, err error, w http.ResponseWriter) {
-	log.Event(ctx, "error", log.ERROR, log.Error(err), logData)
+	log.Event(ctx, logMsg, log.ERROR, log.Error(err), logData)
 	if err == driver.ErrNotFound {
 		http.Error(w, err.Error(), http.StatusNotFound)
 	} else {

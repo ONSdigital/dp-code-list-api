@@ -28,14 +28,14 @@ The endpoint `/health` checks the connection to the database and returns one of:
 
 ### Configuration
 
-| Environment variable          | Default                                | Description
+| Environment variable         | Default                                | Description
 | ---------------------------- | ---------------------------------------| -----------
 | BIND_ADDR                    | :22400                                 | The host and port to bind to
 | CODE_LIST_API_URL            | http://localhost:22400                 | The base URL for the code list API
 | DATASET_API_URL              | http://localhost:22000                 | The base URL for the dataset API
 | GRACEFUL_SHUTDOWN_TIMEOUT    | 5s                                     | The graceful shutdown timeout in seconds
-| HEALTHCHECK_INTERVAL         | 10s                                    | Time between calls to healthchecks
-| HEALTHCHECK_CRITICAL_TIMEOUT | 1m                                     | Timeout to consider a failing healthcheck critical
+| HEALTHCHECK_INTERVAL         | 30s                                    | Time between calls to healthchecks
+| HEALTHCHECK_CRITICAL_TIMEOUT | 90s                                    | Timeout to consider a failing healthcheck critical
 
 ### License
 

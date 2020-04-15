@@ -28,8 +28,8 @@ func Get() (*Configuration, error) {
 		CodeListAPIURL:             "http://localhost:22400",
 		DatasetAPIURL:              "http://localhost:22000",
 		GracefulShutdownTimeout:    time.Second * 5,
-		HealthCheckInterval:        10 * time.Second,
-		HealthCheckCriticalTimeout: 1 * time.Minute,
+		HealthCheckInterval:        30 * time.Second,
+		HealthCheckCriticalTimeout: 90 * time.Second,
 	}
 
 	return cfg, envconfig.Process("", cfg)

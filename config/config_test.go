@@ -17,8 +17,8 @@ func TestGetReturnsDefaultValues(t *testing.T) {
 			CodeListAPIURL:             "http://localhost:22400",
 			DatasetAPIURL:              "http://localhost:22000",
 			GracefulShutdownTimeout:    time.Second * 5,
-			HealthCheckInterval:        time.Second * 10,
-			HealthCheckCriticalTimeout: time.Minute,
+			HealthCheckInterval:        time.Second * 30,
+			HealthCheckCriticalTimeout: time.Second * 90,
 		})
 	})
 }

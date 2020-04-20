@@ -3,6 +3,8 @@ package models
 import (
 	"errors"
 	"fmt"
+
+	dbmodels "github.com/ONSdigital/dp-graph/v2/models"
 )
 
 // CodeResults contains an array of codes which can be paginated
@@ -16,8 +18,7 @@ type CodeResults struct {
 
 // Code for a single dimensions type
 type Code struct {
-	ID    string     `json:"-"`
-	Code  string     `json:"id"`
+	ID    string     `json:"code"`
 	Label string     `json:"label"`
 	Links *CodeLinks `json:"links"`
 }
@@ -29,15 +30,42 @@ type CodeLinks struct {
 	Self     *Link `json:"self"`
 }
 
+// UpdateLinks updates the links for a code list
 func (c *Code) UpdateLinks(host, codeListID, edition string) error {
-	if c.Links == nil || c.Links.Self == nil || c.Links.Self.ID == "" {
-		return errors.New("unable to create links - code id not provided")
+
+	if c.ID == "" {
+		return errors.New("unable to create links - code ID not provided")
 	}
 
-	id := c.Links.Self.ID
-	c.Links.Self = CreateLink(id, fmt.Sprintf(codeURI, codeListID, edition, id), host)
-	c.Links.Datasets = CreateLink("", fmt.Sprintf(datasetsURI, codeListID, edition, id), host)
+	if c.Links == nil {
+		c.Links = &CodeLinks{}
+	}
+
+	c.Links.Self = CreateLink(c.ID, fmt.Sprintf(codeURI, codeListID, edition, c.ID), host)
+	c.Links.Datasets = CreateLink("", fmt.Sprintf(datasetsURI, codeListID, edition, c.ID), host)
 	c.Links.CodeList = CreateLink("", fmt.Sprintf(codeListURI, codeListID), host)
 
 	return nil
+}
+
+// NewCode creates a new Code struct from a Code DB model
+func NewCode(dbCode *dbmodels.Code) *Code {
+	if dbCode == nil {
+		return &Code{}
+	}
+	return &Code{
+		ID:    dbCode.Code,
+		Label: dbCode.Label,
+	}
+}
+
+// NewCodeResults creates a new CodeResult struct from a CodeResult DB model.
+func NewCodeResults(dbCodeResults *dbmodels.CodeResults) *CodeResults {
+	results := &CodeResults{}
+	if dbCodeResults != nil {
+		for _, dbItem := range dbCodeResults.Items {
+			results.Items = append(results.Items, *NewCode(&dbItem))
+		}
+	}
+	return results
 }

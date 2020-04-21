@@ -4,7 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/ONSdigital/go-ns/log"
+	"github.com/ONSdigital/dp-code-list-api/models"
+	"github.com/ONSdigital/log.go/log"
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
 )
@@ -15,22 +16,22 @@ func (c *CodeListAPI) getEditions(w http.ResponseWriter, r *http.Request) {
 	id := vars["id"]
 	data := log.Data{"codelist_id": id}
 
-	log.InfoCtx(ctx, "getEditions endpoint: attempting to find editions", data)
+	log.Event(ctx, "getEditions endpoint: attempting to find editions", log.INFO, data)
 
-	editions, err := c.store.GetEditions(r.Context(), id)
+	dbEditions, err := c.store.GetEditions(r.Context(), id)
 	if err != nil {
-		data["err"] = err
-		log.InfoCtx(ctx, "failed to get editions", data)
-		handleError(ctx, w, err, data)
+		handleError(ctx, "failed to get editions", data, err, w)
 		return
 	}
+	editions := models.NewEditions(dbEditions)
 
-	for _, item := range editions.Items {
+	for i, item := range editions.Items {
 		if err := item.UpdateLinks(id, c.apiURL); err != nil {
-			log.ErrorCtx(ctx, errors.WithMessage(err, "getEditions endpoint: links could not be created"), nil)
+			log.Event(ctx, "error updating links", log.ERROR, log.Error(errors.WithMessage(err, "getEditions endpoint: links could not be created")))
 			http.Error(w, internalServerErr, http.StatusInternalServerError)
 			return
 		}
+		editions.Items[i] = item
 	}
 
 	count := len(editions.Items)
@@ -40,17 +41,15 @@ func (c *CodeListAPI) getEditions(w http.ResponseWriter, r *http.Request) {
 
 	b, err := json.Marshal(editions)
 	if err != nil {
-		data["err"] = err
-		log.InfoCtx(ctx, "failed to marshal editions", data)
-		handleError(ctx, w, err, data)
+		handleError(ctx, "failed to marshal editions", data, err, w)
 		return
 	}
 
 	if err := c.writeBody(w, b); err != nil {
-		log.ErrorCtx(ctx, errors.WithMessage(err, "getEditions endpoint: failed to write bytes to response"), data)
+		log.Event(ctx, "error writting body", log.ERROR, log.Error(errors.WithMessage(err, "getEditions endpoint: failed to write bytes to response")), data)
 		return
 	}
-	log.InfoCtx(r.Context(), "retrieved codelist editions", log.Data{"code_list_id": id})
+	log.Event(r.Context(), "retrieved codelist editions", log.INFO, log.Data{"code_list_id": id})
 }
 
 func (c *CodeListAPI) getEdition(w http.ResponseWriter, r *http.Request) {
@@ -60,33 +59,30 @@ func (c *CodeListAPI) getEdition(w http.ResponseWriter, r *http.Request) {
 	edition := vars["edition"]
 	data := log.Data{"codelist_id": id, "edition": edition}
 
-	log.InfoCtx(ctx, "getEdition endpoint: attempting to find edition", data)
+	log.Event(ctx, "getEdition endpoint: attempting to find edition", log.INFO, data)
 
-	editionModel, err := c.store.GetEdition(r.Context(), id, edition)
+	dbEditionModel, err := c.store.GetEdition(r.Context(), id, edition)
 	if err != nil {
-		data["err"] = err
-		log.InfoCtx(ctx, "failed to get edition", data)
-		handleError(ctx, w, err, data)
+		handleError(ctx, "failed to get edition", data, err, w)
 		return
 	}
+	editionModel := models.NewEdition(dbEditionModel)
 
 	if err := editionModel.UpdateLinks(id, c.apiURL); err != nil {
-		log.ErrorCtx(ctx, errors.WithMessage(err, "getEdition endpoint: links could not be created"), nil)
+		log.Event(ctx, "error updating links", log.ERROR, log.Error(errors.WithMessage(err, "getEdition endpoint: links could not be created")))
 		http.Error(w, internalServerErr, http.StatusInternalServerError)
 		return
 	}
 
 	b, err := json.Marshal(editionModel)
 	if err != nil {
-		data["err"] = err
-		log.InfoCtx(ctx, "failed to marshal editions", data)
-		handleError(ctx, w, err, data)
+		handleError(ctx, "failed to marshal editions", data, err, w)
 		return
 	}
 
 	if err := c.writeBody(w, b); err != nil {
-		log.ErrorCtx(ctx, errors.WithMessage(err, "getEdition endpoint: failed to write bytes to response"), data)
+		log.Event(ctx, "error writting body", log.ERROR, log.Error(errors.WithMessage(err, "getEdition endpoint: failed to write bytes to response")), data)
 		return
 	}
-	log.InfoCtx(r.Context(), "retrieved codelist edition", log.Data{"code_list_id": id, edition: edition})
+	log.Event(r.Context(), "retrieved codelist edition", log.INFO, log.Data{"code_list_id": id, edition: edition})
 }

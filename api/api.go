@@ -6,8 +6,8 @@ import (
 	"context"
 
 	"github.com/ONSdigital/dp-code-list-api/datastore"
-	"github.com/ONSdigital/dp-graph/graph/driver"
-	"github.com/ONSdigital/go-ns/log"
+	"github.com/ONSdigital/dp-graph/v2/graph/driver"
+	"github.com/ONSdigital/log.go/log"
 	"github.com/gorilla/mux"
 )
 
@@ -53,8 +53,8 @@ func CreateCodeListAPI(route *mux.Router, store datastore.DataStore, apiURL, dat
 	return &api
 }
 
-func handleError(ctx context.Context, w http.ResponseWriter, err error, data log.Data) {
-	log.ErrorCtx(ctx, err, data)
+func handleError(ctx context.Context, logMsg string, logData log.Data, err error, w http.ResponseWriter) {
+	log.Event(ctx, logMsg, log.ERROR, log.Error(err), logData)
 	if err == driver.ErrNotFound {
 		http.Error(w, err.Error(), http.StatusNotFound)
 	} else {

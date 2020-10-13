@@ -13,7 +13,7 @@ import (
 	"github.com/ONSdigital/dp-code-list-api/config"
 	"github.com/ONSdigital/dp-graph/v2/graph"
 	"github.com/ONSdigital/dp-healthcheck/healthcheck"
-	"github.com/ONSdigital/go-ns/server"
+	dphttp "github.com/ONSdigital/dp-net/http"
 	"github.com/ONSdigital/log.go/log"
 	"github.com/gorilla/mux"
 )
@@ -68,7 +68,7 @@ func main() {
 	router.Path("/health").HandlerFunc(hc.Handler)
 
 	api.CreateCodeListAPI(router, datastore, cfg.CodeListAPIURL, cfg.DatasetAPIURL)
-	httpServer := server.New(cfg.BindAddr, router)
+	httpServer := dphttp.NewServer(cfg.BindAddr, router)
 	httpServer.HandleOSSignals = false
 
 	// Start healthcheck ticker

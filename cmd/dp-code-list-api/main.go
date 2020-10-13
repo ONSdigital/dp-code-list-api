@@ -48,6 +48,8 @@ func main() {
 		os.Exit(1)
 	}
 
+	graphErrorConsumer := graph.NewLoggingErrorConsumer(ctx, datastore.Errors)
+
 	// Create healthcheck object with versionInfo
 	versionInfo, err := healthcheck.NewVersionInfo(BuildTime, GitCommit, Version)
 	if err != nil {
@@ -113,6 +115,13 @@ func main() {
 			log.Event(shutdownCtx, "datastore close error", log.ERROR, log.Error(err))
 		} else {
 			log.Event(shutdownCtx, "datastore successfully closed", log.INFO)
+		}
+
+		if err = graphErrorConsumer.Close(shutdownCtx); err != nil {
+			anyError = true
+			log.Event(shutdownCtx, "graph error consumer close error", log.ERROR, log.Error(err))
+		} else {
+			log.Event(shutdownCtx, "graph error consumer successfully closed", log.INFO)
 		}
 
 		// If any error happened during shutdown, log it and exit with err code

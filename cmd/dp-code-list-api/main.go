@@ -143,13 +143,13 @@ func registerCheckers(ctx context.Context, hc *healthcheck.HealthCheck, db *grap
 
 	hasErrors := false
 
-	if err = hc.AddCheck("Neo4J", db.Checker); err != nil {
+	if err = hc.AddCheck("Graph DB", db.Checker); err != nil {
 		hasErrors = true
 		log.Event(ctx, "error adding check for graph db", log.ERROR, log.Error(err))
 	}
 
 	if hasErrors {
-		return errors.New("Error(s) registering checkers for healthcheck")
+		return errors.New("error registering checkers for health check")
 	}
 	return nil
 }

@@ -13,7 +13,7 @@ import (
 	"github.com/ONSdigital/dp-code-list-api/config"
 	"github.com/ONSdigital/dp-graph/v2/graph"
 	"github.com/ONSdigital/dp-healthcheck/healthcheck"
-	"github.com/ONSdigital/go-ns/server"
+	dphttp "github.com/ONSdigital/dp-net/http"
 	"github.com/ONSdigital/log.go/log"
 	"github.com/gorilla/mux"
 )
@@ -48,6 +48,8 @@ func main() {
 		os.Exit(1)
 	}
 
+	graphErrorConsumer := graph.NewLoggingErrorConsumer(ctx, datastore.Errors)
+
 	// Create healthcheck object with versionInfo
 	versionInfo, err := healthcheck.NewVersionInfo(BuildTime, GitCommit, Version)
 	if err != nil {
@@ -66,7 +68,7 @@ func main() {
 	router.Path("/health").HandlerFunc(hc.Handler)
 
 	api.CreateCodeListAPI(router, datastore, cfg.CodeListAPIURL, cfg.DatasetAPIURL)
-	httpServer := server.New(cfg.BindAddr, router)
+	httpServer := dphttp.NewServer(cfg.BindAddr, router)
 	httpServer.HandleOSSignals = false
 
 	// Start healthcheck ticker
@@ -115,6 +117,13 @@ func main() {
 			log.Event(shutdownCtx, "datastore successfully closed", log.INFO)
 		}
 
+		if err = graphErrorConsumer.Close(shutdownCtx); err != nil {
+			anyError = true
+			log.Event(shutdownCtx, "graph error consumer close error", log.ERROR, log.Error(err))
+		} else {
+			log.Event(shutdownCtx, "graph error consumer successfully closed", log.INFO)
+		}
+
 		// If any error happened during shutdown, log it and exit with err code
 		if anyError {
 			log.Event(ctx, "graceful shutdown had errors", log.WARN)
@@ -143,13 +152,13 @@ func registerCheckers(ctx context.Context, hc *healthcheck.HealthCheck, db *grap
 
 	hasErrors := false
 
-	if err = hc.AddCheck("Neo4J", db.Checker); err != nil {
+	if err = hc.AddCheck("Graph DB", db.Checker); err != nil {
 		hasErrors = true
 		log.Event(ctx, "error adding check for graph db", log.ERROR, log.Error(err))
 	}
 
 	if hasErrors {
-		return errors.New("Error(s) registering checkers for healthcheck")
+		return errors.New("error registering checkers for health check")
 	}
 	return nil
 }

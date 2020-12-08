@@ -1,7 +1,7 @@
 github.com/ONSdigital/dp-api-clients-go v1.28.0 h1:ExIUlHC6uBdBlFwt/gAI0ApSzpyigy0NWJFK3XCwSVc=
 github.com/ONSdigital/dp-api-clients-go v1.28.0/go.mod h1:iyJy6uRL4B6OYOJA0XMr5UHt6+Q8XmN9uwmURO+9Oj4=
-github.com/ONSdigital/dp-graph/v2 v2.2.2 h1:hqA+BCHdxsDw3KawdiemRmtWBQhAxDHP+DXhhFpk3H8=
-github.com/ONSdigital/dp-graph/v2 v2.2.2/go.mod h1:K4LIhFcyxB8g7nUG5I5I8x6QVf89x82dCEFBbE0mmaQ=
+github.com/ONSdigital/dp-graph/v2 v2.6.1 h1:SD08S7trS0/rnwhgtI1SqEitMKrE3JomDb6mQa4hlSs=
+github.com/ONSdigital/dp-graph/v2 v2.6.1/go.mod h1:wpBSdQi6KrY5lK76APeRR3Na/cqIpJMEZloc+/KOP/k=
 github.com/ONSdigital/dp-healthcheck v1.0.5 h1:DXnohGIqXaLLeYGdaGOhgkZjAbWMNoLAjQ3EgZeMT3M=
 github.com/ONSdigital/dp-healthcheck v1.0.5/go.mod h1:2wbVAUHMl9+4tWhUlxYUuA1dnf2+NrwzC+So5f5BMLk=
 github.com/ONSdigital/dp-mocking v0.0.0-20190905163309-fee2702ad1b9/go.mod h1:BcIRgitUju//qgNePRBmNjATarTtynAgc0yV29VpLEk=
@@ -18,6 +18,8 @@ github.com/ONSdigital/golang-neo4j-bolt-driver v0.0.0-20190228153339-da534111531
 github.com/ONSdigital/golang-neo4j-bolt-driver v0.0.0-20190228153339-da534111531d/go.mod h1:75Sxr59AMz2RiPskqSymLFxdeaIEhnkNaJE5lonMS3M=
 github.com/ONSdigital/graphson v0.0.0-20190718134034-c13ceacd109d h1:yrCtEGlohmA3OnXtke0nOOp/m9O83orpSnTGOfYOw1Q=
 github.com/ONSdigital/graphson v0.0.0-20190718134034-c13ceacd109d/go.mod h1:zQ+8pTnCLGuy4eUek81pWUxZo4/f71ri3VYz97Wby+4=
+github.com/ONSdigital/graphson v0.1.0 h1:Z+9l9RGnSG5OU5sx/QanLEfhrHGqY+hni+7NJ2TLFAY=
+github.com/ONSdigital/graphson v0.1.0/go.mod h1:IRS8d1ydh1oczDKbLhTcqc/BNfgZyzhrrjr21SQOkjA=
 github.com/ONSdigital/gremgo-neptune v1.0.0 h1:l0Pizt2goXK5oCFeqs2sOkosZbF4sva0RpcR150VvNE=
 github.com/ONSdigital/gremgo-neptune v1.0.0/go.mod h1:GZz/N6xjNY+EN0x4FmfBDrM73R+Pr3aI5iCwYbY1oYQ=
 github.com/ONSdigital/log.go v1.0.0 h1:hZQTuitFv4nSrpzMhpGvafUC5/8xMVnLI0CWe1rAJNc=

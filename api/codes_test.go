@@ -25,6 +25,8 @@ var (
 		Label: "test",
 	}
 
+	dbCodeResults = dbmodels.CodeResults{Items: []dbmodels.Code{dbCode}}
+
 	expectedCode = models.Code{
 		ID:    codeID,
 		Label: "test",
@@ -42,6 +44,30 @@ var (
 				Href: fmt.Sprintf("%s/code-lists/%s", codeListURL, codeListID),
 			},
 		},
+	}
+
+	codePaginationTestOne = models.CodeResults{
+		Items:      []models.Code{expectedCode},
+		Count:      1,
+		Offset:     0,
+		Limit:      1,
+		TotalCount: 1,
+	}
+
+	codePaginationTestTwo = models.CodeResults{
+		Items:      []models.Code{expectedCode},
+		Count:      0,
+		Offset:     1,
+		Limit:      7,
+		TotalCount: 1,
+	}
+
+	codePaginationTestThree = models.CodeResults{
+		Items:      []models.Code{expectedCode},
+		Count:      1,
+		Offset:     0,
+		Limit:      0,
+		TotalCount: 1,
 	}
 )
 
@@ -61,7 +87,7 @@ func TestGetCodes_DatastoreError(t *testing.T) {
 
 		Convey("when getCodes is called", func() {
 			router := mux.NewRouter()
-			CreateCodeListAPI(router, mockDatastore, codeListURL, datasetURL)
+			CreateCodeListAPI(router, mockDatastore, codeListURL, datasetURL, defaultOffset, defaultLimit)
 			w := httptest.NewRecorder()
 			r := httptest.NewRequest(http.MethodGet, fmt.Sprintf("%s/code-lists/%s/editions/%s/codes", codeListURL, codeListID, editionID), nil)
 
@@ -89,7 +115,7 @@ func TestGetCodes_EditionNotFound(t *testing.T) {
 
 		Convey("when getCodes is called", func() {
 			router := mux.NewRouter()
-			CreateCodeListAPI(router, mockDatastore, codeListURL, datasetURL)
+			CreateCodeListAPI(router, mockDatastore, codeListURL, datasetURL, defaultOffset, defaultLimit)
 			w := httptest.NewRecorder()
 			r := httptest.NewRequest(http.MethodGet, fmt.Sprintf("%s/code-lists/%s/editions/%s/codes", codeListURL, codeListID, editionID), nil)
 
@@ -118,7 +144,7 @@ func TestGetCodes_WriteBodyError(t *testing.T) {
 		Convey("when getCodes is called", func() {
 			router := mux.NewRouter()
 
-			api := CreateCodeListAPI(router, mockDatastore, codeListURL, datasetURL)
+			api := CreateCodeListAPI(router, mockDatastore, codeListURL, datasetURL, defaultOffset, defaultLimit)
 			api.writeBody = failWriteBody
 
 			w := httptest.NewRecorder()
@@ -145,7 +171,7 @@ func TestGetCodes_Success(t *testing.T) {
 		}
 		expectedResult := models.CodeResults{
 			Count:      1,
-			Limit:      1,
+			Limit:      100,
 			TotalCount: 1,
 			Items:      []models.Code{expectedCode},
 		}
@@ -159,7 +185,7 @@ func TestGetCodes_Success(t *testing.T) {
 		Convey("when getCodes is called", func() {
 			router := mux.NewRouter()
 
-			CreateCodeListAPI(router, mockDatastore, codeListURL, datasetURL)
+			CreateCodeListAPI(router, mockDatastore, codeListURL, datasetURL, defaultOffset, defaultLimit)
 
 			w := httptest.NewRecorder()
 			r := httptest.NewRequest(http.MethodGet, fmt.Sprintf("%s/code-lists/%s/editions/%s/codes", codeListURL, codeListID, editionID), nil)
@@ -179,6 +205,61 @@ func TestGetCodes_Success(t *testing.T) {
 	})
 }
 
+func TestGetCodes_Pagination(t *testing.T) {
+	t.Parallel()
+
+	Convey("When valid limit and offset query parameters are provided, then return codes information according to the offset and limit", t, func() {
+		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/%s/editions/%s/codes?offset=0&limit=1", codeListURL, codeListID, editionID), nil)
+		w := httptest.NewRecorder()
+
+		mockDatastore := &storetest.DataStoreMock{
+			GetCodesFunc: func(ctx context.Context, codeListID string, editionID string) (*dbmodels.CodeResults, error) {
+				return &dbCodeResults, nil
+			},
+		}
+
+		api := CreateCodeListAPI(mux.NewRouter(), mockDatastore, codeListURL, datasetURL, defaultOffset, defaultLimit)
+		api.router.ServeHTTP(w, r)
+		So(w.Code, ShouldEqual, http.StatusOK)
+
+		validateBody(w.Body, &models.CodeResults{}, &codePaginationTestOne)
+	})
+
+	Convey("When valid limit above maximum and offset query parameters are provided, then return codes information according to the offset and limit", t, func() {
+		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/%s/editions/%s/codes?offset=1&limit=7", codeListURL, codeListID, editionID), nil)
+		w := httptest.NewRecorder()
+
+		mockDatastore := &storetest.DataStoreMock{
+			GetCodesFunc: func(ctx context.Context, codeListID string, editionID string) (*dbmodels.CodeResults, error) {
+				return &dbCodeResults, nil
+			},
+		}
+
+		api := CreateCodeListAPI(mux.NewRouter(), mockDatastore, codeListURL, datasetURL, defaultOffset, defaultLimit)
+		api.router.ServeHTTP(w, r)
+		So(w.Code, ShouldEqual, http.StatusOK)
+
+		validateBody(w.Body, &models.CodeResults{}, &codePaginationTestTwo)
+	})
+
+	Convey("When a negative limit and offset query parameters are provided, then return codes information with offset and limit equal to zero", t, func() {
+		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/%s/editions/%s/codes?offset=-1&limit=-7", codeListURL, codeListID, editionID), nil)
+		w := httptest.NewRecorder()
+
+		mockDatastore := &storetest.DataStoreMock{
+			GetCodesFunc: func(ctx context.Context, codeListID string, editionID string) (*dbmodels.CodeResults, error) {
+				return &dbCodeResults, nil
+			},
+		}
+
+		api := CreateCodeListAPI(mux.NewRouter(), mockDatastore, codeListURL, datasetURL, defaultOffset, defaultLimit)
+		api.router.ServeHTTP(w, r)
+		So(w.Code, ShouldEqual, http.StatusOK)
+
+		validateBody(w.Body, &models.CodeResults{}, &codePaginationTestThree)
+	})
+}
+
 func TestGetCode_Success(t *testing.T) {
 	Convey("Given a valid request", t, func() {
 		mockDatastore := &storetest.DataStoreMock{
@@ -190,7 +271,7 @@ func TestGetCode_Success(t *testing.T) {
 		Convey("when getCodes is called", func() {
 			router := mux.NewRouter()
 
-			CreateCodeListAPI(router, mockDatastore, codeListURL, datasetURL)
+			CreateCodeListAPI(router, mockDatastore, codeListURL, datasetURL, defaultOffset, defaultLimit)
 
 			w := httptest.NewRecorder()
 			r := httptest.NewRequest(http.MethodGet, fmt.Sprintf("%s/code-lists/%s/editions/%s/codes/%s", codeListURL, codeListID, editionID, codeID), nil)
@@ -221,7 +302,7 @@ func TestGetCode_DatastoreError(t *testing.T) {
 
 		Convey("when getCodes is called", func() {
 			router := mux.NewRouter()
-			CreateCodeListAPI(router, mockDatastore, codeListURL, datasetURL)
+			CreateCodeListAPI(router, mockDatastore, codeListURL, datasetURL, defaultOffset, defaultLimit)
 			w := httptest.NewRecorder()
 			r := httptest.NewRequest(http.MethodGet, fmt.Sprintf("%s/code-lists/%s/editions/%s/codes/%s", codeListURL, codeListID, editionID, codeID), nil)
 
@@ -250,7 +331,7 @@ func TestGetCode_EditionNotFound(t *testing.T) {
 
 		Convey("when getCodes is called", func() {
 			router := mux.NewRouter()
-			CreateCodeListAPI(router, mockDatastore, codeListURL, datasetURL)
+			CreateCodeListAPI(router, mockDatastore, codeListURL, datasetURL, defaultOffset, defaultLimit)
 			w := httptest.NewRecorder()
 			r := httptest.NewRequest(http.MethodGet, fmt.Sprintf("%s/code-lists/%s/editions/%s/codes/%s", codeListURL, codeListID, editionID, codeID), nil)
 
@@ -279,7 +360,7 @@ func TestGetCode_WriteBodyError(t *testing.T) {
 
 		Convey("when getCodes is called", func() {
 			router := mux.NewRouter()
-			api := CreateCodeListAPI(router, mockDatastore, codeListURL, datasetURL)
+			api := CreateCodeListAPI(router, mockDatastore, codeListURL, datasetURL, defaultOffset, defaultLimit)
 			api.writeBody = failWriteBody
 
 			w := httptest.NewRecorder()

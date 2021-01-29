@@ -3,8 +3,10 @@ package api
 import (
 	"encoding/json"
 	"net/http"
+	"sort"
 
 	"github.com/ONSdigital/dp-code-list-api/models"
+	"github.com/ONSdigital/dp-code-list-api/utils"
 	"github.com/ONSdigital/log.go/log"
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
@@ -20,11 +22,30 @@ func (c *CodeListAPI) getCodeDatasets(w http.ResponseWriter, r *http.Request) {
 
 	log.Event(ctx, "getCodeDatasets endpoint: attempting to find datasets related to code", log.INFO, logData)
 
+	// get limit from query parameters, or default value
+	limit, err := utils.GetPositiveIntQueryParameter(r.URL.Query(), "limit", c.defaultLimit)
+	if err != nil {
+		log.Event(ctx, "failed to obtain limit from request query parameters", log.ERROR)
+		handleError(ctx, "failed to obtain limit", log.Data{"limit": limit}, err, w)
+		return
+	}
+
+	// get offset from query parameters, or default value
+	offset, err := utils.GetPositiveIntQueryParameter(r.URL.Query(), "offset", c.defaultOffset)
+	if err != nil {
+		log.Event(ctx, "failed to obtain offset from request query parameters", log.ERROR)
+		handleError(ctx, "failed to obtain offset", log.Data{"offset": offset}, err, w)
+		return
+	}
+
 	dbDatasets, err := c.store.GetCodeDatasets(ctx, codeListID, edition, code)
 	if err != nil {
 		handleError(ctx, "failed to get datasets list", logData, err, w)
 		return
 	}
+
+	totalCount := len(dbDatasets.Items)
+
 	datasets := models.NewDatasets(dbDatasets)
 
 	if err := datasets.UpdateLinks(c.datasetAPIURL, codeListID); err != nil {
@@ -33,10 +54,17 @@ func (c *CodeListAPI) getCodeDatasets(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	count := len(datasets.Items)
+	sort.Slice(datasets.Items, func(i, j int) bool {
+		return datasets.Items[i].ID < datasets.Items[j].ID
+	})
+
+	slicedResults := utils.DatasetsSlice(datasets.Items, offset, limit)
+
+	count := len(slicedResults)
 	datasets.Count = count
-	datasets.Limit = count
-	datasets.TotalCount = count
+	datasets.Offset = offset
+	datasets.Limit = limit
+	datasets.TotalCount = totalCount
 
 	b, err := json.Marshal(datasets)
 	if err != nil {

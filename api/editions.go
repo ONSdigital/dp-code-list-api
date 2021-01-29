@@ -3,8 +3,10 @@ package api
 import (
 	"encoding/json"
 	"net/http"
+	"sort"
 
 	"github.com/ONSdigital/dp-code-list-api/models"
+	"github.com/ONSdigital/dp-code-list-api/utils"
 	"github.com/ONSdigital/log.go/log"
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
@@ -18,11 +20,30 @@ func (c *CodeListAPI) getEditions(w http.ResponseWriter, r *http.Request) {
 
 	log.Event(ctx, "getEditions endpoint: attempting to find editions", log.INFO, data)
 
+	// get limit from query parameters, or default value
+	limit, err := utils.GetPositiveIntQueryParameter(r.URL.Query(), "limit", c.defaultLimit)
+	if err != nil {
+		log.Event(ctx, "failed to obtain limit from request query parameters", log.ERROR)
+		handleError(ctx, "failed to obtain limit", log.Data{"limit": limit}, err, w)
+		return
+	}
+
+	// get offset from query parameters, or default value
+	offset, err := utils.GetPositiveIntQueryParameter(r.URL.Query(), "offset", c.defaultOffset)
+	if err != nil {
+		log.Event(ctx, "failed to obtain offset from request query parameters", log.ERROR)
+		handleError(ctx, "failed to obtain offset", log.Data{"offset": offset}, err, w)
+		return
+	}
+
 	dbEditions, err := c.store.GetEditions(r.Context(), id)
 	if err != nil {
 		handleError(ctx, "failed to get editions", data, err, w)
 		return
 	}
+
+	totalCount := len(dbEditions.Items)
+
 	editions := models.NewEditions(dbEditions)
 
 	for i, item := range editions.Items {
@@ -34,10 +55,17 @@ func (c *CodeListAPI) getEditions(w http.ResponseWriter, r *http.Request) {
 		editions.Items[i] = item
 	}
 
-	count := len(editions.Items)
+	sort.Slice(editions.Items, func(i, j int) bool {
+		return editions.Items[i].ID < editions.Items[j].ID
+	})
+
+	slicedResults := utils.EditionsSlice(editions.Items, offset, limit)
+
+	count := len(slicedResults)
 	editions.Count = count
-	editions.Limit = count
-	editions.TotalCount = count
+	editions.Offset = offset
+	editions.Limit = limit
+	editions.TotalCount = totalCount
 
 	b, err := json.Marshal(editions)
 	if err != nil {

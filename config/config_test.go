@@ -19,6 +19,8 @@ func TestGetReturnsDefaultValues(t *testing.T) {
 			GracefulShutdownTimeout:    time.Second * 5,
 			HealthCheckInterval:        time.Second * 30,
 			HealthCheckCriticalTimeout: time.Second * 90,
+			DefaultOffset:              0,
+			DefaultLimit:               100,
 		})
 	})
 }

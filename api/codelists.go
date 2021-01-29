@@ -3,8 +3,10 @@ package api
 import (
 	"encoding/json"
 	"net/http"
+	"sort"
 
 	"github.com/ONSdigital/dp-code-list-api/models"
+	"github.com/ONSdigital/dp-code-list-api/utils"
 	"github.com/ONSdigital/log.go/log"
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
@@ -14,6 +16,22 @@ func (c *CodeListAPI) getCodeLists(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	filterBy := r.URL.Query().Get("type")
 
+	// get limit from query parameters, or default value
+	limit, err := utils.GetPositiveIntQueryParameter(r.URL.Query(), "limit", c.defaultLimit)
+	if err != nil {
+		log.Event(ctx, "failed to obtain limit from request query parameters", log.ERROR)
+		handleError(ctx, "failed to obtain limit", log.Data{"limit": limit}, err, w)
+		return
+	}
+
+	// get offset from query parameters, or default value
+	offset, err := utils.GetPositiveIntQueryParameter(r.URL.Query(), "offset", c.defaultOffset)
+	if err != nil {
+		log.Event(ctx, "failed to obtain offset from request query parameters", log.ERROR)
+		handleError(ctx, "failed to obtain offset", log.Data{"offset": offset}, err, w)
+		return
+	}
+
 	log.Event(ctx, "attempting to get code lists", log.INFO, log.Data{"type": filterBy})
 
 	dbCodeLists, err := c.store.GetCodeLists(r.Context(), filterBy)
@@ -21,6 +39,9 @@ func (c *CodeListAPI) getCodeLists(w http.ResponseWriter, r *http.Request) {
 		handleError(ctx, "failed to get code lists from graph", log.Data{"type": filterBy}, err, w)
 		return
 	}
+
+	totalCount := len(dbCodeLists.Items)
+
 	codeLists := models.NewCodeListResults(dbCodeLists)
 
 	for i, item := range codeLists.Items {
@@ -32,10 +53,17 @@ func (c *CodeListAPI) getCodeLists(w http.ResponseWriter, r *http.Request) {
 		codeLists.Items[i] = item
 	}
 
-	count := len(codeLists.Items)
+	sort.Slice(codeLists.Items, func(i, j int) bool {
+		return codeLists.Items[i].ID < codeLists.Items[j].ID
+	})
+
+	slicedResults := utils.CodelistsSlice(codeLists.Items, offset, limit)
+
+	count := len(slicedResults)
 	codeLists.Count = count
-	codeLists.Limit = count
-	codeLists.TotalCount = count
+	codeLists.Offset = offset
+	codeLists.Limit = limit
+	codeLists.TotalCount = totalCount
 
 	b, err := json.Marshal(codeLists)
 	if err != nil {

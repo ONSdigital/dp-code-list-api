@@ -24,10 +24,12 @@ type CodeListAPI struct {
 	writeBody     func(w http.ResponseWriter, bytes []byte) error
 	apiURL        string
 	datasetAPIURL string
+	defaultOffset int
+	defaultLimit  int
 }
 
 // CreateCodeListAPI returns a constructed code list api
-func CreateCodeListAPI(route *mux.Router, store datastore.DataStore, apiURL, datasetAPIURL string) *CodeListAPI {
+func CreateCodeListAPI(route *mux.Router, store datastore.DataStore, apiURL, datasetAPIURL string, defaultOffset, defaultLimit int) *CodeListAPI {
 	api := CodeListAPI{
 		router:        route,
 		store:         store,
@@ -41,6 +43,8 @@ func CreateCodeListAPI(route *mux.Router, store datastore.DataStore, apiURL, dat
 			}
 			return nil
 		},
+		defaultOffset: defaultOffset,
+		defaultLimit:  defaultLimit,
 	}
 
 	api.router.HandleFunc("/code-lists", api.getCodeLists).Methods("GET")

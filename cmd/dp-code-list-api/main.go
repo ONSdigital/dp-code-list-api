@@ -67,7 +67,7 @@ func main() {
 	router := mux.NewRouter()
 	router.Path("/health").HandlerFunc(hc.Handler)
 
-	api.CreateCodeListAPI(router, datastore, cfg.CodeListAPIURL, cfg.DatasetAPIURL)
+	api.CreateCodeListAPI(router, datastore, cfg.CodeListAPIURL, cfg.DatasetAPIURL, cfg.DefaultOffset, cfg.DefaultLimit)
 	httpServer := dphttp.NewServer(cfg.BindAddr, router)
 	httpServer.HandleOSSignals = false
 

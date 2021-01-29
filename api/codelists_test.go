@@ -28,11 +28,36 @@ var (
 			Editions: &models.Link{ID: "", Href: fmt.Sprintf("%s/code-lists/%s/editions", codeListURL, codeListID)},
 		},
 	}
+
 	expectedCodeListResults = models.CodeListResults{
 		Items:      []models.CodeList{expectedCodeList},
 		Count:      1,
 		Offset:     0,
+		Limit:      100,
+		TotalCount: 1,
+	}
+
+	paginationTestOne = models.CodeListResults{
+		Items:      []models.CodeList{expectedCodeList},
+		Count:      1,
+		Offset:     0,
 		Limit:      1,
+		TotalCount: 1,
+	}
+
+	paginationTestTwo = models.CodeListResults{
+		Items:      []models.CodeList{expectedCodeList},
+		Count:      0,
+		Offset:     1,
+		Limit:      7,
+		TotalCount: 1,
+	}
+
+	paginationTestThree = models.CodeListResults{
+		Items:      []models.CodeList{expectedCodeList},
+		Count:      1,
+		Offset:     0,
+		Limit:      0,
 		TotalCount: 1,
 	}
 )
@@ -50,26 +75,62 @@ func TestGetCodeLists(t *testing.T) {
 			},
 		}
 
-		api := CreateCodeListAPI(mux.NewRouter(), mockDatastore, codeListURL, datasetURL)
+		api := CreateCodeListAPI(mux.NewRouter(), mockDatastore, codeListURL, datasetURL, defaultOffset, defaultLimit)
 		api.router.ServeHTTP(w, r)
 		So(w.Code, ShouldEqual, http.StatusOK)
 
 		validateBody(w.Body, &models.CodeListResults{}, &expectedCodeListResults)
 	})
 
-	Convey("Get code lists returns a status of internal error", t, func() {
-		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists", codeListURL), nil)
+	Convey("When valid limit and offset query parameters are provided, then return codelist information according to the offset and limit", t, func() {
+		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists?offset=0&limit=1", codeListURL), nil)
 		w := httptest.NewRecorder()
 
 		mockDatastore := &storetest.DataStoreMock{
-			GetCodeListsFunc: func(ctx context.Context, f string) (*dbmodels.CodeListResults, error) {
-				return nil, ErrInternal
+			GetCodeListsFunc: func(ctx context.Context, filterBy string) (*dbmodels.CodeListResults, error) {
+				return &dbCodeListResults, nil
 			},
 		}
 
-		api := CreateCodeListAPI(mux.NewRouter(), mockDatastore, codeListURL, datasetURL)
+		api := CreateCodeListAPI(mux.NewRouter(), mockDatastore, codeListURL, datasetURL, defaultOffset, defaultLimit)
 		api.router.ServeHTTP(w, r)
-		So(w.Code, ShouldEqual, http.StatusInternalServerError)
+		So(w.Code, ShouldEqual, http.StatusOK)
+
+		validateBody(w.Body, &models.CodeListResults{}, &paginationTestOne)
+	})
+
+	Convey("When valid limit above maximum and offset query parameters are provided, then return codelist information according to the offset and limit", t, func() {
+		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists?offset=1&limit=7", codeListURL), nil)
+		w := httptest.NewRecorder()
+
+		mockDatastore := &storetest.DataStoreMock{
+			GetCodeListsFunc: func(ctx context.Context, filterBy string) (*dbmodels.CodeListResults, error) {
+				return &dbCodeListResults, nil
+			},
+		}
+
+		api := CreateCodeListAPI(mux.NewRouter(), mockDatastore, codeListURL, datasetURL, defaultOffset, defaultLimit)
+		api.router.ServeHTTP(w, r)
+		So(w.Code, ShouldEqual, http.StatusOK)
+
+		validateBody(w.Body, &models.CodeListResults{}, &paginationTestTwo)
+	})
+
+	Convey("When a negative limit and offset query parameters are provided, then return codelist information with offset and limit equal to zero", t, func() {
+		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists?offset=-1&limit=-7", codeListURL), nil)
+		w := httptest.NewRecorder()
+
+		mockDatastore := &storetest.DataStoreMock{
+			GetCodeListsFunc: func(ctx context.Context, filterBy string) (*dbmodels.CodeListResults, error) {
+				return &dbCodeListResults, nil
+			},
+		}
+
+		api := CreateCodeListAPI(mux.NewRouter(), mockDatastore, codeListURL, datasetURL, defaultOffset, defaultLimit)
+		api.router.ServeHTTP(w, r)
+		So(w.Code, ShouldEqual, http.StatusOK)
+
+		validateBody(w.Body, &models.CodeListResults{}, &paginationTestThree)
 	})
 }
 
@@ -87,7 +148,7 @@ func TestGetCodeList(t *testing.T) {
 			},
 		}
 
-		api := CreateCodeListAPI(mux.NewRouter(), mockDatastore, codeListURL, datasetURL)
+		api := CreateCodeListAPI(mux.NewRouter(), mockDatastore, codeListURL, datasetURL, defaultOffset, defaultLimit)
 		api.router.ServeHTTP(w, r)
 		So(w.Code, ShouldEqual, http.StatusOK)
 
@@ -104,7 +165,7 @@ func TestGetCodeList(t *testing.T) {
 			},
 		}
 
-		api := CreateCodeListAPI(mux.NewRouter(), mockDatastore, codeListURL, datasetURL)
+		api := CreateCodeListAPI(mux.NewRouter(), mockDatastore, codeListURL, datasetURL, defaultOffset, defaultLimit)
 		api.router.ServeHTTP(w, r)
 		So(w.Code, ShouldEqual, http.StatusNotFound)
 	})
@@ -119,7 +180,7 @@ func TestGetCodeList(t *testing.T) {
 			},
 		}
 
-		api := CreateCodeListAPI(mux.NewRouter(), mockDatastore, codeListURL, datasetURL)
+		api := CreateCodeListAPI(mux.NewRouter(), mockDatastore, codeListURL, datasetURL, defaultOffset, defaultLimit)
 		api.router.ServeHTTP(w, r)
 		So(w.Code, ShouldEqual, http.StatusInternalServerError)
 	})

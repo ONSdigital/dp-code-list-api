@@ -2,6 +2,8 @@ package api
 
 import (
 	"net/http"
+	"net/url"
+	"strconv"
 
 	"context"
 
@@ -64,4 +66,20 @@ func handleError(ctx context.Context, logMsg string, logData log.Data, err error
 	} else {
 		http.Error(w, internalServerErr, http.StatusInternalServerError)
 	}
+}
+
+// GetPositiveIntQueryParameter obtains the positive int value of query var defined by the provided varKey
+func GetPositiveIntQueryParameter(queryVars url.Values, varKey string, defaultValue int) (val int, err error) {
+	strVal, found := queryVars[varKey]
+	if !found {
+		return defaultValue, nil
+	}
+	val, err = strconv.Atoi(strVal[0])
+	if err != nil {
+		return -1, err
+	}
+	if val < 0 {
+		return 0, nil
+	}
+	return val, nil
 }

@@ -6,7 +6,6 @@ import (
 	"sort"
 
 	"github.com/ONSdigital/dp-code-list-api/models"
-	"github.com/ONSdigital/dp-code-list-api/utils"
 	"github.com/ONSdigital/log.go/log"
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
@@ -17,7 +16,7 @@ func (c *CodeListAPI) getCodeLists(w http.ResponseWriter, r *http.Request) {
 	filterBy := r.URL.Query().Get("type")
 
 	// get limit from query parameters, or default value
-	limit, err := utils.GetPositiveIntQueryParameter(r.URL.Query(), "limit", c.defaultLimit)
+	limit, err := GetPositiveIntQueryParameter(r.URL.Query(), "limit", c.defaultLimit)
 	if err != nil {
 		log.Event(ctx, "failed to obtain limit from request query parameters", log.ERROR)
 		handleError(ctx, "failed to obtain limit", log.Data{"limit": limit}, err, w)
@@ -25,7 +24,7 @@ func (c *CodeListAPI) getCodeLists(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// get offset from query parameters, or default value
-	offset, err := utils.GetPositiveIntQueryParameter(r.URL.Query(), "offset", c.defaultOffset)
+	offset, err := GetPositiveIntQueryParameter(r.URL.Query(), "offset", c.defaultOffset)
 	if err != nil {
 		log.Event(ctx, "failed to obtain offset from request query parameters", log.ERROR)
 		handleError(ctx, "failed to obtain offset", log.Data{"offset": offset}, err, w)
@@ -57,7 +56,7 @@ func (c *CodeListAPI) getCodeLists(w http.ResponseWriter, r *http.Request) {
 		return codeLists.Items[i].ID < codeLists.Items[j].ID
 	})
 
-	slicedResults := utils.CodelistsSlice(codeLists.Items, offset, limit)
+	slicedResults := codelistsSlice(codeLists.Items, offset, limit)
 
 	count := len(slicedResults)
 	codeLists.Count = count
@@ -110,4 +109,16 @@ func (c *CodeListAPI) getCodeList(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Event(ctx, "getCodeList endpoint: request successful", log.INFO, data)
+}
+
+func codelistsSlice(full []models.CodeList, offset, limit int) (sliced []models.CodeList) {
+	end := offset + limit
+	if limit == 0 || end > len(full) {
+		end = len(full)
+	}
+
+	if offset > len(full) {
+		return []models.CodeList{}
+	}
+	return full[offset:end]
 }

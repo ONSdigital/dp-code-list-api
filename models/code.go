@@ -60,10 +60,10 @@ func NewCode(dbCode *dbmodels.Code) *Code {
 }
 
 // NewCodeResults creates a new CodeResult struct from a CodeResult DB model.
-func NewCodeResults(dbCodeResults *dbmodels.CodeResults) *CodeResults {
+func NewCodeResults(dbCodes []dbmodels.Code) *CodeResults {
 	results := &CodeResults{}
-	if dbCodeResults != nil {
-		for _, dbItem := range dbCodeResults.Items {
+	if dbCodes != nil {
+		for _, dbItem := range dbCodes {
 			results.Items = append(results.Items, *NewCode(&dbItem))
 		}
 	}

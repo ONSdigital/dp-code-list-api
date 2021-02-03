@@ -68,7 +68,7 @@ var (
 	}
 
 	datasetPaginationTestTwo = models.Datasets{
-		Items:      []models.Dataset{expectedDataset},
+		Items:      []models.Dataset{},
 		Count:      0,
 		Offset:     1,
 		Limit:      7,

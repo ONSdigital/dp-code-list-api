@@ -6,6 +6,7 @@ import (
 	"sort"
 
 	"github.com/ONSdigital/dp-code-list-api/models"
+	dbmodels "github.com/ONSdigital/dp-graph/v2/models"
 	"github.com/ONSdigital/log.go/log"
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
@@ -43,7 +44,13 @@ func (c *CodeListAPI) getEditions(w http.ResponseWriter, r *http.Request) {
 
 	totalCount := len(dbEditions.Items)
 
-	editions := models.NewEditions(dbEditions)
+	sort.Slice(dbEditions.Items, func(i, j int) bool {
+		return dbEditions.Items[i].ID < dbEditions.Items[j].ID
+	})
+
+	slicedResults := editionsSlice(dbEditions.Items, offset, limit)
+
+	editions := models.NewEditions(slicedResults)
 
 	for i, item := range editions.Items {
 		if err := item.UpdateLinks(id, c.apiURL); err != nil {
@@ -53,12 +60,6 @@ func (c *CodeListAPI) getEditions(w http.ResponseWriter, r *http.Request) {
 		}
 		editions.Items[i] = item
 	}
-
-	sort.Slice(editions.Items, func(i, j int) bool {
-		return editions.Items[i].ID < editions.Items[j].ID
-	})
-
-	slicedResults := editionsSlice(editions.Items, offset, limit)
 
 	count := len(slicedResults)
 	editions.Count = count
@@ -114,14 +115,14 @@ func (c *CodeListAPI) getEdition(w http.ResponseWriter, r *http.Request) {
 	log.Event(r.Context(), "retrieved codelist edition", log.INFO, log.Data{"code_list_id": id, edition: edition})
 }
 
-func editionsSlice(full []models.Edition, offset, limit int) (sliced []models.Edition) {
+func editionsSlice(full []dbmodels.Edition, offset, limit int) (sliced []dbmodels.Edition) {
 	end := offset + limit
 	if limit == 0 || end > len(full) {
 		end = len(full)
 	}
 
 	if offset > len(full) {
-		return []models.Edition{}
+		return []dbmodels.Edition{}
 	}
 	return full[offset:end]
 }

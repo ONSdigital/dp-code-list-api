@@ -225,23 +225,6 @@ func TestGetCodes_Pagination(t *testing.T) {
 		validateBody(w.Body, &models.CodeResults{}, &codePaginationTestOne)
 	})
 
-	Convey("When valid limit above maximum and offset query parameters are provided, then return codes information according to the offset and limit", t, func() {
-		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/%s/editions/%s/codes?offset=1&limit=7", codeListURL, codeListID, editionID), nil)
-		w := httptest.NewRecorder()
-
-		mockDatastore := &storetest.DataStoreMock{
-			GetCodesFunc: func(ctx context.Context, codeListID string, editionID string) (*dbmodels.CodeResults, error) {
-				return &dbCodeResults, nil
-			},
-		}
-
-		api := CreateCodeListAPI(mux.NewRouter(), mockDatastore, codeListURL, datasetURL, defaultOffset, defaultLimit)
-		api.router.ServeHTTP(w, r)
-		So(w.Code, ShouldEqual, http.StatusOK)
-
-		validateBody(w.Body, &models.CodeResults{}, &codePaginationTestTwo)
-	})
-
 	Convey("When a negative limit and offset query parameters are provided, then return codes information with offset and limit equal to zero", t, func() {
 		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/%s/editions/%s/codes?offset=-1&limit=-7", codeListURL, codeListID, editionID), nil)
 		w := httptest.NewRecorder()

@@ -6,6 +6,7 @@ import (
 	"sort"
 
 	"github.com/ONSdigital/dp-code-list-api/models"
+	dbmodels "github.com/ONSdigital/dp-graph/v2/models"
 	"github.com/ONSdigital/log.go/log"
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
@@ -41,7 +42,13 @@ func (c *CodeListAPI) getCodeLists(w http.ResponseWriter, r *http.Request) {
 
 	totalCount := len(dbCodeLists.Items)
 
-	codeLists := models.NewCodeListResults(dbCodeLists)
+	sort.Slice(dbCodeLists.Items, func(i, j int) bool {
+		return dbCodeLists.Items[i].ID < dbCodeLists.Items[j].ID
+	})
+
+	slicedResults := codelistsSlice(dbCodeLists.Items, offset, limit)
+
+	codeLists := models.NewCodeListResults(slicedResults)
 
 	for i, item := range codeLists.Items {
 		if err := item.UpdateLinks(c.apiURL); err != nil {
@@ -51,12 +58,6 @@ func (c *CodeListAPI) getCodeLists(w http.ResponseWriter, r *http.Request) {
 		}
 		codeLists.Items[i] = item
 	}
-
-	sort.Slice(codeLists.Items, func(i, j int) bool {
-		return codeLists.Items[i].ID < codeLists.Items[j].ID
-	})
-
-	slicedResults := codelistsSlice(codeLists.Items, offset, limit)
 
 	count := len(slicedResults)
 	codeLists.Count = count
@@ -111,14 +112,14 @@ func (c *CodeListAPI) getCodeList(w http.ResponseWriter, r *http.Request) {
 	log.Event(ctx, "getCodeList endpoint: request successful", log.INFO, data)
 }
 
-func codelistsSlice(full []models.CodeList, offset, limit int) (sliced []models.CodeList) {
+func codelistsSlice(full []dbmodels.CodeList, offset, limit int) (sliced []dbmodels.CodeList) {
 	end := offset + limit
 	if limit == 0 || end > len(full) {
 		end = len(full)
 	}
 
 	if offset > len(full) {
-		return []models.CodeList{}
+		return []dbmodels.CodeList{}
 	}
 	return full[offset:end]
 }

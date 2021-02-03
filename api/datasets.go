@@ -6,6 +6,7 @@ import (
 	"sort"
 
 	"github.com/ONSdigital/dp-code-list-api/models"
+	dbmodels "github.com/ONSdigital/dp-graph/v2/models"
 	"github.com/ONSdigital/log.go/log"
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
@@ -45,19 +46,19 @@ func (c *CodeListAPI) getCodeDatasets(w http.ResponseWriter, r *http.Request) {
 
 	totalCount := len(dbDatasets.Items)
 
-	datasets := models.NewDatasets(dbDatasets)
+	sort.Slice(dbDatasets.Items, func(i, j int) bool {
+		return dbDatasets.Items[i].ID < dbDatasets.Items[j].ID
+	})
+
+	slicedResults := datasetsSlice(dbDatasets.Items, offset, limit)
+
+	datasets := models.NewDatasets(slicedResults)
 
 	if err := datasets.UpdateLinks(c.datasetAPIURL, codeListID); err != nil {
 		log.Event(ctx, "error updating links", log.ERROR, log.Error(errors.WithMessage(err, "getCodeDatasets endpoint: links could not be created")))
 		http.Error(w, internalServerErr, http.StatusInternalServerError)
 		return
 	}
-
-	sort.Slice(datasets.Items, func(i, j int) bool {
-		return datasets.Items[i].ID < datasets.Items[j].ID
-	})
-
-	slicedResults := datasetsSlice(datasets.Items, offset, limit)
 
 	count := len(slicedResults)
 	datasets.Count = count
@@ -79,14 +80,14 @@ func (c *CodeListAPI) getCodeDatasets(w http.ResponseWriter, r *http.Request) {
 	log.Event(ctx, "getCodeDatasets endpoint: request successful", log.INFO, logData)
 }
 
-func datasetsSlice(full []models.Dataset, offset, limit int) (sliced []models.Dataset) {
+func datasetsSlice(full []dbmodels.Dataset, offset, limit int) (sliced []dbmodels.Dataset) {
 	end := offset + limit
 	if limit == 0 || end > len(full) {
 		end = len(full)
 	}
 
 	if offset > len(full) {
-		return []models.Dataset{}
+		return []dbmodels.Dataset{}
 	}
 	return full[offset:end]
 }

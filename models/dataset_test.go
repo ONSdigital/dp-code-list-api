@@ -129,17 +129,25 @@ func TestNewDatasets(t *testing.T) {
 	})
 
 	Convey("Given a valid database Datasets model", t, func() {
-		dbDatasets := &dbmodels.Datasets{
-			Items: []dbmodels.Dataset{dbDataset1},
+		dbDatasets := []dbmodels.Dataset{
+			dbmodels.Dataset{
+				ID: "id1",
+			},
 		}
 
 		Convey("NewDatasets function returns the corresponding API Datasets model", func() {
 			datasets := models.NewDatasets(dbDatasets)
 			So(datasets, ShouldResemble, &models.Datasets{
-				Items: []models.Dataset{dataset1},
+				Items: []models.Dataset{
+					models.Dataset{
+						ID:       "id1",
+						Editions: []models.DatasetEdition{},
+					},
+				},
 			})
 		})
 	})
+
 }
 
 func TestNewDatasetEdition(t *testing.T) {

@@ -46,7 +46,7 @@ var (
 	}
 
 	paginationTestTwo = models.CodeListResults{
-		Items:      []models.CodeList{expectedCodeList},
+		Items:      []models.CodeList{},
 		Count:      0,
 		Offset:     1,
 		Limit:      7,
@@ -97,23 +97,6 @@ func TestGetCodeLists(t *testing.T) {
 		So(w.Code, ShouldEqual, http.StatusOK)
 
 		validateBody(w.Body, &models.CodeListResults{}, &paginationTestOne)
-	})
-
-	Convey("When valid limit above maximum and offset query parameters are provided, then return codelist information according to the offset and limit", t, func() {
-		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists?offset=1&limit=7", codeListURL), nil)
-		w := httptest.NewRecorder()
-
-		mockDatastore := &storetest.DataStoreMock{
-			GetCodeListsFunc: func(ctx context.Context, filterBy string) (*dbmodels.CodeListResults, error) {
-				return &dbCodeListResults, nil
-			},
-		}
-
-		api := CreateCodeListAPI(mux.NewRouter(), mockDatastore, codeListURL, datasetURL, defaultOffset, defaultLimit)
-		api.router.ServeHTTP(w, r)
-		So(w.Code, ShouldEqual, http.StatusOK)
-
-		validateBody(w.Body, &models.CodeListResults{}, &paginationTestTwo)
 	})
 
 	Convey("When a negative limit and offset query parameters are provided, then return codelist information with offset and limit equal to zero", t, func() {

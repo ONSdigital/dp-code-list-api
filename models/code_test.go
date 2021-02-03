@@ -41,23 +41,12 @@ func TestNewCodeResults(t *testing.T) {
 		So(codeResults, ShouldResemble, &models.CodeResults{})
 	})
 
-	Convey("Given a CodeResults model with nil Items", t, func() {
-		dbCodeResults := &dbmodels.CodeResults{Items: nil}
-
-		Convey("NewCodeResults function returns the corresponding API Code model", func() {
-			codeResults := models.NewCodeResults(dbCodeResults)
-			So(codeResults, ShouldResemble, &models.CodeResults{Items: nil})
-		})
-	})
-
 	Convey("Given a valid database CodeResults model with items", t, func() {
-		dbCodeResults := &dbmodels.CodeResults{
-			Items: []dbmodels.Code{
-				dbmodels.Code{
-					ID:    "testID",
-					Label: "testLabel",
-					Code:  "testCode",
-				},
+		dbCodeResults := []dbmodels.Code{
+			dbmodels.Code{
+				ID:    "testID",
+				Label: "testLabel",
+				Code:  "testCode",
 			},
 		}
 

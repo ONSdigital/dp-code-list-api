@@ -55,7 +55,7 @@ var (
 	}
 
 	editionsPaginationTestTwo = models.Editions{
-		Items:      []models.Edition{expectedEdition},
+		Items:      []models.Edition{},
 		Count:      0,
 		Offset:     1,
 		Limit:      7,
@@ -223,4 +223,5 @@ func TestGetEditions_Pagination(t *testing.T) {
 
 		validateBody(w.Body, &models.Editions{}, &editionsPaginationTestThree)
 	})
+
 }

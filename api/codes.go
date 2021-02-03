@@ -24,16 +24,14 @@ func (c *CodeListAPI) getCodes(w http.ResponseWriter, r *http.Request) {
 	// get limit from query parameters, or default value
 	limit, err := GetPositiveIntQueryParameter(r.URL.Query(), "limit", c.defaultLimit)
 	if err != nil {
-		log.Event(ctx, "failed to obtain limit from request query parameters", log.ERROR)
-		handleError(ctx, "failed to obtain limit", log.Data{"limit": limit}, err, w)
+		handleError(ctx, "failed to obtain a positive integer value for limit query parameter", log.Data{"limit": limit}, err, w)
 		return
 	}
 
 	// get offset from query parameters, or default value
 	offset, err := GetPositiveIntQueryParameter(r.URL.Query(), "offset", c.defaultOffset)
 	if err != nil {
-		log.Event(ctx, "failed to obtain offset from request query parameters", log.ERROR)
-		handleError(ctx, "failed to obtain offset", log.Data{"offset": offset}, err, w)
+		handleError(ctx, "failed to obtain a positive integer value for offset query parameter", log.Data{"offset": offset}, err, w)
 		return
 	}
 

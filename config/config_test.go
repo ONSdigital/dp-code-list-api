@@ -20,7 +20,8 @@ func TestGetReturnsDefaultValues(t *testing.T) {
 			HealthCheckInterval:        time.Second * 30,
 			HealthCheckCriticalTimeout: time.Second * 90,
 			DefaultOffset:              0,
-			DefaultLimit:               100,
+			DefaultLimit:               20,
+			DefaultMaxLimit:            1000,
 		})
 	})
 }

@@ -16,27 +16,42 @@ func (c *CodeListAPI) getEditions(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	vars := mux.Vars(r)
 	id := vars["id"]
-	data := log.Data{"codelist_id": id}
+	logData := log.Data{"codelist_id": id}
+	offsetParameter := r.URL.Query().Get("offset")
+	limitParameter := r.URL.Query().Get("limit")
+	offset := c.defaultOffset
+	limit := c.defaultLimit
+	var err error
 
-	log.Event(ctx, "getEditions endpoint: attempting to find editions", log.INFO, data)
+	log.Event(ctx, "getEditions endpoint: attempting to find editions", log.INFO, logData)
 
-	// get limit from query parameters, or default value
-	limit, err := GetPositiveIntQueryParameter(r.URL.Query(), "limit", c.defaultLimit)
-	if err != nil {
-		handleError(ctx, "failed to obtain a positive integer value for limit query parameter", log.Data{"limit": limit}, err, w)
-		return
+	if offsetParameter != "" {
+		logData["offset"] = offsetParameter
+		offset, err = ValidatePositiveInt(offsetParameter)
+		if err != nil {
+			handleError(ctx, "failed to obtain a positive integer value for offset query parameter", log.Data{}, err, w)
+			return
+		}
 	}
 
-	// get offset from query parameters, or default value
-	offset, err := GetPositiveIntQueryParameter(r.URL.Query(), "offset", c.defaultOffset)
-	if err != nil {
-		handleError(ctx, "failed to obtain a positive integer value for offset query parameter", log.Data{"offset": offset}, err, w)
+	if limitParameter != "" {
+		logData["limit"] = limitParameter
+		limit, err = ValidatePositiveInt(limitParameter)
+		if err != nil {
+			handleError(ctx, "failed to obtain a positive integer value for offset query parameter", log.Data{}, err, w)
+			return
+		}
+	}
+
+	if limit > c.maxLimit {
+		logData["max_limit"] = c.maxLimit
+		handleError(ctx, "limit is greater than the maximum allowed", log.Data{}, err, w)
 		return
 	}
 
 	dbEditions, err := c.store.GetEditions(r.Context(), id)
 	if err != nil {
-		handleError(ctx, "failed to get editions", data, err, w)
+		handleError(ctx, "failed to get editions", logData, err, w)
 		return
 	}
 
@@ -67,12 +82,12 @@ func (c *CodeListAPI) getEditions(w http.ResponseWriter, r *http.Request) {
 
 	b, err := json.Marshal(editions)
 	if err != nil {
-		handleError(ctx, "failed to marshal editions", data, err, w)
+		handleError(ctx, "failed to marshal editions", logData, err, w)
 		return
 	}
 
 	if err := c.writeBody(w, b); err != nil {
-		log.Event(ctx, "error writting body", log.ERROR, log.Error(errors.WithMessage(err, "getEditions endpoint: failed to write bytes to response")), data)
+		log.Event(ctx, "error writting body", log.ERROR, log.Error(errors.WithMessage(err, "getEditions endpoint: failed to write bytes to response")), logData)
 		return
 	}
 	log.Event(r.Context(), "retrieved codelist editions", log.INFO, log.Data{"code_list_id": id})
@@ -115,11 +130,11 @@ func (c *CodeListAPI) getEdition(w http.ResponseWriter, r *http.Request) {
 
 func editionsSlice(full []dbmodels.Edition, offset, limit int) (sliced []dbmodels.Edition) {
 	end := offset + limit
-	if limit == 0 || end > len(full) {
+	if end > len(full) {
 		end = len(full)
 	}
 
-	if offset > len(full) {
+	if offset > len(full) || limit == 0 {
 		return []dbmodels.Edition{}
 	}
 	return full[offset:end]

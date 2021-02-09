@@ -55,7 +55,7 @@ var (
 		Items:      []models.Dataset{expectedDataset},
 		Count:      1,
 		Offset:     0,
-		Limit:      100,
+		Limit:      20,
 		TotalCount: 1,
 	}
 
@@ -74,14 +74,6 @@ var (
 		Limit:      7,
 		TotalCount: 1,
 	}
-
-	datasetPaginationTestThree = models.Datasets{
-		Items:      []models.Dataset{expectedDataset},
-		Count:      1,
-		Offset:     0,
-		Limit:      0,
-		TotalCount: 1,
-	}
 )
 
 func TestGetCodeDatasets(t *testing.T) {
@@ -96,7 +88,7 @@ func TestGetCodeDatasets(t *testing.T) {
 			},
 		}
 
-		api := CreateCodeListAPI(mux.NewRouter(), mockDatastore, codeListURL, datasetURL, defaultOffset, defaultLimit)
+		api := CreateCodeListAPI(mux.NewRouter(), mockDatastore, codeListURL, datasetURL, defaultOffset, defaultLimit, maxLimit)
 		api.router.ServeHTTP(w, r)
 		So(w.Code, ShouldEqual, http.StatusOK)
 
@@ -113,7 +105,7 @@ func TestGetCodeDatasets(t *testing.T) {
 			},
 		}
 
-		api := CreateCodeListAPI(mux.NewRouter(), mockDatastore, codeListURL, datasetURL, defaultOffset, defaultLimit)
+		api := CreateCodeListAPI(mux.NewRouter(), mockDatastore, codeListURL, datasetURL, defaultOffset, defaultLimit, maxLimit)
 		api.router.ServeHTTP(w, r)
 		So(w.Code, ShouldEqual, http.StatusInternalServerError)
 	})
@@ -132,7 +124,7 @@ func TestGetCodeDatasets_Pagination(t *testing.T) {
 			},
 		}
 
-		api := CreateCodeListAPI(mux.NewRouter(), mockDatastore, codeListURL, datasetURL, defaultOffset, defaultLimit)
+		api := CreateCodeListAPI(mux.NewRouter(), mockDatastore, codeListURL, datasetURL, defaultOffset, defaultLimit, maxLimit)
 		api.router.ServeHTTP(w, r)
 		So(w.Code, ShouldEqual, http.StatusOK)
 
@@ -149,27 +141,10 @@ func TestGetCodeDatasets_Pagination(t *testing.T) {
 			},
 		}
 
-		api := CreateCodeListAPI(mux.NewRouter(), mockDatastore, codeListURL, datasetURL, defaultOffset, defaultLimit)
+		api := CreateCodeListAPI(mux.NewRouter(), mockDatastore, codeListURL, datasetURL, defaultOffset, defaultLimit, maxLimit)
 		api.router.ServeHTTP(w, r)
 		So(w.Code, ShouldEqual, http.StatusOK)
 
 		validateBody(w.Body, &models.Datasets{}, &datasetPaginationTestTwo)
-	})
-
-	Convey("When a negative limit and offset query parameters are provided, then return codes information with offset and limit equal to zero", t, func() {
-		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/%s/editions/%s/codes/%s/datasets?offset=-1&limit=-7", codeListURL, codeListID, editionID, codeID), nil)
-		w := httptest.NewRecorder()
-
-		mockDatastore := &storetest.DataStoreMock{
-			GetCodeDatasetsFunc: func(ctx context.Context, codeListID string, edition string, code string) (*dbmodels.Datasets, error) {
-				return &dbDatasets, nil
-			},
-		}
-
-		api := CreateCodeListAPI(mux.NewRouter(), mockDatastore, codeListURL, datasetURL, defaultOffset, defaultLimit)
-		api.router.ServeHTTP(w, r)
-		So(w.Code, ShouldEqual, http.StatusOK)
-
-		validateBody(w.Body, &models.Datasets{}, &datasetPaginationTestThree)
 	})
 }

@@ -15,6 +15,7 @@ type Configuration struct {
 	HealthCheckCriticalTimeout time.Duration `envconfig:"HEALTHCHECK_CRITICAL_TIMEOUT"`
 	DefaultLimit               int           `envconfig:"DEFAULT_LIMIT"`
 	DefaultOffset              int           `envconfig:"DEFAULT_OFFSET"`
+	DefaultMaxLimit            int           `envconfig:"DEFAULT_MAXIMUM_LIMIT"`
 }
 
 var cfg *Configuration
@@ -32,8 +33,9 @@ func Get() (*Configuration, error) {
 		GracefulShutdownTimeout:    time.Second * 5,
 		HealthCheckInterval:        30 * time.Second,
 		HealthCheckCriticalTimeout: 90 * time.Second,
-		DefaultLimit:               100,
+		DefaultLimit:               20,
 		DefaultOffset:              0,
+		DefaultMaxLimit:            1000,
 	}
 
 	return cfg, envconfig.Process("", cfg)

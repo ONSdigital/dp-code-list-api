@@ -18,20 +18,36 @@ func (c *CodeListAPI) getCodes(w http.ResponseWriter, r *http.Request) {
 	id := vars["id"]
 	edition := vars["edition"]
 	data := log.Data{"codelist_id": id, "edition": edition}
+	logData := log.Data{}
+	offsetParameter := r.URL.Query().Get("offset")
+	limitParameter := r.URL.Query().Get("limit")
+	offset := c.defaultOffset
+	limit := c.defaultLimit
+	var err error
 
 	log.Event(ctx, "getCodes endpoint: attempting to get edition codes", log.INFO, data)
 
-	// get limit from query parameters, or default value
-	limit, err := GetPositiveIntQueryParameter(r.URL.Query(), "limit", c.defaultLimit)
-	if err != nil {
-		handleError(ctx, "failed to obtain a positive integer value for limit query parameter", log.Data{"limit": limit}, err, w)
-		return
+	if offsetParameter != "" {
+		logData["offset"] = offsetParameter
+		offset, err = ValidatePositiveInt(offsetParameter)
+		if err != nil {
+			handleError(ctx, "failed to obtain a positive integer value for offset query parameter", log.Data{}, err, w)
+			return
+		}
 	}
 
-	// get offset from query parameters, or default value
-	offset, err := GetPositiveIntQueryParameter(r.URL.Query(), "offset", c.defaultOffset)
-	if err != nil {
-		handleError(ctx, "failed to obtain a positive integer value for offset query parameter", log.Data{"offset": offset}, err, w)
+	if limitParameter != "" {
+		logData["limit"] = limitParameter
+		limit, err = ValidatePositiveInt(limitParameter)
+		if err != nil {
+			handleError(ctx, "failed to obtain a positive integer value for offset query parameter", log.Data{}, err, w)
+			return
+		}
+	}
+
+	if limit > c.maxLimit {
+		logData["max_limit"] = c.maxLimit
+		handleError(ctx, "limit is greater than the maximum allowed", log.Data{}, err, w)
 		return
 	}
 
@@ -121,11 +137,11 @@ func (c *CodeListAPI) getCode(w http.ResponseWriter, r *http.Request) {
 
 func codesSlice(full []dbmodels.Code, offset, limit int) (sliced []dbmodels.Code) {
 	end := offset + limit
-	if limit == 0 || end > len(full) {
+	if end > len(full) {
 		end = len(full)
 	}
 
-	if offset > len(full) {
+	if offset > len(full) || limit == 0 {
 		return []dbmodels.Code{}
 	}
 	return full[offset:end]

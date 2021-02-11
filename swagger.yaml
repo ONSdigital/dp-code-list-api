@@ -40,12 +40,14 @@ parameters:
     in: query
     required: false
     type: integer
+    default: 20
   offset:
     name: offset
     description: "Starting index of the items array that will be returned. By default it is zero, meaning that the returned items will start from the beginning."
     in: query
     required: false
     type: integer
+    default: 0
 paths:
   /code-lists:
     get:

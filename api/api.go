@@ -10,6 +10,7 @@ import (
 	"github.com/ONSdigital/dp-graph/v2/graph/driver"
 	"github.com/ONSdigital/log.go/log"
 	"github.com/gorilla/mux"
+	"github.com/pkg/errors"
 )
 
 const (
@@ -71,7 +72,7 @@ func handleError(ctx context.Context, logMsg string, logData log.Data, err error
 
 // ValidatePositiveInt obtains the positive int value of query var defined by the provided varKey
 func ValidatePositiveInt(parameter string) (val int, err error) {
-
+	err = errors.New("value is not a positive integer")
 	val, err = strconv.Atoi(parameter)
 	if err != nil {
 		return -1, err

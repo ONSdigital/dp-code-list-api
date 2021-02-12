@@ -31,7 +31,8 @@ func (c *CodeListAPI) getCodes(w http.ResponseWriter, r *http.Request) {
 		logData["offset"] = offsetParameter
 		offset, err = ValidatePositiveInt(offsetParameter)
 		if err != nil {
-			handleError(ctx, "failed to obtain a positive integer value for offset query parameter", log.Data{}, err, w)
+			log.Event(ctx, "invalid query parameter: offset", log.ERROR, log.Error(err), logData)
+			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 	}
@@ -40,14 +41,17 @@ func (c *CodeListAPI) getCodes(w http.ResponseWriter, r *http.Request) {
 		logData["limit"] = limitParameter
 		limit, err = ValidatePositiveInt(limitParameter)
 		if err != nil {
-			handleError(ctx, "failed to obtain a positive integer value for offset query parameter", log.Data{}, err, w)
+			log.Event(ctx, "invalid query parameter: limit", log.ERROR, log.Error(err), logData)
+			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 	}
 
 	if limit > c.maxLimit {
 		logData["max_limit"] = c.maxLimit
-		handleError(ctx, "limit is greater than the maximum allowed", log.Data{}, err, w)
+		err = errors.New("limit is greater than the maximum allowed")
+		log.Event(ctx, "invalid query parameter: limit, maximum limit reached", log.ERROR, log.Error(err), logData)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 

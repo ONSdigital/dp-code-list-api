@@ -217,6 +217,26 @@ func TestGetCodes_Pagination(t *testing.T) {
 		validateBody(w.Body, &models.CodeResults{}, &codePaginationTestOne)
 	})
 
+	Convey("When negative limit and offset query parameters are provided, then 400 status returned", t, func() {
+		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists?offset=-1&limit=-2", codeListURL), nil)
+		w := httptest.NewRecorder()
+
+		api := CreateCodeListAPI(mux.NewRouter(), &storetest.DataStoreMock{}, codeListURL, datasetURL, defaultOffset, defaultLimit, maxLimit)
+		api.router.ServeHTTP(w, r)
+		So(w.Code, ShouldEqual, http.StatusBadRequest)
+
+	})
+
+	Convey("When limit above default maximum is provided, then 400 status returned", t, func() {
+		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists?limit=1001", codeListURL), nil)
+		w := httptest.NewRecorder()
+
+		api := CreateCodeListAPI(mux.NewRouter(), &storetest.DataStoreMock{}, codeListURL, datasetURL, defaultOffset, defaultLimit, maxLimit)
+		api.router.ServeHTTP(w, r)
+		So(w.Code, ShouldEqual, http.StatusBadRequest)
+
+	})
+
 }
 
 func TestGetCode_Success(t *testing.T) {

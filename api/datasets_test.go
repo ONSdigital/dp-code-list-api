@@ -74,6 +74,22 @@ var (
 		Limit:      7,
 		TotalCount: 1,
 	}
+
+	datasetPaginationTestThree = models.Datasets{
+		Items:      []models.Dataset{},
+		Count:      0,
+		Offset:     2,
+		Limit:      1,
+		TotalCount: 1,
+	}
+
+	datasetPaginationTestFour = models.Datasets{
+		Items:      []models.Dataset{expectedDataset},
+		Count:      1,
+		Offset:     0,
+		Limit:      20,
+		TotalCount: 1,
+	}
 )
 
 func TestGetCodeDatasets(t *testing.T) {
@@ -148,6 +164,40 @@ func TestGetCodeDatasets_Pagination(t *testing.T) {
 		validateBody(w.Body, &models.Datasets{}, &datasetPaginationTestTwo)
 	})
 
+	Convey("When offset value greater than count provided, then return zero items", t, func() {
+		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/%s/editions/%s/codes/%s/datasets?offset=2&limit=1", codeListURL, codeListID, editionID, codeID), nil)
+		w := httptest.NewRecorder()
+
+		mockDatastore := &storetest.DataStoreMock{
+			GetCodeDatasetsFunc: func(ctx context.Context, codeListID string, edition string, code string) (*dbmodels.Datasets, error) {
+				return &dbDatasets, nil
+			},
+		}
+
+		api := CreateCodeListAPI(mux.NewRouter(), mockDatastore, codeListURL, datasetURL, defaultOffset, defaultLimit, maxLimit)
+		api.router.ServeHTTP(w, r)
+		So(w.Code, ShouldEqual, http.StatusOK)
+
+		validateBody(w.Body, &models.Datasets{}, &datasetPaginationTestThree)
+	})
+
+	Convey("When no offset or limit value provided, then return codes information based on defaults", t, func() {
+		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/%s/editions/%s/codes/%s/datasets", codeListURL, codeListID, editionID, codeID), nil)
+		w := httptest.NewRecorder()
+
+		mockDatastore := &storetest.DataStoreMock{
+			GetCodeDatasetsFunc: func(ctx context.Context, codeListID string, edition string, code string) (*dbmodels.Datasets, error) {
+				return &dbDatasets, nil
+			},
+		}
+
+		api := CreateCodeListAPI(mux.NewRouter(), mockDatastore, codeListURL, datasetURL, defaultOffset, defaultLimit, maxLimit)
+		api.router.ServeHTTP(w, r)
+		So(w.Code, ShouldEqual, http.StatusOK)
+
+		validateBody(w.Body, &models.Datasets{}, &datasetPaginationTestFour)
+	})
+
 	Convey("When negative limit and offset query parameters are provided, then 400 status returned", t, func() {
 		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists?offset=-1&limit=-2", codeListURL), nil)
 		w := httptest.NewRecorder()
@@ -160,6 +210,16 @@ func TestGetCodeDatasets_Pagination(t *testing.T) {
 
 	Convey("When limit above default maximum is provided, then 400 status returned", t, func() {
 		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists?limit=1001", codeListURL), nil)
+		w := httptest.NewRecorder()
+
+		api := CreateCodeListAPI(mux.NewRouter(), &storetest.DataStoreMock{}, codeListURL, datasetURL, defaultOffset, defaultLimit, maxLimit)
+		api.router.ServeHTTP(w, r)
+		So(w.Code, ShouldEqual, http.StatusBadRequest)
+
+	})
+
+	Convey("When non-integer query parameter value provided, then 400 status returned", t, func() {
+		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists?offset=x&limit=y", codeListURL), nil)
 		w := httptest.NewRecorder()
 
 		api := CreateCodeListAPI(mux.NewRouter(), &storetest.DataStoreMock{}, codeListURL, datasetURL, defaultOffset, defaultLimit, maxLimit)

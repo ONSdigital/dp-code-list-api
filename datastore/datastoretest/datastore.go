@@ -5,10 +5,25 @@ package storetest
 
 import (
 	"context"
-	"sync"
-
+	"github.com/ONSdigital/dp-code-list-api/datastore"
 	"github.com/ONSdigital/dp-graph/v2/models"
+	"sync"
 )
+
+var (
+	lockDataStoreMockCountCodes      sync.RWMutex
+	lockDataStoreMockGetCode         sync.RWMutex
+	lockDataStoreMockGetCodeDatasets sync.RWMutex
+	lockDataStoreMockGetCodeList     sync.RWMutex
+	lockDataStoreMockGetCodeLists    sync.RWMutex
+	lockDataStoreMockGetCodes        sync.RWMutex
+	lockDataStoreMockGetEdition      sync.RWMutex
+	lockDataStoreMockGetEditions     sync.RWMutex
+)
+
+// Ensure, that DataStoreMock does implement datastore.DataStore.
+// If this is not the case, regenerate this file with moq.
+var _ datastore.DataStore = &DataStoreMock{}
 
 // DataStoreMock is a mock implementation of datastore.DataStore.
 //
@@ -16,6 +31,9 @@ import (
 //
 //         // make and configure a mocked datastore.DataStore
 //         mockedDataStore := &DataStoreMock{
+//             CountCodesFunc: func(ctx context.Context, codeListID string, edition string) (int64, error) {
+// 	               panic("mock out the CountCodes method")
+//             },
 //             GetCodeFunc: func(ctx context.Context, codeListID string, editionID string, codeID string) (*models.Code, error) {
 // 	               panic("mock out the GetCode method")
 //             },
@@ -44,6 +62,9 @@ import (
 //
 //     }
 type DataStoreMock struct {
+	// CountCodesFunc mocks the CountCodes method.
+	CountCodesFunc func(ctx context.Context, codeListID string, edition string) (int64, error)
+
 	// GetCodeFunc mocks the GetCode method.
 	GetCodeFunc func(ctx context.Context, codeListID string, editionID string, codeID string) (*models.Code, error)
 
@@ -67,6 +88,15 @@ type DataStoreMock struct {
 
 	// calls tracks calls to the methods.
 	calls struct {
+		// CountCodes holds details about calls to the CountCodes method.
+		CountCodes []struct {
+			// Ctx is the ctx argument value.
+			Ctx context.Context
+			// CodeListID is the codeListID argument value.
+			CodeListID string
+			// Edition is the edition argument value.
+			Edition string
+		}
 		// GetCode holds details about calls to the GetCode method.
 		GetCode []struct {
 			// Ctx is the ctx argument value.
@@ -129,13 +159,45 @@ type DataStoreMock struct {
 			CodeListID string
 		}
 	}
-	lockGetCode         sync.RWMutex
-	lockGetCodeDatasets sync.RWMutex
-	lockGetCodeList     sync.RWMutex
-	lockGetCodeLists    sync.RWMutex
-	lockGetCodes        sync.RWMutex
-	lockGetEdition      sync.RWMutex
-	lockGetEditions     sync.RWMutex
+}
+
+// CountCodes calls CountCodesFunc.
+func (mock *DataStoreMock) CountCodes(ctx context.Context, codeListID string, edition string) (int64, error) {
+	if mock.CountCodesFunc == nil {
+		panic("DataStoreMock.CountCodesFunc: method is nil but DataStore.CountCodes was just called")
+	}
+	callInfo := struct {
+		Ctx        context.Context
+		CodeListID string
+		Edition    string
+	}{
+		Ctx:        ctx,
+		CodeListID: codeListID,
+		Edition:    edition,
+	}
+	lockDataStoreMockCountCodes.Lock()
+	mock.calls.CountCodes = append(mock.calls.CountCodes, callInfo)
+	lockDataStoreMockCountCodes.Unlock()
+	return mock.CountCodesFunc(ctx, codeListID, edition)
+}
+
+// CountCodesCalls gets all the calls that were made to CountCodes.
+// Check the length with:
+//     len(mockedDataStore.CountCodesCalls())
+func (mock *DataStoreMock) CountCodesCalls() []struct {
+	Ctx        context.Context
+	CodeListID string
+	Edition    string
+} {
+	var calls []struct {
+		Ctx        context.Context
+		CodeListID string
+		Edition    string
+	}
+	lockDataStoreMockCountCodes.RLock()
+	calls = mock.calls.CountCodes
+	lockDataStoreMockCountCodes.RUnlock()
+	return calls
 }
 
 // GetCode calls GetCodeFunc.
@@ -154,9 +216,9 @@ func (mock *DataStoreMock) GetCode(ctx context.Context, codeListID string, editi
 		EditionID:  editionID,
 		CodeID:     codeID,
 	}
-	mock.lockGetCode.Lock()
+	lockDataStoreMockGetCode.Lock()
 	mock.calls.GetCode = append(mock.calls.GetCode, callInfo)
-	mock.lockGetCode.Unlock()
+	lockDataStoreMockGetCode.Unlock()
 	return mock.GetCodeFunc(ctx, codeListID, editionID, codeID)
 }
 
@@ -175,9 +237,9 @@ func (mock *DataStoreMock) GetCodeCalls() []struct {
 		EditionID  string
 		CodeID     string
 	}
-	mock.lockGetCode.RLock()
+	lockDataStoreMockGetCode.RLock()
 	calls = mock.calls.GetCode
-	mock.lockGetCode.RUnlock()
+	lockDataStoreMockGetCode.RUnlock()
 	return calls
 }
 
@@ -197,9 +259,9 @@ func (mock *DataStoreMock) GetCodeDatasets(ctx context.Context, codeListID strin
 		Edition:    edition,
 		Code:       code,
 	}
-	mock.lockGetCodeDatasets.Lock()
+	lockDataStoreMockGetCodeDatasets.Lock()
 	mock.calls.GetCodeDatasets = append(mock.calls.GetCodeDatasets, callInfo)
-	mock.lockGetCodeDatasets.Unlock()
+	lockDataStoreMockGetCodeDatasets.Unlock()
 	return mock.GetCodeDatasetsFunc(ctx, codeListID, edition, code)
 }
 
@@ -218,9 +280,9 @@ func (mock *DataStoreMock) GetCodeDatasetsCalls() []struct {
 		Edition    string
 		Code       string
 	}
-	mock.lockGetCodeDatasets.RLock()
+	lockDataStoreMockGetCodeDatasets.RLock()
 	calls = mock.calls.GetCodeDatasets
-	mock.lockGetCodeDatasets.RUnlock()
+	lockDataStoreMockGetCodeDatasets.RUnlock()
 	return calls
 }
 
@@ -236,9 +298,9 @@ func (mock *DataStoreMock) GetCodeList(ctx context.Context, code string) (*model
 		Ctx:  ctx,
 		Code: code,
 	}
-	mock.lockGetCodeList.Lock()
+	lockDataStoreMockGetCodeList.Lock()
 	mock.calls.GetCodeList = append(mock.calls.GetCodeList, callInfo)
-	mock.lockGetCodeList.Unlock()
+	lockDataStoreMockGetCodeList.Unlock()
 	return mock.GetCodeListFunc(ctx, code)
 }
 
@@ -253,9 +315,9 @@ func (mock *DataStoreMock) GetCodeListCalls() []struct {
 		Ctx  context.Context
 		Code string
 	}
-	mock.lockGetCodeList.RLock()
+	lockDataStoreMockGetCodeList.RLock()
 	calls = mock.calls.GetCodeList
-	mock.lockGetCodeList.RUnlock()
+	lockDataStoreMockGetCodeList.RUnlock()
 	return calls
 }
 
@@ -271,9 +333,9 @@ func (mock *DataStoreMock) GetCodeLists(ctx context.Context, filterBy string) (*
 		Ctx:      ctx,
 		FilterBy: filterBy,
 	}
-	mock.lockGetCodeLists.Lock()
+	lockDataStoreMockGetCodeLists.Lock()
 	mock.calls.GetCodeLists = append(mock.calls.GetCodeLists, callInfo)
-	mock.lockGetCodeLists.Unlock()
+	lockDataStoreMockGetCodeLists.Unlock()
 	return mock.GetCodeListsFunc(ctx, filterBy)
 }
 
@@ -288,9 +350,9 @@ func (mock *DataStoreMock) GetCodeListsCalls() []struct {
 		Ctx      context.Context
 		FilterBy string
 	}
-	mock.lockGetCodeLists.RLock()
+	lockDataStoreMockGetCodeLists.RLock()
 	calls = mock.calls.GetCodeLists
-	mock.lockGetCodeLists.RUnlock()
+	lockDataStoreMockGetCodeLists.RUnlock()
 	return calls
 }
 
@@ -308,9 +370,9 @@ func (mock *DataStoreMock) GetCodes(ctx context.Context, codeListID string, edit
 		CodeListID: codeListID,
 		EditionID:  editionID,
 	}
-	mock.lockGetCodes.Lock()
+	lockDataStoreMockGetCodes.Lock()
 	mock.calls.GetCodes = append(mock.calls.GetCodes, callInfo)
-	mock.lockGetCodes.Unlock()
+	lockDataStoreMockGetCodes.Unlock()
 	return mock.GetCodesFunc(ctx, codeListID, editionID)
 }
 
@@ -327,9 +389,9 @@ func (mock *DataStoreMock) GetCodesCalls() []struct {
 		CodeListID string
 		EditionID  string
 	}
-	mock.lockGetCodes.RLock()
+	lockDataStoreMockGetCodes.RLock()
 	calls = mock.calls.GetCodes
-	mock.lockGetCodes.RUnlock()
+	lockDataStoreMockGetCodes.RUnlock()
 	return calls
 }
 
@@ -347,9 +409,9 @@ func (mock *DataStoreMock) GetEdition(ctx context.Context, codeListID string, ed
 		CodeListID: codeListID,
 		EditionID:  editionID,
 	}
-	mock.lockGetEdition.Lock()
+	lockDataStoreMockGetEdition.Lock()
 	mock.calls.GetEdition = append(mock.calls.GetEdition, callInfo)
-	mock.lockGetEdition.Unlock()
+	lockDataStoreMockGetEdition.Unlock()
 	return mock.GetEditionFunc(ctx, codeListID, editionID)
 }
 
@@ -366,9 +428,9 @@ func (mock *DataStoreMock) GetEditionCalls() []struct {
 		CodeListID string
 		EditionID  string
 	}
-	mock.lockGetEdition.RLock()
+	lockDataStoreMockGetEdition.RLock()
 	calls = mock.calls.GetEdition
-	mock.lockGetEdition.RUnlock()
+	lockDataStoreMockGetEdition.RUnlock()
 	return calls
 }
 
@@ -384,9 +446,9 @@ func (mock *DataStoreMock) GetEditions(ctx context.Context, codeListID string) (
 		Ctx:        ctx,
 		CodeListID: codeListID,
 	}
-	mock.lockGetEditions.Lock()
+	lockDataStoreMockGetEditions.Lock()
 	mock.calls.GetEditions = append(mock.calls.GetEditions, callInfo)
-	mock.lockGetEditions.Unlock()
+	lockDataStoreMockGetEditions.Unlock()
 	return mock.GetEditionsFunc(ctx, codeListID)
 }
 
@@ -401,8 +463,8 @@ func (mock *DataStoreMock) GetEditionsCalls() []struct {
 		Ctx        context.Context
 		CodeListID string
 	}
-	mock.lockGetEditions.RLock()
+	lockDataStoreMockGetEditions.RLock()
 	calls = mock.calls.GetEditions
-	mock.lockGetEditions.RUnlock()
+	lockDataStoreMockGetEditions.RUnlock()
 	return calls
 }

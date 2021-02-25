@@ -4,7 +4,7 @@ go 1.13
 
 require (
 	github.com/ONSdigital/dp-api-clients-go v1.33.0 // indirect
-	github.com/ONSdigital/dp-graph/v2 v2.7.1
+	github.com/ONSdigital/dp-graph/v2 v2.7.2-0.20210225122829-7f65dfb7f713
 	github.com/ONSdigital/dp-healthcheck v1.0.5
 	github.com/ONSdigital/dp-net v1.0.11
 	github.com/ONSdigital/log.go v1.0.1
@@ -18,5 +18,4 @@ require (
 	github.com/smartystreets/goconvey v1.6.4
 	golang.org/x/net v0.0.0-20210119194325-5f4716e94777 // indirect
 	golang.org/x/sys v0.0.0-20210124154548-22da62e12c0c // indirect
-	gopkg.in/mgo.v2 v2.0.0-20190816093944-a6b53ec6cb22
 )

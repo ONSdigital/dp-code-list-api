@@ -22,7 +22,7 @@ var (
 		ID:             codeID,
 		DimensionLabel: "testDimensionLabel",
 		Editions: []dbmodels.DatasetEdition{
-			dbmodels.DatasetEdition{
+			{
 				ID:            datasetEditionID,
 				CodeListID:    codeID,
 				LatestVersion: latestDatasetEditionVersion,
@@ -37,7 +37,7 @@ var (
 		ID:             codeID,
 		DimensionLabel: "testDimensionLabel",
 		Editions: []models.DatasetEdition{
-			models.DatasetEdition{
+			{
 				ID:            datasetEditionID,
 				LatestVersion: latestDatasetEditionVersion,
 				Links: &models.DatasetEditionLinks{

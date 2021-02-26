@@ -18,84 +18,100 @@ import (
 
 // Dataset models for testing
 var (
-	dbDataset = dbmodels.Dataset{
-		ID:             codeID,
-		DimensionLabel: "testDimensionLabel",
+	dbDataset1 = dbmodels.Dataset{
+		ID:             datasetID1,
+		DimensionLabel: "test Dataset One",
 		Editions: []dbmodels.DatasetEdition{
 			{
 				ID:            datasetEditionID,
-				CodeListID:    codeID,
+				CodeListID:    codeID1,
 				LatestVersion: latestDatasetEditionVersion,
 			},
 		},
 	}
-	dbDatasets = dbmodels.Datasets{
-		Items: []dbmodels.Dataset{dbDataset},
+
+	dbDataset2 = dbmodels.Dataset{
+		ID:             datasetID2,
+		DimensionLabel: "test Dataset Two",
 	}
 
-	expectedDataset = models.Dataset{
-		ID:             codeID,
-		DimensionLabel: "testDimensionLabel",
+	dbDatasets = dbmodels.Datasets{
+		Items: []dbmodels.Dataset{dbDataset1, dbDataset2},
+	}
+
+	expectedDataset1 = models.Dataset{
+		ID:             datasetID1,
+		DimensionLabel: "test Dataset One",
 		Editions: []models.DatasetEdition{
 			{
 				ID:            datasetEditionID,
 				LatestVersion: latestDatasetEditionVersion,
 				Links: &models.DatasetEditionLinks{
-					Self:             &models.Link{ID: datasetEditionID, Href: fmt.Sprintf("%s/datasets/%s/editions/%s", datasetURL, codeID, datasetEditionID)},
-					DatasetDimension: &models.Link{ID: codeListID, Href: fmt.Sprintf("%s/datasets/%s/editions/%s/versions/%d/dimensions/%s", datasetURL, codeID, datasetEditionID, latestDatasetEditionVersion, codeListID)},
-					LatestVersion:    &models.Link{ID: fmt.Sprintf("%d", latestDatasetEditionVersion), Href: fmt.Sprintf("%s/datasets/%s/editions/%s/versions/%d", datasetURL, codeID, datasetEditionID, latestDatasetEditionVersion)},
+					Self:             &models.Link{ID: datasetEditionID, Href: fmt.Sprintf("%s/datasets/%s/editions/%s", datasetURL, datasetID1, datasetEditionID)},
+					DatasetDimension: &models.Link{ID: codeListID1, Href: fmt.Sprintf("%s/datasets/%s/editions/%s/versions/%d/dimensions/%s", datasetURL, datasetID1, datasetEditionID, latestDatasetEditionVersion, codeListID1)},
+					LatestVersion:    &models.Link{ID: fmt.Sprintf("%d", latestDatasetEditionVersion), Href: fmt.Sprintf("%s/datasets/%s/editions/%s/versions/%d", datasetURL, datasetID1, datasetEditionID, latestDatasetEditionVersion)},
 				},
 			},
 		},
 		Links: &models.DatasetLinks{
-			Self: &models.Link{ID: codeID, Href: fmt.Sprintf("%s/datasets/%s", datasetURL, codeID)},
+			Self: &models.Link{ID: datasetID1, Href: fmt.Sprintf("%s/datasets/%s", datasetURL, datasetID1)},
 		},
 	}
+
+	expectedDataset2 = models.Dataset{
+		ID:             datasetID2,
+		DimensionLabel: "test Dataset Two",
+		Links: &models.DatasetLinks{
+			Self: &models.Link{ID: datasetID2, Href: fmt.Sprintf("%s/datasets/%s", datasetURL, datasetID2)},
+		},
+		Editions: []models.DatasetEdition{},
+	}
+
 	expectedDatasets = models.Datasets{
-		Items:      []models.Dataset{expectedDataset},
-		Count:      1,
+		Items:      []models.Dataset{expectedDataset1, expectedDataset2},
+		Count:      2,
 		Offset:     0,
 		Limit:      20,
-		TotalCount: 1,
+		TotalCount: 2,
 	}
 
 	datasetPaginationTestOne = models.Datasets{
-		Items:      []models.Dataset{expectedDataset},
+		Items:      []models.Dataset{expectedDataset1},
 		Count:      1,
 		Offset:     0,
 		Limit:      1,
-		TotalCount: 1,
+		TotalCount: 2,
 	}
 
 	datasetPaginationTestTwo = models.Datasets{
-		Items:      []models.Dataset{},
-		Count:      0,
+		Items:      []models.Dataset{expectedDataset2},
+		Count:      1,
 		Offset:     1,
 		Limit:      7,
-		TotalCount: 1,
+		TotalCount: 2,
 	}
 
 	datasetPaginationTestThree = models.Datasets{
 		Items:      []models.Dataset{},
 		Count:      0,
-		Offset:     2,
+		Offset:     3,
 		Limit:      1,
-		TotalCount: 1,
+		TotalCount: 2,
 	}
 
 	datasetPaginationTestFour = models.Datasets{
-		Items:      []models.Dataset{expectedDataset},
+		Items:      []models.Dataset{expectedDataset1},
 		Count:      1,
 		Offset:     0,
 		Limit:      20,
-		TotalCount: 1,
+		TotalCount: 2,
 	}
 )
 
 func TestGetCodeDatasets(t *testing.T) {
 
-	Convey("Get code lists returns a status of Ok", t, func() {
-		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/%s/editions/%s/codes/%s/datasets", codeListURL, codeListID, editionID, codeID), nil)
+	Convey("GetCodeDatasets returns a status of Ok", t, func() {
+		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/%s/editions/%s/codes/%s/datasets", codeListURL, codeListID1, editionID1, codeID1), nil)
 		w := httptest.NewRecorder()
 
 		mockDatastore := &storetest.DataStoreMock{
@@ -111,7 +127,7 @@ func TestGetCodeDatasets(t *testing.T) {
 		validateBody(w.Body, &models.Datasets{}, &expectedDatasets)
 	})
 
-	Convey("Get code lists returns a status of internal error", t, func() {
+	Convey("When datastore.GetCodeDatasets returns an error, then GetCodeDatasets returns a status of internal error", t, func() {
 		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/567/editions/890/codes/123/datasets", codeListURL), nil)
 		w := httptest.NewRecorder()
 
@@ -125,13 +141,46 @@ func TestGetCodeDatasets(t *testing.T) {
 		api.router.ServeHTTP(w, r)
 		So(w.Code, ShouldEqual, http.StatusInternalServerError)
 	})
+
+	Convey("When datastore.GetCodeDatasets returns an invalid dataset (no ID), then GetCodeDatasets returns a status of internal error", t, func() {
+		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/%s/editions/%s/codes/%s/datasets", codeListURL, codeListID1, editionID1, codeID1), nil)
+		w := httptest.NewRecorder()
+
+		mockDatastore := &storetest.DataStoreMock{
+			GetCodeDatasetsFunc: func(ctx context.Context, codeListID string, edition string, code string) (*dbmodels.Datasets, error) {
+				return &dbmodels.Datasets{
+					Items: []dbmodels.Dataset{{ID: ""}},
+				}, nil
+			},
+		}
+
+		api := CreateCodeListAPI(mux.NewRouter(), mockDatastore, codeListURL, datasetURL, defaultOffset, defaultLimit, maxLimit)
+		api.router.ServeHTTP(w, r)
+		So(w.Code, ShouldEqual, http.StatusInternalServerError)
+	})
+
+	Convey("When writeBody fails, then GetCodeDatasets returns a status of internal error", t, func() {
+		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/%s/editions/%s/codes/%s/datasets", codeListURL, codeListID1, editionID1, codeID1), nil)
+		w := httptest.NewRecorder()
+
+		mockDatastore := &storetest.DataStoreMock{
+			GetCodeDatasetsFunc: func(ctx context.Context, codeListID string, edition string, code string) (*dbmodels.Datasets, error) {
+				return &dbDatasets, nil
+			},
+		}
+
+		api := CreateCodeListAPI(mux.NewRouter(), mockDatastore, codeListURL, datasetURL, defaultOffset, defaultLimit, maxLimit)
+		api.writeBody = failWriteBody
+		api.router.ServeHTTP(w, r)
+		So(w.Code, ShouldEqual, http.StatusInternalServerError)
+	})
 }
 
 func TestGetCodeDatasets_Pagination(t *testing.T) {
 	t.Parallel()
 
 	Convey("When valid limit and offset query parameters are provided, then return code datasets information according to the offset and limit", t, func() {
-		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/%s/editions/%s/codes/%s/datasets?offset=0&limit=1", codeListURL, codeListID, editionID, codeID), nil)
+		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/%s/editions/%s/codes/%s/datasets?offset=0&limit=1", codeListURL, codeListID1, editionID1, codeID1), nil)
 		w := httptest.NewRecorder()
 
 		mockDatastore := &storetest.DataStoreMock{
@@ -148,7 +197,7 @@ func TestGetCodeDatasets_Pagination(t *testing.T) {
 	})
 
 	Convey("When valid limit above maximum and offset query parameters are provided, then return codes information according to the offset and limit", t, func() {
-		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/%s/editions/%s/codes/%s/datasets?offset=1&limit=7", codeListURL, codeListID, editionID, codeID), nil)
+		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/%s/editions/%s/codes/%s/datasets?offset=1&limit=7", codeListURL, codeListID1, editionID1, codeID1), nil)
 		w := httptest.NewRecorder()
 
 		mockDatastore := &storetest.DataStoreMock{
@@ -165,7 +214,7 @@ func TestGetCodeDatasets_Pagination(t *testing.T) {
 	})
 
 	Convey("When offset value greater than count provided, then return zero items", t, func() {
-		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/%s/editions/%s/codes/%s/datasets?offset=2&limit=1", codeListURL, codeListID, editionID, codeID), nil)
+		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/%s/editions/%s/codes/%s/datasets?offset=3&limit=1", codeListURL, codeListID1, editionID1, codeID1), nil)
 		w := httptest.NewRecorder()
 
 		mockDatastore := &storetest.DataStoreMock{
@@ -181,50 +230,39 @@ func TestGetCodeDatasets_Pagination(t *testing.T) {
 		validateBody(w.Body, &models.Datasets{}, &datasetPaginationTestThree)
 	})
 
-	Convey("When no offset or limit value provided, then return codes information based on defaults", t, func() {
-		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/%s/editions/%s/codes/%s/datasets", codeListURL, codeListID, editionID, codeID), nil)
-		w := httptest.NewRecorder()
-
-		mockDatastore := &storetest.DataStoreMock{
-			GetCodeDatasetsFunc: func(ctx context.Context, codeListID string, edition string, code string) (*dbmodels.Datasets, error) {
-				return &dbDatasets, nil
-			},
-		}
-
-		api := CreateCodeListAPI(mux.NewRouter(), mockDatastore, codeListURL, datasetURL, defaultOffset, defaultLimit, maxLimit)
-		api.router.ServeHTTP(w, r)
-		So(w.Code, ShouldEqual, http.StatusOK)
-
-		validateBody(w.Body, &models.Datasets{}, &datasetPaginationTestFour)
-	})
-
-	Convey("When negative limit and offset query parameters are provided, then 400 status returned", t, func() {
-		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists?offset=-1&limit=-2", codeListURL), nil)
+	Convey("When a negative offset query parameter is provided, then 400 status returned", t, func() {
+		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/%s/editions/%s/codes/%s/datasets?offset=-1", codeListURL, codeListID1, editionID1, codeID1), nil)
 		w := httptest.NewRecorder()
 
 		api := CreateCodeListAPI(mux.NewRouter(), &storetest.DataStoreMock{}, codeListURL, datasetURL, defaultOffset, defaultLimit, maxLimit)
 		api.router.ServeHTTP(w, r)
 		So(w.Code, ShouldEqual, http.StatusBadRequest)
+	})
 
+	Convey("When a negative limit query parameter is provided, then 400 status returned", t, func() {
+		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/%s/editions/%s/codes/%s/datasets?limit=-1", codeListURL, codeListID1, editionID1, codeID1), nil)
+		w := httptest.NewRecorder()
+
+		api := CreateCodeListAPI(mux.NewRouter(), &storetest.DataStoreMock{}, codeListURL, datasetURL, defaultOffset, defaultLimit, maxLimit)
+		api.router.ServeHTTP(w, r)
+		So(w.Code, ShouldEqual, http.StatusBadRequest)
 	})
 
 	Convey("When limit above default maximum is provided, then 400 status returned", t, func() {
-		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists?limit=1001", codeListURL), nil)
+		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/%s/editions/%s/codes/%s/datasets?limit=1001", codeListURL, codeListID1, editionID1, codeID1), nil)
 		w := httptest.NewRecorder()
 
 		api := CreateCodeListAPI(mux.NewRouter(), &storetest.DataStoreMock{}, codeListURL, datasetURL, defaultOffset, defaultLimit, maxLimit)
 		api.router.ServeHTTP(w, r)
 		So(w.Code, ShouldEqual, http.StatusBadRequest)
-
 	})
 
 	Convey("When non-integer query parameter value provided, then 400 status returned", t, func() {
-		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists?offset=x&limit=y", codeListURL), nil)
+		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/%s/editions/%s/codes/%s/datasets?offset=x&limit=y", codeListURL, codeListID1, editionID1, codeID1), nil)
 		w := httptest.NewRecorder()
 
 		api := CreateCodeListAPI(mux.NewRouter(), &storetest.DataStoreMock{}, codeListURL, datasetURL, defaultOffset, defaultLimit, maxLimit)
 		api.router.ServeHTTP(w, r)
 		So(w.Code, ShouldEqual, http.StatusBadRequest)
-
 	})
 }

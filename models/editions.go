@@ -60,12 +60,12 @@ func NewEdition(dbEdition *dbmodels.Edition) *Edition {
 }
 
 // NewEditions creates an Editions struct from a DB Editions model
-func NewEditions(dbEditions *dbmodels.Editions) *Editions {
-	if dbEditions == nil {
+func NewEditions(dbEdition []dbmodels.Edition) *Editions {
+	if dbEdition == nil {
 		return &Editions{}
 	}
 	items := []Edition{}
-	for _, dbItem := range dbEditions.Items {
+	for _, dbItem := range dbEdition {
 		items = append(items, *NewEdition(&dbItem))
 	}
 	return &Editions{

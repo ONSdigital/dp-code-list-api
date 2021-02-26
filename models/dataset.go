@@ -158,12 +158,12 @@ func NewDatasetEdition(dbDatasetEdition *dbmodels.DatasetEdition) *DatasetEditio
 }
 
 // NewDatasets creates a new Datasets struct from a database Datasets
-func NewDatasets(dbDatasets *dbmodels.Datasets) *Datasets {
-	if dbDatasets == nil {
+func NewDatasets(dbData []dbmodels.Dataset) *Datasets {
+	if dbData == nil {
 		return &Datasets{}
 	}
 	items := []Dataset{}
-	for _, dbItem := range dbDatasets.Items {
+	for _, dbItem := range dbData {
 		items = append(items, *NewDataset(&dbItem))
 	}
 	return &Datasets{

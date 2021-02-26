@@ -56,10 +56,10 @@ func NewCodeList(dbCodeList *dbmodels.CodeList) *CodeList {
 }
 
 // NewCodeListResults creates a new CodeListResult struct from a CodeListResult DB model.
-func NewCodeListResults(dbCodeListResults *dbmodels.CodeListResults) *CodeListResults {
+func NewCodeListResults(dbCodeLists []dbmodels.CodeList) *CodeListResults {
 	results := &CodeListResults{}
-	if dbCodeListResults != nil {
-		for _, dbItem := range dbCodeListResults.Items {
+	if dbCodeLists != nil {
+		for _, dbItem := range dbCodeLists {
 			results.Items = append(results.Items, *NewCodeList(&dbItem))
 		}
 	}

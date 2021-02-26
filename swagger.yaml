@@ -34,6 +34,20 @@ parameters:
     in: path
     type: string
     required: true
+  limit:
+    name: limit
+    description: "Maximum number of items that will be returned. A value of zero will return zero items. The default value is 20 and the maximum allowed is 1000."
+    in: query
+    required: false
+    type: integer
+    default: 20
+  offset:
+    name: offset
+    description: "Starting index of the items array that will be returned. By default it is zero, meaning that the returned items will start from the beginning."
+    in: query
+    required: false
+    type: integer
+    default: 0
 paths:
   /code-lists:
     get:
@@ -41,6 +55,9 @@ paths:
       - "Code List"
       summary: "Get a list of code lists"
       description: "Get a set of code lists containing information about dimensions which are used for all datasets at the ONS"
+      parameters:
+      - $ref: '#/parameters/limit'
+      - $ref: '#/parameters/offset'
       produces:
       - "application/json"
       responses:
@@ -79,6 +96,8 @@ paths:
       description: "Get a list of editions associated with a code list"
       parameters:
       - $ref: '#/parameters/id'
+      - $ref: '#/parameters/limit'
+      - $ref: '#/parameters/offset'
       produces:
       - "application/json"
       responses:
@@ -119,6 +138,8 @@ paths:
       parameters:
       - $ref: '#/parameters/id'
       - $ref: '#/parameters/edition'
+      - $ref: '#/parameters/limit'
+      - $ref: '#/parameters/offset'
       produces:
       - "application/json"
       responses:
@@ -161,6 +182,8 @@ paths:
       - $ref: '#/parameters/id'
       - $ref: '#/parameters/edition'
       - $ref: '#/parameters/codeId'
+      - $ref: '#/parameters/limit'
+      - $ref: '#/parameters/offset'
       produces:
       - "application/json"
       responses:

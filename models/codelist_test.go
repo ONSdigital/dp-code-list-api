@@ -38,21 +38,10 @@ func TestNewCodeListResults(t *testing.T) {
 		So(codeListResults, ShouldResemble, &models.CodeListResults{})
 	})
 
-	Convey("Given a CodeListResults model with nil Items", t, func() {
-		dbCodeListResults := &dbmodels.CodeListResults{Items: nil}
-
-		Convey("NewCodeListResults function returns the corresponding API CodeList model", func() {
-			codeListResults := models.NewCodeListResults(dbCodeListResults)
-			So(codeListResults, ShouldResemble, &models.CodeListResults{Items: nil})
-		})
-	})
-
 	Convey("Given a valid database CodeListResults model with items", t, func() {
-		dbCodeListResults := &dbmodels.CodeListResults{
-			Items: []dbmodels.CodeList{
-				dbmodels.CodeList{
-					ID: "testID",
-				},
+		dbCodeListResults := []dbmodels.CodeList{
+			dbmodels.CodeList{
+				ID: "testID",
 			},
 		}
 
@@ -67,6 +56,7 @@ func TestNewCodeListResults(t *testing.T) {
 			})
 		})
 	})
+
 }
 
 func TestCodeListUpdateLinks(t *testing.T) {

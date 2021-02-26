@@ -2,6 +2,7 @@ package api
 
 import (
 	"net/http"
+	"strconv"
 
 	"context"
 
@@ -9,6 +10,7 @@ import (
 	"github.com/ONSdigital/dp-graph/v2/graph/driver"
 	"github.com/ONSdigital/log.go/log"
 	"github.com/gorilla/mux"
+	"github.com/pkg/errors"
 )
 
 const (
@@ -24,10 +26,13 @@ type CodeListAPI struct {
 	writeBody     func(w http.ResponseWriter, bytes []byte) error
 	apiURL        string
 	datasetAPIURL string
+	defaultOffset int
+	defaultLimit  int
+	maxLimit      int
 }
 
 // CreateCodeListAPI returns a constructed code list api
-func CreateCodeListAPI(route *mux.Router, store datastore.DataStore, apiURL, datasetAPIURL string) *CodeListAPI {
+func CreateCodeListAPI(route *mux.Router, store datastore.DataStore, apiURL, datasetAPIURL string, defaultOffset, defaultLimit, maxLimit int) *CodeListAPI {
 	api := CodeListAPI{
 		router:        route,
 		store:         store,
@@ -41,6 +46,9 @@ func CreateCodeListAPI(route *mux.Router, store datastore.DataStore, apiURL, dat
 			}
 			return nil
 		},
+		defaultOffset: defaultOffset,
+		defaultLimit:  defaultLimit,
+		maxLimit:      maxLimit,
 	}
 
 	api.router.HandleFunc("/code-lists", api.getCodeLists).Methods("GET")
@@ -60,4 +68,18 @@ func handleError(ctx context.Context, logMsg string, logData log.Data, err error
 	} else {
 		http.Error(w, internalServerErr, http.StatusInternalServerError)
 	}
+}
+
+// ValidatePositiveInt obtains the positive int value of query var defined by the provided varKey
+func ValidatePositiveInt(parameter string) (val int, err error) {
+	val, err = strconv.Atoi(parameter)
+	errInvalid := errors.New("invalid query parameter")
+
+	if err != nil {
+		return -1, errInvalid
+	}
+	if val < 0 {
+		return -1, errInvalid
+	}
+	return val, nil
 }

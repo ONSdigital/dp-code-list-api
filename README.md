@@ -36,9 +36,12 @@ The endpoint `/health` checks the connection to the database and returns one of:
 | GRACEFUL_SHUTDOWN_TIMEOUT    | 5s                                     | The graceful shutdown timeout in seconds
 | HEALTHCHECK_INTERVAL         | 30s                                    | Time between calls to healthchecks
 | HEALTHCHECK_CRITICAL_TIMEOUT | 90s                                    | Timeout to consider a failing healthcheck critical
+| DEFAULT_MAXIMUM_LIMIT        | 1000                                   | Default maximum limit for pagination
+| DEFAULT_LIMIT                | 20                                     | Default limit for pagination
+| DEFAULT_OFFSET               | 0                                      | Default offset for pagination
 
 ### License
 
-Copyright © 2016-2019, Office for National Statistics (https://www.ons.gov.uk)
+Copyright © 2016-2021, Office for National Statistics (https://www.ons.gov.uk)
 
 Released under MIT license, see [LICENSE](LICENSE.md) for details

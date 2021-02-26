@@ -3,8 +3,10 @@ package api
 import (
 	"encoding/json"
 	"net/http"
+	"sort"
 
 	"github.com/ONSdigital/dp-code-list-api/models"
+	dbmodels "github.com/ONSdigital/dp-graph/v2/models"
 	"github.com/ONSdigital/log.go/log"
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
@@ -16,15 +18,58 @@ func (c *CodeListAPI) getCodes(w http.ResponseWriter, r *http.Request) {
 	id := vars["id"]
 	edition := vars["edition"]
 	data := log.Data{"codelist_id": id, "edition": edition}
+	logData := log.Data{}
+	offsetParameter := r.URL.Query().Get("offset")
+	limitParameter := r.URL.Query().Get("limit")
+	offset := c.defaultOffset
+	limit := c.defaultLimit
+	var err error
 
 	log.Event(ctx, "getCodes endpoint: attempting to get edition codes", log.INFO, data)
+
+	if offsetParameter != "" {
+		logData["offset"] = offsetParameter
+		offset, err = ValidatePositiveInt(offsetParameter)
+		if err != nil {
+			log.Event(ctx, "invalid query parameter: offset", log.ERROR, log.Error(err), logData)
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+	}
+
+	if limitParameter != "" {
+		logData["limit"] = limitParameter
+		limit, err = ValidatePositiveInt(limitParameter)
+		if err != nil {
+			log.Event(ctx, "invalid query parameter: limit", log.ERROR, log.Error(err), logData)
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+	}
+
+	if limit > c.maxLimit {
+		logData["max_limit"] = c.maxLimit
+		err = errors.New("limit is greater than the maximum allowed")
+		log.Event(ctx, "invalid query parameter: limit, maximum limit reached", log.ERROR, log.Error(err), logData)
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 
 	dbCodes, err := c.store.GetCodes(ctx, id, edition)
 	if err != nil {
 		handleError(ctx, "getCodes endpoint: store.GetCode returned an error", data, err, w)
 		return
 	}
-	codes := models.NewCodeResults(dbCodes)
+
+	totalCount := len(dbCodes.Items)
+
+	sort.Slice(dbCodes.Items, func(i, j int) bool {
+		return dbCodes.Items[i].ID < dbCodes.Items[j].ID
+	})
+
+	slicedResults := codesSlice(dbCodes.Items, offset, limit)
+
+	codes := models.NewCodeResults(slicedResults)
 
 	for i, item := range codes.Items {
 		if err := item.UpdateLinks(c.apiURL, id, edition); err != nil {
@@ -35,10 +80,11 @@ func (c *CodeListAPI) getCodes(w http.ResponseWriter, r *http.Request) {
 		codes.Items[i] = item
 	}
 
-	count := len(codes.Items)
+	count := len(slicedResults)
 	codes.Count = count
-	codes.Limit = count
-	codes.TotalCount = count
+	codes.Offset = offset
+	codes.Limit = limit
+	codes.TotalCount = totalCount
 
 	b, err := json.Marshal(codes)
 	if err != nil {
@@ -91,4 +137,16 @@ func (c *CodeListAPI) getCode(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Event(ctx, "getCode endpoint: request successful", log.INFO, data)
+}
+
+func codesSlice(full []dbmodels.Code, offset, limit int) (sliced []dbmodels.Code) {
+	end := offset + limit
+	if end > len(full) {
+		end = len(full)
+	}
+
+	if offset > len(full) || limit == 0 {
+		return []dbmodels.Code{}
+	}
+	return full[offset:end]
 }

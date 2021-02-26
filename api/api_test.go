@@ -18,6 +18,9 @@ const (
 	editionID                   = "testEdition"
 	datasetEditionID            = "testDatasetEdition"
 	latestDatasetEditionVersion = 248
+	defaultOffset               = 0
+	defaultLimit                = 20
+	maxLimit                    = 1000
 )
 
 // ErrInternal is the error returned by mocks to emulate an internal service error

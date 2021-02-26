@@ -42,12 +42,10 @@ func TestNewEditions(t *testing.T) {
 	})
 
 	Convey("Given a valid editions Datasets model", t, func() {
-		dbEditions := &dbmodels.Editions{
-			Items: []dbmodels.Edition{
-				dbmodels.Edition{
-					ID:    "testEdition",
-					Label: "testLabel",
-				},
+		dbEditions := []dbmodels.Edition{
+			dbmodels.Edition{
+				ID:    "testEdition",
+				Label: "testLabel",
 			},
 		}
 

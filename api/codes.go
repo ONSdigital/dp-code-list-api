@@ -91,8 +91,7 @@ func (c *CodeListAPI) getCodes(w http.ResponseWriter, r *http.Request) {
 
 	b, err := json.Marshal(codes)
 	if err != nil {
-		log.Event(ctx, "marshal error", log.ERROR, log.Error(errors.WithMessage(err, "getCodes endpoint: failed to marshal codes to json bytes")), data)
-		http.Error(w, internalServerErr, http.StatusInternalServerError)
+		handleError(ctx, "failed to marshal codes", data, err, w)
 		return
 	}
 
@@ -129,8 +128,7 @@ func (c *CodeListAPI) getCode(w http.ResponseWriter, r *http.Request) {
 
 	b, err := json.Marshal(apiCode)
 	if err != nil {
-		log.Event(ctx, "marshal error", log.ERROR, log.Error(errors.WithMessage(err, "getCode endpoint: error attempting to marshal result to JSON")), data)
-		http.Error(w, internalServerErr, http.StatusInternalServerError)
+		handleError(ctx, "failed to marshal code", data, err, w)
 		return
 	}
 

@@ -96,7 +96,6 @@ func (c *CodeListAPI) getCodes(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := c.writeBody(w, b); err != nil {
-		log.Event(ctx, "error writting body", log.ERROR, log.Error(errors.WithMessage(err, "getCodes endpoint: failed to write bytes to response")))
 		return
 	}
 

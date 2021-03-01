@@ -90,7 +90,7 @@ func (c *CodeListAPI) getCodeDatasets(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := c.writeBody(w, b); err != nil {
-		handleError(ctx, "failed to write body", logData, err, w)
+		log.Event(ctx, "error writting body", log.ERROR, log.Error(errors.WithMessage(err, "getCodeDatasets endpoint: failed to write bytes to response")))
 		return
 	}
 

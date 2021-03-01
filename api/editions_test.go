@@ -161,22 +161,6 @@ func TestGetEditions(t *testing.T) {
 		api.router.ServeHTTP(w, r)
 		So(w.Code, ShouldEqual, http.StatusInternalServerError)
 	})
-
-	Convey("Get code list editions returns a status internal server error if writeBody fails", t, func() {
-		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/%s/editions", codeListURL, codeListID1), nil)
-		w := httptest.NewRecorder()
-
-		mockDatastore := &storetest.DataStoreMock{
-			GetEditionsFunc: func(ctx context.Context, f string) (*dbmodels.Editions, error) {
-				return &dbEditions, nil
-			},
-		}
-
-		api := CreateCodeListAPI(mux.NewRouter(), mockDatastore, codeListURL, datasetURL, defaultOffset, defaultLimit, maxLimit)
-		api.writeBody = failWriteBody
-		api.router.ServeHTTP(w, r)
-		So(w.Code, ShouldEqual, http.StatusInternalServerError)
-	})
 }
 
 func TestGetEditions_Pagination(t *testing.T) {
@@ -329,22 +313,6 @@ func TestGetEdition(t *testing.T) {
 		}
 
 		api := CreateCodeListAPI(mux.NewRouter(), mockDatastore, codeListURL, datasetURL, defaultOffset, defaultLimit, maxLimit)
-		api.router.ServeHTTP(w, r)
-		So(w.Code, ShouldEqual, http.StatusInternalServerError)
-	})
-
-	Convey("Get code list edition returns a status internal server error if writeBody fails", t, func() {
-		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/%s/editions/%s", codeListURL, codeListID1, editionID1), nil)
-		w := httptest.NewRecorder()
-
-		mockDatastore := &storetest.DataStoreMock{
-			GetEditionFunc: func(ctx context.Context, f, e string) (*dbmodels.Edition, error) {
-				return &dbEdition1, nil
-			},
-		}
-
-		api := CreateCodeListAPI(mux.NewRouter(), mockDatastore, codeListURL, datasetURL, defaultOffset, defaultLimit, maxLimit)
-		api.writeBody = failWriteBody
 		api.router.ServeHTTP(w, r)
 		So(w.Code, ShouldEqual, http.StatusInternalServerError)
 	})

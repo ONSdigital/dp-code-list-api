@@ -158,22 +158,6 @@ func TestGetCodeLists(t *testing.T) {
 		So(w.Code, ShouldEqual, http.StatusInternalServerError)
 	})
 
-	Convey("When write response body returns an error, then 500 status is returned", t, func() {
-		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists", codeListURL), nil)
-		w := httptest.NewRecorder()
-
-		mockDatastore := &storetest.DataStoreMock{
-			GetCodeListsFunc: func(ctx context.Context, filterBy string) (*dbmodels.CodeListResults, error) {
-				return &dbCodeListResults, nil
-			},
-		}
-
-		api := CreateCodeListAPI(mux.NewRouter(), mockDatastore, codeListURL, datasetURL, defaultOffset, defaultLimit, maxLimit)
-		api.writeBody = failWriteBody
-		api.router.ServeHTTP(w, r)
-		So(w.Code, ShouldEqual, http.StatusInternalServerError)
-	})
-
 	Convey("When a negative offset query parameter is provided, then 400 status returned", t, func() {
 		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists?offset=-1", codeListURL), nil)
 		w := httptest.NewRecorder()
@@ -276,23 +260,6 @@ func TestGetCodeList(t *testing.T) {
 		}
 
 		api := CreateCodeListAPI(mux.NewRouter(), mockDatastore, codeListURL, datasetURL, defaultOffset, defaultLimit, maxLimit)
-		api.router.ServeHTTP(w, r)
-		So(w.Code, ShouldEqual, http.StatusInternalServerError)
-	})
-
-	Convey("When write response body returns an error, then 500 status is returned", t, func() {
-		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/%s", codeListURL, codeListID1), nil)
-		w := httptest.NewRecorder()
-
-		mockDatastore := &storetest.DataStoreMock{
-			GetCodeListFunc: func(ctx context.Context, id string) (*dbmodels.CodeList, error) {
-				So(id, ShouldEqual, codeListID1)
-				return &dbCodeList1, nil
-			},
-		}
-
-		api := CreateCodeListAPI(mux.NewRouter(), mockDatastore, codeListURL, datasetURL, defaultOffset, defaultLimit, maxLimit)
-		api.writeBody = failWriteBody
 		api.router.ServeHTTP(w, r)
 		So(w.Code, ShouldEqual, http.StatusInternalServerError)
 	})

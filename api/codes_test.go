@@ -99,7 +99,6 @@ var (
 )
 
 var failWriteBody = func(w http.ResponseWriter, bytes []byte) error {
-	http.Error(w, internalServerErr, http.StatusInternalServerError)
 	return ErrInternal
 }
 
@@ -252,10 +251,7 @@ func TestGetCodes_WriteBodyError(t *testing.T) {
 
 			router.ServeHTTP(w, r)
 
-			Convey("then a 500 status is returned", func() {
-				So(w.Code, ShouldEqual, http.StatusInternalServerError)
-				So(strings.TrimSpace(w.Body.String()), ShouldEqual, internalServerErr)
-
+			Convey("then the expected calls are performed", func() {
 				So(mockDatastore.CountCodesCalls(), ShouldHaveLength, 1)
 				So(mockDatastore.CountCodesCalls()[0].CodeListID, ShouldEqual, codeListID1)
 				So(mockDatastore.CountCodesCalls()[0].Edition, ShouldEqual, editionID1)
@@ -592,10 +588,7 @@ func TestGetCode_WriteBodyError(t *testing.T) {
 
 			router.ServeHTTP(w, r)
 
-			Convey("then a 500 status is returned", func() {
-				So(w.Code, ShouldEqual, http.StatusInternalServerError)
-				So(strings.TrimSpace(w.Body.String()), ShouldEqual, internalServerErr)
-
+			Convey("then the expected calls are performed", func() {
 				So(mockDatastore.GetCodeCalls(), ShouldHaveLength, 1)
 				So(mockDatastore.GetCodeCalls()[0].CodeListID, ShouldEqual, codeListID1)
 				So(mockDatastore.GetCodeCalls()[0].EditionID, ShouldEqual, editionID1)

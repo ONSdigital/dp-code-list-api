@@ -13,9 +13,14 @@ import (
 const (
 	codeListURL                 = "http://codelist-url"
 	datasetURL                  = "http://dataset-url"
-	codeListID                  = "testCodeList"
-	codeID                      = "testCode"
-	editionID                   = "testEdition"
+	codeListID1                 = "testCodeList1"
+	codeListID2                 = "testCodeList2"
+	codeID1                     = "testCode1"
+	codeID2                     = "testCode2"
+	datasetID1                  = "testDataset1"
+	datasetID2                  = "testDataset2"
+	editionID1                  = "testEdition1"
+	editionID2                  = "testEdition2"
 	datasetEditionID            = "testDatasetEdition"
 	latestDatasetEditionVersion = 248
 	defaultOffset               = 0

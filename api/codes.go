@@ -3,7 +3,6 @@ package api
 import (
 	"encoding/json"
 	"net/http"
-	"sort"
 
 	"github.com/ONSdigital/dp-code-list-api/models"
 	dbmodels "github.com/ONSdigital/dp-graph/v2/models"
@@ -55,17 +54,21 @@ func (c *CodeListAPI) getCodes(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	dbCodes, err := c.store.GetCodes(ctx, id, edition)
+	totalCount, err := c.store.CountCodes(ctx, id, edition)
 	if err != nil {
-		handleError(ctx, "getCodes endpoint: store.GetCode returned an error", data, err, w)
+		handleError(ctx, "getCodes endpoint: store.CountCodes returned an error", data, err, w)
 		return
 	}
 
-	totalCount := len(dbCodes.Items)
+	dbCodes := &dbmodels.CodeResults{}
 
-	sort.Slice(dbCodes.Items, func(i, j int) bool {
-		return dbCodes.Items[i].ID < dbCodes.Items[j].ID
-	})
+	if limit > 0 && totalCount > 0 {
+		dbCodes, err = c.store.GetCodes(ctx, id, edition)
+		if err != nil {
+			handleError(ctx, "getCodes endpoint: store.GetCodes returned an error", data, err, w)
+			return
+		}
+	}
 
 	slicedResults := codesSlice(dbCodes.Items, offset, limit)
 
@@ -84,17 +87,15 @@ func (c *CodeListAPI) getCodes(w http.ResponseWriter, r *http.Request) {
 	codes.Count = count
 	codes.Offset = offset
 	codes.Limit = limit
-	codes.TotalCount = totalCount
+	codes.TotalCount = int(totalCount)
 
 	b, err := json.Marshal(codes)
 	if err != nil {
-		log.Event(ctx, "marshal error", log.ERROR, log.Error(errors.WithMessage(err, "getCodes endpoint: failed to marshal codes to json bytes")), data)
-		http.Error(w, internalServerErr, http.StatusInternalServerError)
+		handleError(ctx, "failed to marshal codes", data, err, w)
 		return
 	}
 
 	if err := c.writeBody(w, b); err != nil {
-		log.Event(ctx, "error writting body", log.ERROR, log.Error(errors.WithMessage(err, "getCodes endpoint: failed to write bytes to response")))
 		return
 	}
 
@@ -126,8 +127,7 @@ func (c *CodeListAPI) getCode(w http.ResponseWriter, r *http.Request) {
 
 	b, err := json.Marshal(apiCode)
 	if err != nil {
-		log.Event(ctx, "marshal error", log.ERROR, log.Error(errors.WithMessage(err, "getCode endpoint: error attempting to marshal result to JSON")), data)
-		http.Error(w, internalServerErr, http.StatusInternalServerError)
+		handleError(ctx, "failed to marshal code", data, err, w)
 		return
 	}
 

@@ -19,76 +19,119 @@ import (
 
 // Code models for testing
 var (
-	dbCode = dbmodels.Code{
+	dbCode1 = dbmodels.Code{
 		ID:    "ignored",
-		Code:  codeID,
-		Label: "test",
+		Code:  codeID1,
+		Label: "test one",
 	}
 
-	dbCodeResults = dbmodels.CodeResults{Items: []dbmodels.Code{dbCode}}
+	dbCode2 = dbmodels.Code{
+		ID:    "ignored",
+		Code:  codeID2,
+		Label: "test two",
+	}
 
-	expectedCode = models.Code{
-		ID:    codeID,
-		Label: "test",
+	dbCodeResults = dbmodels.CodeResults{
+		Items: []dbmodels.Code{dbCode1, dbCode2},
+	}
+
+	expectedCode1 = models.Code{
+		ID:    codeID1,
+		Label: "test one",
 		Links: &models.CodeLinks{
 			Self: &models.Link{
-				ID:   codeID,
-				Href: fmt.Sprintf("%s/code-lists/%s/editions/%s/codes/%s", codeListURL, codeListID, editionID, codeID),
+				ID:   codeID1,
+				Href: fmt.Sprintf("%s/code-lists/%s/editions/%s/codes/%s", codeListURL, codeListID1, editionID1, codeID1),
 			},
 			Datasets: &models.Link{
 				ID:   "",
-				Href: fmt.Sprintf("%s/code-lists/%s/editions/%s/codes/%s/datasets", codeListURL, codeListID, editionID, codeID),
+				Href: fmt.Sprintf("%s/code-lists/%s/editions/%s/codes/%s/datasets", codeListURL, codeListID1, editionID1, codeID1),
 			},
 			CodeList: &models.Link{
 				ID:   "",
-				Href: fmt.Sprintf("%s/code-lists/%s", codeListURL, codeListID),
+				Href: fmt.Sprintf("%s/code-lists/%s", codeListURL, codeListID1),
 			},
 		},
 	}
 
+	expectedCode2 = models.Code{
+		ID:    codeID2,
+		Label: "test two",
+		Links: &models.CodeLinks{
+			Self: &models.Link{
+				ID:   codeID2,
+				Href: fmt.Sprintf("%s/code-lists/%s/editions/%s/codes/%s", codeListURL, codeListID1, editionID1, codeID2),
+			},
+			Datasets: &models.Link{
+				ID:   "",
+				Href: fmt.Sprintf("%s/code-lists/%s/editions/%s/codes/%s/datasets", codeListURL, codeListID1, editionID1, codeID2),
+			},
+			CodeList: &models.Link{
+				ID:   "",
+				Href: fmt.Sprintf("%s/code-lists/%s", codeListURL, codeListID1),
+			},
+		},
+	}
+
+	codePaginationTestZero = models.CodeResults{
+		Items:      nil,
+		Count:      0,
+		Offset:     0,
+		Limit:      0,
+		TotalCount: 2,
+	}
+
 	codePaginationTestOne = models.CodeResults{
-		Items:      []models.Code{expectedCode},
+		Items:      []models.Code{expectedCode1},
 		Count:      1,
 		Offset:     0,
 		Limit:      1,
-		TotalCount: 1,
-	}
-
-	codePaginationTestTwo = models.CodeResults{
-		Items:      []models.Code{expectedCode},
-		Count:      0,
-		Offset:     1,
-		Limit:      7,
-		TotalCount: 1,
+		TotalCount: 2,
 	}
 
 	codePaginationTestThree = models.CodeResults{
 		Items:      nil,
 		Count:      0,
-		Offset:     2,
+		Offset:     3,
 		Limit:      1,
-		TotalCount: 1,
-	}
-
-	codePaginationTestFour = models.CodeResults{
-		Items:      []models.Code{expectedCode},
-		Count:      1,
-		Offset:     0,
-		Limit:      20,
-		TotalCount: 1,
+		TotalCount: 2,
 	}
 )
 
-var failWriteBody = func(w http.ResponseWriter, bytes []byte) error {
-	http.Error(w, internalServerErr, http.StatusInternalServerError)
-	return ErrInternal
-}
-
 func TestGetCodes_DatastoreError(t *testing.T) {
+
+	Convey("Given datastore.CountCodes returns an error", t, func() {
+		mockDatastore := &storetest.DataStoreMock{
+			CountCodesFunc: func(ctx context.Context, codeListID string, edition string) (int64, error) {
+				return 0, ErrInternal
+			},
+		}
+
+		Convey("when getCodes is called", func() {
+			router := mux.NewRouter()
+			CreateCodeListAPI(router, mockDatastore, codeListURL, datasetURL, defaultOffset, defaultLimit, maxLimit)
+			w := httptest.NewRecorder()
+			r := httptest.NewRequest(http.MethodGet, fmt.Sprintf("%s/code-lists/%s/editions/%s/codes", codeListURL, codeListID1, editionID1), nil)
+
+			router.ServeHTTP(w, r)
+
+			Convey("then a 500 status is returned", func() {
+				So(w.Code, ShouldEqual, http.StatusInternalServerError)
+				So(strings.TrimSpace(w.Body.String()), ShouldEqual, internalServerErr)
+
+				So(mockDatastore.CountCodesCalls(), ShouldHaveLength, 1)
+				So(mockDatastore.CountCodesCalls()[0].CodeListID, ShouldEqual, codeListID1)
+				So(mockDatastore.CountCodesCalls()[0].Edition, ShouldEqual, editionID1)
+			})
+		})
+	})
 
 	Convey("Given datastore.GetCodes returns an error", t, func() {
 		mockDatastore := &storetest.DataStoreMock{
-			GetCodesFunc: func(ctx context.Context, codeListID string, editionID string) (*dbmodels.CodeResults, error) {
+			CountCodesFunc: func(ctx context.Context, codeListID string, edition string) (int64, error) {
+				return 1, nil
+			},
+			GetCodesFunc: func(ctx context.Context, codeListID string, editionID1 string) (*dbmodels.CodeResults, error) {
 				return nil, ErrInternal
 			},
 		}
@@ -97,7 +140,7 @@ func TestGetCodes_DatastoreError(t *testing.T) {
 			router := mux.NewRouter()
 			CreateCodeListAPI(router, mockDatastore, codeListURL, datasetURL, defaultOffset, defaultLimit, maxLimit)
 			w := httptest.NewRecorder()
-			r := httptest.NewRequest(http.MethodGet, fmt.Sprintf("%s/code-lists/%s/editions/%s/codes", codeListURL, codeListID, editionID), nil)
+			r := httptest.NewRequest(http.MethodGet, fmt.Sprintf("%s/code-lists/%s/editions/%s/codes", codeListURL, codeListID1, editionID1), nil)
 
 			router.ServeHTTP(w, r)
 
@@ -105,19 +148,23 @@ func TestGetCodes_DatastoreError(t *testing.T) {
 				So(w.Code, ShouldEqual, http.StatusInternalServerError)
 				So(strings.TrimSpace(w.Body.String()), ShouldEqual, internalServerErr)
 
+				So(mockDatastore.CountCodesCalls(), ShouldHaveLength, 1)
+				So(mockDatastore.CountCodesCalls()[0].CodeListID, ShouldEqual, codeListID1)
+				So(mockDatastore.CountCodesCalls()[0].Edition, ShouldEqual, editionID1)
+
 				So(mockDatastore.GetCodesCalls(), ShouldHaveLength, 1)
-				So(mockDatastore.GetCodesCalls()[0].CodeListID, ShouldEqual, codeListID)
-				So(mockDatastore.GetCodesCalls()[0].EditionID, ShouldEqual, editionID)
+				So(mockDatastore.GetCodesCalls()[0].CodeListID, ShouldEqual, codeListID1)
+				So(mockDatastore.GetCodesCalls()[0].EditionID, ShouldEqual, editionID1)
 			})
 		})
 	})
 }
 
 func TestGetCodes_EditionNotFound(t *testing.T) {
-	Convey("Given datastore.GetCodes returns an edition not found error", t, func() {
+	Convey("Given datastore.CountCodes returns an edition not found error", t, func() {
 		mockDatastore := &storetest.DataStoreMock{
-			GetCodesFunc: func(ctx context.Context, codeListID string, editionID string) (*dbmodels.CodeResults, error) {
-				return nil, driver.ErrNotFound
+			CountCodesFunc: func(ctx context.Context, codeListID string, edition string) (int64, error) {
+				return 1, driver.ErrNotFound
 			},
 		}
 
@@ -125,7 +172,7 @@ func TestGetCodes_EditionNotFound(t *testing.T) {
 			router := mux.NewRouter()
 			CreateCodeListAPI(router, mockDatastore, codeListURL, datasetURL, defaultOffset, defaultLimit, maxLimit)
 			w := httptest.NewRecorder()
-			r := httptest.NewRequest(http.MethodGet, fmt.Sprintf("%s/code-lists/%s/editions/%s/codes", codeListURL, codeListID, editionID), nil)
+			r := httptest.NewRequest(http.MethodGet, fmt.Sprintf("%s/code-lists/%s/editions/%s/codes", codeListURL, codeListID1, editionID1), nil)
 
 			router.ServeHTTP(w, r)
 
@@ -133,30 +180,32 @@ func TestGetCodes_EditionNotFound(t *testing.T) {
 				So(w.Code, ShouldEqual, http.StatusNotFound)
 				So(strings.TrimSpace(w.Body.String()), ShouldEqual, driver.ErrNotFound.Error())
 
-				So(mockDatastore.GetCodesCalls(), ShouldHaveLength, 1)
-				So(mockDatastore.GetCodesCalls()[0].CodeListID, ShouldEqual, codeListID)
-				So(mockDatastore.GetCodesCalls()[0].EditionID, ShouldEqual, editionID)
+				So(mockDatastore.CountCodesCalls(), ShouldHaveLength, 1)
+				So(mockDatastore.CountCodesCalls()[0].CodeListID, ShouldEqual, codeListID1)
+				So(mockDatastore.CountCodesCalls()[0].Edition, ShouldEqual, editionID1)
 			})
 		})
 	})
 }
 
-func TestGetCodes_WriteBodyError(t *testing.T) {
-	Convey("Given write response body returns an error ", t, func() {
+func TestGetCodes_InvalidCode(t *testing.T) {
+	Convey("Given GetCodes returns an invalid code (empty ID)", t, func() {
 		mockDatastore := &storetest.DataStoreMock{
-			GetCodesFunc: func(ctx context.Context, codeListID string, editionID string) (*dbmodels.CodeResults, error) {
-				return &dbmodels.CodeResults{}, nil
+			CountCodesFunc: func(ctx context.Context, codeListID string, edition string) (int64, error) {
+				return 1, nil
+			},
+			GetCodesFunc: func(ctx context.Context, codeListID string, editionID1 string) (*dbmodels.CodeResults, error) {
+				return &dbmodels.CodeResults{
+					Items: []dbmodels.Code{{ID: ""}},
+				}, nil
 			},
 		}
 
 		Convey("when getCodes is called", func() {
 			router := mux.NewRouter()
-
-			api := CreateCodeListAPI(router, mockDatastore, codeListURL, datasetURL, defaultOffset, defaultLimit, maxLimit)
-			api.writeBody = failWriteBody
-
+			CreateCodeListAPI(router, mockDatastore, codeListURL, datasetURL, defaultOffset, defaultLimit, maxLimit)
 			w := httptest.NewRecorder()
-			r := httptest.NewRequest(http.MethodGet, fmt.Sprintf("%s/code-lists/%s/editions/%s/codes", codeListURL, codeListID, editionID), nil)
+			r := httptest.NewRequest(http.MethodGet, fmt.Sprintf("%s/code-lists/%s/editions/%s/codes", codeListURL, codeListID1, editionID1), nil)
 
 			router.ServeHTTP(w, r)
 
@@ -164,28 +213,36 @@ func TestGetCodes_WriteBodyError(t *testing.T) {
 				So(w.Code, ShouldEqual, http.StatusInternalServerError)
 				So(strings.TrimSpace(w.Body.String()), ShouldEqual, internalServerErr)
 
+				So(mockDatastore.CountCodesCalls(), ShouldHaveLength, 1)
+				So(mockDatastore.CountCodesCalls()[0].CodeListID, ShouldEqual, codeListID1)
+				So(mockDatastore.CountCodesCalls()[0].Edition, ShouldEqual, editionID1)
+
 				So(mockDatastore.GetCodesCalls(), ShouldHaveLength, 1)
-				So(mockDatastore.GetCodesCalls()[0].CodeListID, ShouldEqual, codeListID)
-				So(mockDatastore.GetCodesCalls()[0].EditionID, ShouldEqual, editionID)
+				So(mockDatastore.GetCodesCalls()[0].CodeListID, ShouldEqual, codeListID1)
+				So(mockDatastore.GetCodesCalls()[0].EditionID, ShouldEqual, editionID1)
 			})
 		})
 	})
 }
 
 func TestGetCodes_Success(t *testing.T) {
+
 	Convey("Given a valid request", t, func() {
 		dbResult := dbmodels.CodeResults{
-			Items: []dbmodels.Code{dbCode},
+			Items: []dbmodels.Code{dbCode1, dbCode2},
 		}
 		expectedResult := models.CodeResults{
-			Count:      1,
+			Count:      2,
 			Limit:      20,
-			TotalCount: 1,
-			Items:      []models.Code{expectedCode},
+			TotalCount: 2,
+			Items:      []models.Code{expectedCode1, expectedCode2},
 		}
 
 		mockDatastore := &storetest.DataStoreMock{
-			GetCodesFunc: func(ctx context.Context, codeListID string, editionID string) (*dbmodels.CodeResults, error) {
+			CountCodesFunc: func(ctx context.Context, codeListID string, edition string) (int64, error) {
+				return int64(2), nil
+			},
+			GetCodesFunc: func(ctx context.Context, codeListID string, editionID1 string) (*dbmodels.CodeResults, error) {
 				return &dbResult, nil
 			},
 		}
@@ -196,7 +253,7 @@ func TestGetCodes_Success(t *testing.T) {
 			CreateCodeListAPI(router, mockDatastore, codeListURL, datasetURL, defaultOffset, defaultLimit, maxLimit)
 
 			w := httptest.NewRecorder()
-			r := httptest.NewRequest(http.MethodGet, fmt.Sprintf("%s/code-lists/%s/editions/%s/codes", codeListURL, codeListID, editionID), nil)
+			r := httptest.NewRequest(http.MethodGet, fmt.Sprintf("%s/code-lists/%s/editions/%s/codes", codeListURL, codeListID1, editionID1), nil)
 
 			router.ServeHTTP(w, r)
 
@@ -205,9 +262,54 @@ func TestGetCodes_Success(t *testing.T) {
 
 				validateBody(w.Body, &models.CodeResults{}, &expectedResult)
 
-				So(mockDatastore.GetCodesCalls(), ShouldHaveLength, 1)
-				So(mockDatastore.GetCodesCalls()[0].CodeListID, ShouldEqual, codeListID)
-				So(mockDatastore.GetCodesCalls()[0].EditionID, ShouldEqual, editionID)
+				Convey("and CountCodes and GetCodes are called with the expected paramters", func() {
+					So(mockDatastore.CountCodesCalls(), ShouldHaveLength, 1)
+					So(mockDatastore.CountCodesCalls()[0].CodeListID, ShouldEqual, codeListID1)
+					So(mockDatastore.CountCodesCalls()[0].Edition, ShouldEqual, editionID1)
+
+					So(mockDatastore.GetCodesCalls(), ShouldHaveLength, 1)
+					So(mockDatastore.GetCodesCalls()[0].CodeListID, ShouldEqual, codeListID1)
+					So(mockDatastore.GetCodesCalls()[0].EditionID, ShouldEqual, editionID1)
+				})
+			})
+		})
+	})
+
+	Convey("Given a valid request for a codelist without codes", t, func() {
+
+		expectedResult := models.CodeResults{
+			Count:      0,
+			Limit:      20,
+			TotalCount: 0,
+			Items:      nil,
+		}
+
+		mockDatastore := &storetest.DataStoreMock{
+			CountCodesFunc: func(ctx context.Context, codeListID string, edition string) (int64, error) {
+				return int64(0), nil
+			},
+		}
+
+		Convey("when getCodes is called", func() {
+			router := mux.NewRouter()
+
+			CreateCodeListAPI(router, mockDatastore, codeListURL, datasetURL, defaultOffset, defaultLimit, maxLimit)
+
+			w := httptest.NewRecorder()
+			r := httptest.NewRequest(http.MethodGet, fmt.Sprintf("%s/code-lists/%s/editions/%s/codes", codeListURL, codeListID1, editionID1), nil)
+
+			router.ServeHTTP(w, r)
+
+			Convey("then a 200 status is returned with the expected body", func() {
+				So(w.Code, ShouldEqual, http.StatusOK)
+
+				validateBody(w.Body, &models.CodeResults{}, &expectedResult)
+
+				Convey("and CountCodes is called with the expected paramters", func() {
+					So(mockDatastore.CountCodesCalls(), ShouldHaveLength, 1)
+					So(mockDatastore.CountCodesCalls()[0].CodeListID, ShouldEqual, codeListID1)
+					So(mockDatastore.CountCodesCalls()[0].Edition, ShouldEqual, editionID1)
+				})
 			})
 		})
 	})
@@ -217,11 +319,14 @@ func TestGetCodes_Pagination(t *testing.T) {
 	t.Parallel()
 
 	Convey("When valid limit and offset query parameters are provided, then return codes information according to the offset and limit", t, func() {
-		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/%s/editions/%s/codes?offset=0&limit=1", codeListURL, codeListID, editionID), nil)
+		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/%s/editions/%s/codes?offset=0&limit=1", codeListURL, codeListID1, editionID1), nil)
 		w := httptest.NewRecorder()
 
 		mockDatastore := &storetest.DataStoreMock{
-			GetCodesFunc: func(ctx context.Context, codeListID string, editionID string) (*dbmodels.CodeResults, error) {
+			CountCodesFunc: func(ctx context.Context, codeListID string, edition string) (int64, error) {
+				return 2, nil
+			},
+			GetCodesFunc: func(ctx context.Context, codeListID string, editionID1 string) (*dbmodels.CodeResults, error) {
 				return &dbCodeResults, nil
 			},
 		}
@@ -234,11 +339,14 @@ func TestGetCodes_Pagination(t *testing.T) {
 	})
 
 	Convey("When offset value greater than count provided, then return zero items", t, func() {
-		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/%s/editions/%s/codes?offset=2&limit=1", codeListURL, codeListID, editionID), nil)
+		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/%s/editions/%s/codes?offset=3&limit=1", codeListURL, codeListID1, editionID1), nil)
 		w := httptest.NewRecorder()
 
 		mockDatastore := &storetest.DataStoreMock{
-			GetCodesFunc: func(ctx context.Context, codeListID string, editionID string) (*dbmodels.CodeResults, error) {
+			CountCodesFunc: func(ctx context.Context, codeListID string, edition string) (int64, error) {
+				return 2, nil
+			},
+			GetCodesFunc: func(ctx context.Context, codeListID string, editionID1 string) (*dbmodels.CodeResults, error) {
 				return &dbCodeResults, nil
 			},
 		}
@@ -250,13 +358,13 @@ func TestGetCodes_Pagination(t *testing.T) {
 		validateBody(w.Body, &models.CodeResults{}, &codePaginationTestThree)
 	})
 
-	Convey("When no offset or limit value provided, then return codes information based on defaults", t, func() {
-		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/%s/editions/%s/codes", codeListURL, codeListID, editionID), nil)
+	Convey("When limit is zero, then return zero items and only call dp-graph CountCodes", t, func() {
+		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/%s/editions/%s/codes?limit=0", codeListURL, codeListID1, editionID1), nil)
 		w := httptest.NewRecorder()
 
 		mockDatastore := &storetest.DataStoreMock{
-			GetCodesFunc: func(ctx context.Context, codeListID string, editionID string) (*dbmodels.CodeResults, error) {
-				return &dbCodeResults, nil
+			CountCodesFunc: func(ctx context.Context, codeListID string, edition string) (int64, error) {
+				return 2, nil
 			},
 		}
 
@@ -264,46 +372,51 @@ func TestGetCodes_Pagination(t *testing.T) {
 		api.router.ServeHTTP(w, r)
 		So(w.Code, ShouldEqual, http.StatusOK)
 
-		validateBody(w.Body, &models.CodeResults{}, &codePaginationTestFour)
+		validateBody(w.Body, &models.CodeResults{}, &codePaginationTestZero)
 	})
 
-	Convey("When negative limit and offset query parameters are provided, then 400 status returned", t, func() {
-		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists?offset=-1&limit=-2", codeListURL), nil)
+	Convey("When a negative offset query parameter is provided, then 400 status returned", t, func() {
+		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/%s/editions/%s/codes?offset=-1", codeListURL, codeListID1, editionID1), nil)
 		w := httptest.NewRecorder()
 
 		api := CreateCodeListAPI(mux.NewRouter(), &storetest.DataStoreMock{}, codeListURL, datasetURL, defaultOffset, defaultLimit, maxLimit)
 		api.router.ServeHTTP(w, r)
 		So(w.Code, ShouldEqual, http.StatusBadRequest)
+	})
 
+	Convey("When a negative limit query parameter is provided, then 400 status returned", t, func() {
+		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/%s/editions/%s/codes?limit=-1", codeListURL, codeListID1, editionID1), nil)
+		w := httptest.NewRecorder()
+
+		api := CreateCodeListAPI(mux.NewRouter(), &storetest.DataStoreMock{}, codeListURL, datasetURL, defaultOffset, defaultLimit, maxLimit)
+		api.router.ServeHTTP(w, r)
+		So(w.Code, ShouldEqual, http.StatusBadRequest)
 	})
 
 	Convey("When limit above default maximum is provided, then 400 status returned", t, func() {
-		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists?limit=1001", codeListURL), nil)
+		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/%s/editions/%s/codes?limit=1001", codeListURL, codeListID1, editionID1), nil)
 		w := httptest.NewRecorder()
 
 		api := CreateCodeListAPI(mux.NewRouter(), &storetest.DataStoreMock{}, codeListURL, datasetURL, defaultOffset, defaultLimit, maxLimit)
 		api.router.ServeHTTP(w, r)
 		So(w.Code, ShouldEqual, http.StatusBadRequest)
-
 	})
 
 	Convey("When non-integer query parameter value provided, then 400 status returned", t, func() {
-		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists?offset=x&limit=y", codeListURL), nil)
+		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/%s/editions/%s/codes?offset=x&limit=y", codeListURL, codeListID1, editionID1), nil)
 		w := httptest.NewRecorder()
 
 		api := CreateCodeListAPI(mux.NewRouter(), &storetest.DataStoreMock{}, codeListURL, datasetURL, defaultOffset, defaultLimit, maxLimit)
 		api.router.ServeHTTP(w, r)
 		So(w.Code, ShouldEqual, http.StatusBadRequest)
-
 	})
-
 }
 
 func TestGetCode_Success(t *testing.T) {
 	Convey("Given a valid request", t, func() {
 		mockDatastore := &storetest.DataStoreMock{
-			GetCodeFunc: func(ctx context.Context, codeListID string, editionID string, codeID string) (*dbmodels.Code, error) {
-				return &dbCode, nil
+			GetCodeFunc: func(ctx context.Context, codeListID string, editionID1 string, codeID string) (*dbmodels.Code, error) {
+				return &dbCode1, nil
 			},
 		}
 
@@ -313,19 +426,19 @@ func TestGetCode_Success(t *testing.T) {
 			CreateCodeListAPI(router, mockDatastore, codeListURL, datasetURL, defaultOffset, defaultLimit, maxLimit)
 
 			w := httptest.NewRecorder()
-			r := httptest.NewRequest(http.MethodGet, fmt.Sprintf("%s/code-lists/%s/editions/%s/codes/%s", codeListURL, codeListID, editionID, codeID), nil)
+			r := httptest.NewRequest(http.MethodGet, fmt.Sprintf("%s/code-lists/%s/editions/%s/codes/%s", codeListURL, codeListID1, editionID1, codeID1), nil)
 
 			router.ServeHTTP(w, r)
 
 			Convey("then a 200 status is returned with the expected body", func() {
 				So(w.Code, ShouldEqual, http.StatusOK)
 
-				validateBody(w.Body, &models.Code{}, &expectedCode)
+				validateBody(w.Body, &models.Code{}, &expectedCode1)
 
 				So(mockDatastore.GetCodeCalls(), ShouldHaveLength, 1)
-				So(mockDatastore.GetCodeCalls()[0].CodeListID, ShouldEqual, codeListID)
-				So(mockDatastore.GetCodeCalls()[0].EditionID, ShouldEqual, editionID)
-				So(mockDatastore.GetCodeCalls()[0].CodeID, ShouldEqual, codeID)
+				So(mockDatastore.GetCodeCalls()[0].CodeListID, ShouldEqual, codeListID1)
+				So(mockDatastore.GetCodeCalls()[0].EditionID, ShouldEqual, editionID1)
+				So(mockDatastore.GetCodeCalls()[0].CodeID, ShouldEqual, codeID1)
 			})
 		})
 	})
@@ -334,7 +447,7 @@ func TestGetCode_Success(t *testing.T) {
 func TestGetCode_DatastoreError(t *testing.T) {
 	Convey("Given datastore.GetCode returns an error", t, func() {
 		mockDatastore := &storetest.DataStoreMock{
-			GetCodeFunc: func(ctx context.Context, codeListID string, editionID string, codeID string) (*dbmodels.Code, error) {
+			GetCodeFunc: func(ctx context.Context, codeListID string, editionID1 string, codeID string) (*dbmodels.Code, error) {
 				return nil, ErrInternal
 			},
 		}
@@ -343,7 +456,7 @@ func TestGetCode_DatastoreError(t *testing.T) {
 			router := mux.NewRouter()
 			CreateCodeListAPI(router, mockDatastore, codeListURL, datasetURL, defaultOffset, defaultLimit, maxLimit)
 			w := httptest.NewRecorder()
-			r := httptest.NewRequest(http.MethodGet, fmt.Sprintf("%s/code-lists/%s/editions/%s/codes/%s", codeListURL, codeListID, editionID, codeID), nil)
+			r := httptest.NewRequest(http.MethodGet, fmt.Sprintf("%s/code-lists/%s/editions/%s/codes/%s", codeListURL, codeListID1, editionID1, codeID1), nil)
 
 			router.ServeHTTP(w, r)
 
@@ -352,9 +465,9 @@ func TestGetCode_DatastoreError(t *testing.T) {
 				So(strings.TrimSpace(w.Body.String()), ShouldEqual, internalServerErr)
 
 				So(mockDatastore.GetCodeCalls(), ShouldHaveLength, 1)
-				So(mockDatastore.GetCodeCalls()[0].CodeListID, ShouldEqual, codeListID)
-				So(mockDatastore.GetCodeCalls()[0].EditionID, ShouldEqual, editionID)
-				So(mockDatastore.GetCodeCalls()[0].CodeID, ShouldEqual, codeID)
+				So(mockDatastore.GetCodeCalls()[0].CodeListID, ShouldEqual, codeListID1)
+				So(mockDatastore.GetCodeCalls()[0].EditionID, ShouldEqual, editionID1)
+				So(mockDatastore.GetCodeCalls()[0].CodeID, ShouldEqual, codeID1)
 			})
 		})
 	})
@@ -363,16 +476,16 @@ func TestGetCode_DatastoreError(t *testing.T) {
 func TestGetCode_EditionNotFound(t *testing.T) {
 	Convey("Given datastore.GetCode returns edition not found error", t, func() {
 		mockDatastore := &storetest.DataStoreMock{
-			GetCodeFunc: func(ctx context.Context, codeListID string, editionID string, codeID string) (*dbmodels.Code, error) {
+			GetCodeFunc: func(ctx context.Context, codeListID string, editionID1 string, codeID string) (*dbmodels.Code, error) {
 				return nil, driver.ErrNotFound
 			},
 		}
 
-		Convey("when getCodes is called", func() {
+		Convey("when getCode is called", func() {
 			router := mux.NewRouter()
 			CreateCodeListAPI(router, mockDatastore, codeListURL, datasetURL, defaultOffset, defaultLimit, maxLimit)
 			w := httptest.NewRecorder()
-			r := httptest.NewRequest(http.MethodGet, fmt.Sprintf("%s/code-lists/%s/editions/%s/codes/%s", codeListURL, codeListID, editionID, codeID), nil)
+			r := httptest.NewRequest(http.MethodGet, fmt.Sprintf("%s/code-lists/%s/editions/%s/codes/%s", codeListURL, codeListID1, editionID1, codeID1), nil)
 
 			router.ServeHTTP(w, r)
 
@@ -381,29 +494,27 @@ func TestGetCode_EditionNotFound(t *testing.T) {
 				So(strings.TrimSpace(w.Body.String()), ShouldEqual, driver.ErrNotFound.Error())
 
 				So(mockDatastore.GetCodeCalls(), ShouldHaveLength, 1)
-				So(mockDatastore.GetCodeCalls()[0].CodeListID, ShouldEqual, codeListID)
-				So(mockDatastore.GetCodeCalls()[0].EditionID, ShouldEqual, editionID)
-				So(mockDatastore.GetCodeCalls()[0].CodeID, ShouldEqual, codeID)
+				So(mockDatastore.GetCodeCalls()[0].CodeListID, ShouldEqual, codeListID1)
+				So(mockDatastore.GetCodeCalls()[0].EditionID, ShouldEqual, editionID1)
+				So(mockDatastore.GetCodeCalls()[0].CodeID, ShouldEqual, codeID1)
 			})
 		})
 	})
 }
 
-func TestGetCode_WriteBodyError(t *testing.T) {
-	Convey("Given datastore.GetCode returns an error", t, func() {
+func TestGetCode_InvalidCode(t *testing.T) {
+	Convey("Given datastore.GetCode returns an invalid code (empty ID)", t, func() {
 		mockDatastore := &storetest.DataStoreMock{
-			GetCodeFunc: func(ctx context.Context, codeListID string, editionID string, codeID string) (*dbmodels.Code, error) {
-				return &dbCode, nil
+			GetCodeFunc: func(ctx context.Context, codeListID string, editionID1 string, codeID string) (*dbmodels.Code, error) {
+				return &dbmodels.Code{ID: ""}, nil
 			},
 		}
 
-		Convey("when getCodes is called", func() {
+		Convey("when getCode is called", func() {
 			router := mux.NewRouter()
-			api := CreateCodeListAPI(router, mockDatastore, codeListURL, datasetURL, defaultOffset, defaultLimit, maxLimit)
-			api.writeBody = failWriteBody
-
+			CreateCodeListAPI(router, mockDatastore, codeListURL, datasetURL, defaultOffset, defaultLimit, maxLimit)
 			w := httptest.NewRecorder()
-			r := httptest.NewRequest(http.MethodGet, fmt.Sprintf("%s/code-lists/%s/editions/%s/codes/%s", codeListURL, codeListID, editionID, codeID), nil)
+			r := httptest.NewRequest(http.MethodGet, fmt.Sprintf("%s/code-lists/%s/editions/%s/codes/%s", codeListURL, codeListID1, editionID1, codeID1), nil)
 
 			router.ServeHTTP(w, r)
 
@@ -412,9 +523,9 @@ func TestGetCode_WriteBodyError(t *testing.T) {
 				So(strings.TrimSpace(w.Body.String()), ShouldEqual, internalServerErr)
 
 				So(mockDatastore.GetCodeCalls(), ShouldHaveLength, 1)
-				So(mockDatastore.GetCodeCalls()[0].CodeListID, ShouldEqual, codeListID)
-				So(mockDatastore.GetCodeCalls()[0].EditionID, ShouldEqual, editionID)
-				So(mockDatastore.GetCodeCalls()[0].CodeID, ShouldEqual, codeID)
+				So(mockDatastore.GetCodeCalls()[0].CodeListID, ShouldEqual, codeListID1)
+				So(mockDatastore.GetCodeCalls()[0].EditionID, ShouldEqual, editionID1)
+				So(mockDatastore.GetCodeCalls()[0].CodeID, ShouldEqual, codeID1)
 			})
 		})
 	})

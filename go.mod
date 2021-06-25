@@ -3,11 +3,11 @@ module github.com/ONSdigital/dp-code-list-api
 go 1.13
 
 require (
-	github.com/ONSdigital/dp-api-clients-go v1.33.0 // indirect
 	github.com/ONSdigital/dp-graph/v2 v2.7.2
 	github.com/ONSdigital/dp-healthcheck v1.0.5
-	github.com/ONSdigital/dp-net v1.0.11
+	github.com/ONSdigital/dp-net v1.0.12
 	github.com/ONSdigital/log.go v1.0.1
+	github.com/ONSdigital/log.go/v2 v2.0.0 // indirect
 	github.com/fatih/color v1.10.0 // indirect
 	github.com/gofrs/uuid v4.0.0+incompatible // indirect
 	github.com/gorilla/mux v1.8.0
@@ -17,5 +17,4 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/smartystreets/goconvey v1.6.4
 	golang.org/x/net v0.0.0-20210119194325-5f4716e94777 // indirect
-	golang.org/x/sys v0.0.0-20210124154548-22da62e12c0c // indirect
 )

@@ -7,7 +7,7 @@ import (
 
 	"github.com/ONSdigital/dp-code-list-api/models"
 	dbmodels "github.com/ONSdigital/dp-graph/v2/models"
-	"github.com/ONSdigital/log.go/log"
+	"github.com/ONSdigital/log.go/v2/log"
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
 )
@@ -22,13 +22,13 @@ func (c *CodeListAPI) getCodeLists(w http.ResponseWriter, r *http.Request) {
 	limit := c.defaultLimit
 	var err error
 
-	log.Event(ctx, "attempting to get code lists", log.INFO, log.Data{"type": filterBy})
+	log.Info(ctx, "attempting to get code lists", log.Data{"type": filterBy})
 
 	if offsetParameter != "" {
 		logData["offset"] = offsetParameter
 		offset, err = ValidatePositiveInt(offsetParameter)
 		if err != nil {
-			log.Event(ctx, "invalid query parameter: offset", log.ERROR, log.Error(err), logData)
+			log.Error(ctx, "invalid query parameter: offset", err, logData)
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
@@ -38,7 +38,7 @@ func (c *CodeListAPI) getCodeLists(w http.ResponseWriter, r *http.Request) {
 		logData["limit"] = limitParameter
 		limit, err = ValidatePositiveInt(limitParameter)
 		if err != nil {
-			log.Event(ctx, "invalid query parameter: limit", log.ERROR, log.Error(err), logData)
+			log.Error(ctx, "invalid query parameter: limit", err, logData)
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
@@ -47,7 +47,7 @@ func (c *CodeListAPI) getCodeLists(w http.ResponseWriter, r *http.Request) {
 	if limit > c.maxLimit {
 		logData["max_limit"] = c.maxLimit
 		err = errors.New("limit is greater than the maximum allowed")
-		log.Event(ctx, "invalid query parameter: limit, maximum limit reached", log.ERROR, log.Error(err), logData)
+		log.Error(ctx, "invalid query parameter: limit, maximum limit reached", err, logData)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -70,7 +70,7 @@ func (c *CodeListAPI) getCodeLists(w http.ResponseWriter, r *http.Request) {
 
 	for i, item := range codeLists.Items {
 		if err := item.UpdateLinks(c.apiURL); err != nil {
-			log.Event(ctx, "error updating links", log.ERROR, log.Error(errors.WithMessage(err, "getCodeLists endpoint: links could not be created")))
+			log.Error(ctx, "error updating links", errors.WithMessage(err, "getCodeLists endpoint: links could not be created"))
 			http.Error(w, internalServerErr, http.StatusInternalServerError)
 			return
 		}
@@ -92,7 +92,7 @@ func (c *CodeListAPI) getCodeLists(w http.ResponseWriter, r *http.Request) {
 	if err := c.writeBody(w, b); err != nil {
 		return
 	}
-	log.Event(ctx, "retrieved all codelists", log.INFO)
+	log.Info(ctx, "retrieved all codelists")
 }
 
 func (c *CodeListAPI) getCodeList(w http.ResponseWriter, r *http.Request) {
@@ -110,7 +110,7 @@ func (c *CodeListAPI) getCodeList(w http.ResponseWriter, r *http.Request) {
 	codeList := models.NewCodeList(dbCodeList)
 
 	if err := codeList.UpdateLinks(c.apiURL); err != nil {
-		log.Event(ctx, "error updating links", log.ERROR, log.Error(errors.WithMessage(err, "getCodeList endpoint: links could not be created")))
+		log.Error(ctx, "error updating links", errors.WithMessage(err, "getCodeList endpoint: links could not be created"))
 		http.Error(w, internalServerErr, http.StatusInternalServerError)
 		return
 	}
@@ -122,11 +122,11 @@ func (c *CodeListAPI) getCodeList(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := c.writeBody(w, b); err != nil {
-		log.Event(ctx, "error writting body", log.ERROR, log.Error(errors.WithMessage(err, "getCodeList endpoint: failed to write bytes to response")), data)
+		log.Error(ctx, "error writting body", errors.WithMessage(err, "getCodeList endpoint: failed to write bytes to response"), data)
 		return
 	}
 
-	log.Event(ctx, "getCodeList endpoint: request successful", log.INFO, data)
+	log.Info(ctx, "getCodeList endpoint: request successful", data)
 }
 
 func codelistsSlice(full []dbmodels.CodeList, offset, limit int) (sliced []dbmodels.CodeList) {

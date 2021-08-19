@@ -7,7 +7,7 @@ import (
 
 	"github.com/ONSdigital/dp-code-list-api/models"
 	dbmodels "github.com/ONSdigital/dp-graph/v2/models"
-	"github.com/ONSdigital/log.go/log"
+	"github.com/ONSdigital/log.go/v2/log"
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
 )
@@ -23,13 +23,13 @@ func (c *CodeListAPI) getEditions(w http.ResponseWriter, r *http.Request) {
 	limit := c.defaultLimit
 	var err error
 
-	log.Event(ctx, "getEditions endpoint: attempting to find editions", log.INFO, logData)
+	log.Info(ctx, "getEditions endpoint: attempting to find editions", logData)
 
 	if offsetParameter != "" {
 		logData["offset"] = offsetParameter
 		offset, err = ValidatePositiveInt(offsetParameter)
 		if err != nil {
-			log.Event(ctx, "invalid query parameter: offset", log.ERROR, log.Error(err), logData)
+			log.Error(ctx, "invalid query parameter: offset", err, logData)
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
@@ -39,7 +39,7 @@ func (c *CodeListAPI) getEditions(w http.ResponseWriter, r *http.Request) {
 		logData["limit"] = limitParameter
 		limit, err = ValidatePositiveInt(limitParameter)
 		if err != nil {
-			log.Event(ctx, "invalid query parameter: limit", log.ERROR, log.Error(err), logData)
+			log.Error(ctx, "invalid query parameter: limit", err, logData)
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
@@ -48,7 +48,7 @@ func (c *CodeListAPI) getEditions(w http.ResponseWriter, r *http.Request) {
 	if limit > c.maxLimit {
 		logData["max_limit"] = c.maxLimit
 		err = errors.New("limit is greater than the maximum allowed")
-		log.Event(ctx, "invalid query parameter: limit, maximum limit reached", log.ERROR, log.Error(err), logData)
+		log.Error(ctx, "invalid query parameter: limit, maximum limit reached", err, logData)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -71,7 +71,7 @@ func (c *CodeListAPI) getEditions(w http.ResponseWriter, r *http.Request) {
 
 	for i, item := range editions.Items {
 		if err := item.UpdateLinks(id, c.apiURL); err != nil {
-			log.Event(ctx, "error updating links", log.ERROR, log.Error(errors.WithMessage(err, "getEditions endpoint: links could not be created")))
+			log.Error(ctx, "error updating links", errors.WithMessage(err, "getEditions endpoint: links could not be created"))
 			http.Error(w, internalServerErr, http.StatusInternalServerError)
 			return
 		}
@@ -91,10 +91,10 @@ func (c *CodeListAPI) getEditions(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := c.writeBody(w, b); err != nil {
-		log.Event(ctx, "error writting body", log.ERROR, log.Error(errors.WithMessage(err, "getEditions endpoint: failed to write bytes to response")), logData)
+		log.Error(ctx, "error writting body", errors.WithMessage(err, "getEditions endpoint: failed to write bytes to response"), logData)
 		return
 	}
-	log.Event(r.Context(), "retrieved codelist editions", log.INFO, log.Data{"code_list_id": id})
+	log.Info(r.Context(), "retrieved codelist editions", log.Data{"code_list_id": id})
 }
 
 func (c *CodeListAPI) getEdition(w http.ResponseWriter, r *http.Request) {
@@ -104,7 +104,7 @@ func (c *CodeListAPI) getEdition(w http.ResponseWriter, r *http.Request) {
 	edition := vars["edition"]
 	data := log.Data{"codelist_id": id, "edition": edition}
 
-	log.Event(ctx, "getEdition endpoint: attempting to find edition", log.INFO, data)
+	log.Info(ctx, "getEdition endpoint: attempting to find edition", data)
 
 	dbEditionModel, err := c.store.GetEdition(r.Context(), id, edition)
 	if err != nil {
@@ -114,7 +114,7 @@ func (c *CodeListAPI) getEdition(w http.ResponseWriter, r *http.Request) {
 	editionModel := models.NewEdition(dbEditionModel)
 
 	if err := editionModel.UpdateLinks(id, c.apiURL); err != nil {
-		log.Event(ctx, "error updating links", log.ERROR, log.Error(errors.WithMessage(err, "getEdition endpoint: links could not be created")))
+		log.Error(ctx, "error updating links", errors.WithMessage(err, "getEdition endpoint: links could not be created"))
 		http.Error(w, internalServerErr, http.StatusInternalServerError)
 		return
 	}
@@ -126,10 +126,10 @@ func (c *CodeListAPI) getEdition(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := c.writeBody(w, b); err != nil {
-		log.Event(ctx, "error writting body", log.ERROR, log.Error(errors.WithMessage(err, "getEdition endpoint: failed to write bytes to response")), data)
+		log.Error(ctx, "error writting body", errors.WithMessage(err, "getEdition endpoint: failed to write bytes to response"), data)
 		return
 	}
-	log.Event(r.Context(), "retrieved codelist edition", log.INFO, log.Data{"code_list_id": id, edition: edition})
+	log.Info(r.Context(), "retrieved codelist edition", log.Data{"code_list_id": id, edition: edition})
 }
 
 func editionsSlice(full []dbmodels.Edition, offset, limit int) (sliced []dbmodels.Edition) {

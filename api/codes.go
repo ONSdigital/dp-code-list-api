@@ -6,7 +6,7 @@ import (
 
 	"github.com/ONSdigital/dp-code-list-api/models"
 	dbmodels "github.com/ONSdigital/dp-graph/v2/models"
-	"github.com/ONSdigital/log.go/log"
+	"github.com/ONSdigital/log.go/v2/log"
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
 )
@@ -24,13 +24,13 @@ func (c *CodeListAPI) getCodes(w http.ResponseWriter, r *http.Request) {
 	limit := c.defaultLimit
 	var err error
 
-	log.Event(ctx, "getCodes endpoint: attempting to get edition codes", log.INFO, data)
+	log.Info(ctx, "getCodes endpoint: attempting to get edition codes", data)
 
 	if offsetParameter != "" {
 		logData["offset"] = offsetParameter
 		offset, err = ValidatePositiveInt(offsetParameter)
 		if err != nil {
-			log.Event(ctx, "invalid query parameter: offset", log.ERROR, log.Error(err), logData)
+			log.Error(ctx, "invalid query parameter: offset", err, logData)
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
@@ -40,7 +40,7 @@ func (c *CodeListAPI) getCodes(w http.ResponseWriter, r *http.Request) {
 		logData["limit"] = limitParameter
 		limit, err = ValidatePositiveInt(limitParameter)
 		if err != nil {
-			log.Event(ctx, "invalid query parameter: limit", log.ERROR, log.Error(err), logData)
+			log.Error(ctx, "invalid query parameter: limit", err, logData)
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
@@ -49,7 +49,7 @@ func (c *CodeListAPI) getCodes(w http.ResponseWriter, r *http.Request) {
 	if limit > c.maxLimit {
 		logData["max_limit"] = c.maxLimit
 		err = errors.New("limit is greater than the maximum allowed")
-		log.Event(ctx, "invalid query parameter: limit, maximum limit reached", log.ERROR, log.Error(err), logData)
+		log.Error(ctx, "invalid query parameter: limit, maximum limit reached", err, logData)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -76,7 +76,7 @@ func (c *CodeListAPI) getCodes(w http.ResponseWriter, r *http.Request) {
 
 	for i, item := range codes.Items {
 		if err := item.UpdateLinks(c.apiURL, id, edition); err != nil {
-			log.Event(ctx, "error updating links", log.ERROR, log.Error(errors.WithMessage(err, "getCodes endpoint: links could not be created")))
+			log.Error(ctx, "error updating links", errors.WithMessage(err, "getCodes endpoint: links could not be created"))
 			http.Error(w, internalServerErr, http.StatusInternalServerError)
 			return
 		}
@@ -99,7 +99,7 @@ func (c *CodeListAPI) getCodes(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Event(ctx, "getCodes endpoint: request successful", log.INFO, data)
+	log.Info(ctx, "getCodes endpoint: request successful", data)
 }
 
 func (c *CodeListAPI) getCode(w http.ResponseWriter, r *http.Request) {
@@ -110,7 +110,7 @@ func (c *CodeListAPI) getCode(w http.ResponseWriter, r *http.Request) {
 	code := vars["code"]
 	data := log.Data{"codelist_id": id, "edition": edition, "code": code}
 
-	log.Event(ctx, "getCode: attempting to get code list code", log.INFO, data)
+	log.Info(ctx, "getCode: attempting to get code list code", data)
 
 	dbCode, err := c.store.GetCode(ctx, id, edition, code)
 	if err != nil {
@@ -120,7 +120,7 @@ func (c *CodeListAPI) getCode(w http.ResponseWriter, r *http.Request) {
 	apiCode := models.NewCode(dbCode)
 
 	if err := apiCode.UpdateLinks(c.apiURL, id, edition); err != nil {
-		log.Event(ctx, "error updating links", log.ERROR, log.Error(errors.WithMessage(err, "getCode endpoint: links could not be created")))
+		log.Error(ctx, "error updating links", errors.WithMessage(err, "getCode endpoint: links could not be created"))
 		http.Error(w, internalServerErr, http.StatusInternalServerError)
 		return
 	}
@@ -132,11 +132,11 @@ func (c *CodeListAPI) getCode(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := c.writeBody(w, b); err != nil {
-		log.Event(ctx, "error writting body", log.ERROR, log.Error(errors.WithMessage(err, "getCode endpoint: failed to write bytes to response")))
+		log.Error(ctx, "error writting body", errors.WithMessage(err, "getCode endpoint: failed to write bytes to response"))
 		return
 	}
 
-	log.Event(ctx, "getCode endpoint: request successful", log.INFO, data)
+	log.Info(ctx, "getCode endpoint: request successful", data)
 }
 
 func codesSlice(full []dbmodels.Code, offset, limit int) (sliced []dbmodels.Code) {

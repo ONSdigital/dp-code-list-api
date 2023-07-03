@@ -55,14 +55,6 @@ var (
 	}
 
 	paginationTestTwo = models.CodeListResults{
-		Items:      []models.CodeList{},
-		Count:      0,
-		Offset:     1,
-		Limit:      7,
-		TotalCount: 2,
-	}
-
-	paginationTestFour = models.CodeListResults{
 		Items:      nil,
 		Count:      0,
 		Offset:     3,
@@ -122,7 +114,7 @@ func TestGetCodeLists(t *testing.T) {
 		api.router.ServeHTTP(w, r)
 		So(w.Code, ShouldEqual, http.StatusOK)
 
-		validateBody(w.Body, &models.CodeListResults{}, &paginationTestFour)
+		validateBody(w.Body, &models.CodeListResults{}, &paginationTestTwo)
 	})
 
 	Convey("When datastore GetCodeLists returns an error, then 500 status is returned", t, func() {
@@ -183,7 +175,6 @@ func TestGetCodeLists(t *testing.T) {
 		api := CreateCodeListAPI(mux.NewRouter(), &storetest.DataStoreMock{}, codeListURL, datasetURL, defaultOffset, defaultLimit, maxLimit)
 		api.router.ServeHTTP(w, r)
 		So(w.Code, ShouldEqual, http.StatusBadRequest)
-
 	})
 
 	Convey("When non-integer query parameter value provided, then 400 status returned", t, func() {
@@ -193,9 +184,7 @@ func TestGetCodeLists(t *testing.T) {
 		api := CreateCodeListAPI(mux.NewRouter(), &storetest.DataStoreMock{}, codeListURL, datasetURL, defaultOffset, defaultLimit, maxLimit)
 		api.router.ServeHTTP(w, r)
 		So(w.Code, ShouldEqual, http.StatusBadRequest)
-
 	})
-
 }
 
 func TestGetCodeList(t *testing.T) {

@@ -22,6 +22,11 @@ all: audit test build
 audit:
 	go list -m all | nancy sleuth
 
+.PHONY: lint
+lint:
+	go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.52.2
+	golangci-lint run ./...
+
 .PHONY: build
 build:
 	@mkdir -p $(BUILD_ARCH)/$(BIN_DIR)

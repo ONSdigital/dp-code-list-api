@@ -45,7 +45,6 @@ type DatasetLinks struct {
 
 // UpdateLinks updates the Dataset Links for all datasets in items.
 func (ds *Datasets) UpdateLinks(datasetAPIhost, codeListID string) error {
-
 	hasErrors := false
 	for i, dataset := range ds.Items {
 		if err := dataset.UpdateLinks(datasetAPIhost, codeListID); err != nil {
@@ -63,7 +62,6 @@ func (ds *Datasets) UpdateLinks(datasetAPIhost, codeListID string) error {
 
 // UpdateLinks updates the Dataset Self Link, and all the nested DatasetEdition links.
 func (d *Dataset) UpdateLinks(datasetAPIhost, codeListID string) error {
-
 	if d.Links == nil {
 		d.Links = &DatasetLinks{}
 	}
@@ -93,7 +91,6 @@ func (d *Dataset) UpdateLinks(datasetAPIhost, codeListID string) error {
 
 // UpdateLinks updates the links for the DatasetEdition
 func (e *DatasetEdition) UpdateLinks(datasetAPIhost, codeListID, datasetID string) error {
-
 	if e.Links == nil {
 		e.Links = &DatasetEditionLinks{}
 	}
@@ -137,7 +134,8 @@ func NewDataset(dbDataset *dbmodels.Dataset) *Dataset {
 	}
 	editions := []DatasetEdition{}
 	for _, dbEdition := range dbDataset.Editions {
-		editions = append(editions, *NewDatasetEdition(&dbEdition))
+		dbEditionCopy := dbEdition
+		editions = append(editions, *NewDatasetEdition(&dbEditionCopy))
 	}
 	return &Dataset{
 		ID:             dbDataset.ID,
@@ -164,7 +162,8 @@ func NewDatasets(dbData []dbmodels.Dataset) *Datasets {
 	}
 	items := []Dataset{}
 	for _, dbItem := range dbData {
-		items = append(items, *NewDataset(&dbItem))
+		dbItemCopy := dbItem
+		items = append(items, *NewDataset(&dbItemCopy))
 	}
 	return &Datasets{
 		Items: items,

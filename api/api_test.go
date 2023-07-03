@@ -3,7 +3,7 @@ package api
 import (
 	"bytes"
 	"encoding/json"
-	"io/ioutil"
+	"io"
 
 	"github.com/pkg/errors"
 	. "github.com/smartystreets/goconvey/convey"
@@ -33,7 +33,7 @@ var ErrInternal = errors.New("internal error")
 
 // validateBody is a generic function that un-marshals the body to a provided interface, and validates it against the expected.
 func validateBody(body *bytes.Buffer, apiStruct, expected interface{}) {
-	payload, err := ioutil.ReadAll(body)
+	payload, err := io.ReadAll(body)
 	So(err, ShouldBeNil)
 	json.Unmarshal(payload, apiStruct)
 	So(apiStruct, ShouldResemble, expected)

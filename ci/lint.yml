@@ -12,4 +12,4 @@ inputs:
   - name: dp-code-list-api
 
 run:
-  path: dp-code-list-api/ci/scripts/unit.sh
+  path: dp-code-list-api/ci/scripts/lint.sh

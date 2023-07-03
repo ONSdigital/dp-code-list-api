@@ -98,18 +98,9 @@ var (
 		Limit:      1,
 		TotalCount: 2,
 	}
-
-	datasetPaginationTestFour = models.Datasets{
-		Items:      []models.Dataset{expectedDataset1},
-		Count:      1,
-		Offset:     0,
-		Limit:      20,
-		TotalCount: 2,
-	}
 )
 
 func TestGetCodeDatasets(t *testing.T) {
-
 	Convey("GetCodeDatasets returns a status of Ok", t, func() {
 		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/%s/editions/%s/codes/%s/datasets", codeListURL, codeListID1, editionID1, codeID1), nil)
 		w := httptest.NewRecorder()

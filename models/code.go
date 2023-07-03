@@ -32,7 +32,6 @@ type CodeLinks struct {
 
 // UpdateLinks updates the links for a code list
 func (c *Code) UpdateLinks(host, codeListID, edition string) error {
-
 	if c.ID == "" {
 		return errors.New("unable to create links - code ID not provided")
 	}
@@ -62,10 +61,9 @@ func NewCode(dbCode *dbmodels.Code) *Code {
 // NewCodeResults creates a new CodeResult struct from a CodeResult DB model.
 func NewCodeResults(dbCodes []dbmodels.Code) *CodeResults {
 	results := &CodeResults{}
-	if dbCodes != nil {
-		for _, dbItem := range dbCodes {
-			results.Items = append(results.Items, *NewCode(&dbItem))
-		}
+	for _, dbItem := range dbCodes {
+		dbItemCopy := dbItem
+		results.Items = append(results.Items, *NewCode(&dbItemCopy))
 	}
 	return results
 }

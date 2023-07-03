@@ -88,14 +88,12 @@ var (
 )
 
 func TestNewDataset(t *testing.T) {
-
 	Convey("NewDataset function called with a nil argument results in an empty API Dataset model", t, func() {
 		dataset := models.NewDataset(nil)
 		So(dataset, ShouldResemble, &models.Dataset{})
 	})
 
 	Convey("Given a valid database Dataset model without editions", t, func() {
-
 		dbDataset := &dbmodels.Dataset{
 			ID:             "testID",
 			DimensionLabel: testDimensionLabel,
@@ -113,7 +111,6 @@ func TestNewDataset(t *testing.T) {
 	})
 
 	Convey("Given a valid database Dataset model", t, func() {
-
 		Convey("NewDataset function returns the corresponding API Dataset model", func() {
 			dataset := models.NewDataset(&dbDataset1)
 			So(dataset, ShouldResemble, &dataset1)
@@ -122,7 +119,6 @@ func TestNewDataset(t *testing.T) {
 }
 
 func TestNewDatasets(t *testing.T) {
-
 	Convey("NewDatasets function called with a nil argument results in an empty API Datasets model", t, func() {
 		dataset := models.NewDatasets(nil)
 		So(dataset, ShouldResemble, &models.Datasets{})
@@ -130,7 +126,7 @@ func TestNewDatasets(t *testing.T) {
 
 	Convey("Given a valid database Datasets model", t, func() {
 		dbDatasets := []dbmodels.Dataset{
-			dbmodels.Dataset{
+			{
 				ID: "id1",
 			},
 		}
@@ -139,7 +135,7 @@ func TestNewDatasets(t *testing.T) {
 			datasets := models.NewDatasets(dbDatasets)
 			So(datasets, ShouldResemble, &models.Datasets{
 				Items: []models.Dataset{
-					models.Dataset{
+					{
 						ID:       "id1",
 						Editions: []models.DatasetEdition{},
 					},
@@ -147,18 +143,15 @@ func TestNewDatasets(t *testing.T) {
 			})
 		})
 	})
-
 }
 
 func TestNewDatasetEdition(t *testing.T) {
-
 	Convey("NewDatasetEdition function called with a nil argument results in an empty API Dataset model", t, func() {
 		datasetEdition := models.NewDatasetEdition(nil)
 		So(datasetEdition, ShouldResemble, &models.DatasetEdition{})
 	})
 
 	Convey("Given a valid database DatasetEdition model", t, func() {
-
 		Convey("NewDatasetEdition function returns the corresponding API DatasetEdition model", func() {
 			datasetEdition := models.NewDatasetEdition(&dbDatasetEdition1)
 			So(datasetEdition, ShouldResemble, &datasetEdition1)
@@ -167,12 +160,10 @@ func TestNewDatasetEdition(t *testing.T) {
 }
 
 func TestDatasetsUpdateLinks(t *testing.T) {
-
 	Convey("Given a Dataset struct that contains at least a Dataset item without ID", t, func() {
-
 		datasets := models.Datasets{
 			Items: []models.Dataset{
-				models.Dataset{},
+				{},
 			},
 		}
 
@@ -183,10 +174,9 @@ func TestDatasetsUpdateLinks(t *testing.T) {
 	})
 
 	Convey("Given a valid Dataset struct with all Dataset items containing IDs, but no editions", t, func() {
-
 		datasets := models.Datasets{
 			Items: []models.Dataset{
-				models.Dataset{
+				{
 					ID: testDatasetID,
 				},
 			},
@@ -194,7 +184,7 @@ func TestDatasetsUpdateLinks(t *testing.T) {
 
 		datasetsWithLinks := models.Datasets{
 			Items: []models.Dataset{
-				models.Dataset{
+				{
 					ID: testDatasetID,
 					Links: &models.DatasetLinks{
 						Self: &models.Link{
@@ -214,7 +204,6 @@ func TestDatasetsUpdateLinks(t *testing.T) {
 	})
 
 	Convey("Given a valid Dataset struct with all Dataset items containing IDs, with nested Editions", t, func() {
-
 		datasets := models.Datasets{
 			Items: []models.Dataset{
 				dataset1,
@@ -236,9 +225,7 @@ func TestDatasetsUpdateLinks(t *testing.T) {
 }
 
 func TestDatasetUpdateLinks(t *testing.T) {
-
 	Convey("Given a Dataset struct without ID", t, func() {
-
 		dataset := models.Dataset{}
 
 		Convey("UpdateLinks fails with the expected error and dataset is not mutated", func() {
@@ -249,7 +236,6 @@ func TestDatasetUpdateLinks(t *testing.T) {
 	})
 
 	Convey("Given a valid Dataset with ID", t, func() {
-
 		dataset := models.Dataset{
 			ID: testDatasetID,
 		}
@@ -272,12 +258,11 @@ func TestDatasetUpdateLinks(t *testing.T) {
 	})
 
 	Convey("Given a valid Dataset with ID, and nested Edition with no ID", t, func() {
-
 		dataset := models.Dataset{
 			ID:             testDatasetID,
 			DimensionLabel: testDimensionLabel,
 			Editions: []models.DatasetEdition{
-				models.DatasetEdition{},
+				{},
 			},
 		}
 
@@ -285,7 +270,7 @@ func TestDatasetUpdateLinks(t *testing.T) {
 			ID:             testDatasetID,
 			DimensionLabel: testDimensionLabel,
 			Editions: []models.DatasetEdition{
-				models.DatasetEdition{},
+				{},
 			},
 			Links: &models.DatasetLinks{
 				Self: &models.Link{
@@ -303,20 +288,16 @@ func TestDatasetUpdateLinks(t *testing.T) {
 	})
 
 	Convey("Given a valid Dataset struct with all Dataset items containing IDs, with nested Editions", t, func() {
-
 		Convey("UpdateLinks generates the expected links", func() {
 			err := dataset1.UpdateLinks(testDatasetHost, testCodeListID)
 			So(err, ShouldBeNil)
 			So(dataset1, ShouldResemble, dataset1WithLinks)
 		})
 	})
-
 }
 
 func TestDatasetEditionUpdateLinks(t *testing.T) {
-
 	Convey("Given a DatasetEdition struct without ID", t, func() {
-
 		datasetEdition := models.DatasetEdition{
 			LatestVersion: 246,
 		}
@@ -333,7 +314,6 @@ func TestDatasetEditionUpdateLinks(t *testing.T) {
 	})
 
 	Convey("Given a DatasetEdition struct without a valid LatestVersion", t, func() {
-
 		datasetEdition := models.DatasetEdition{
 			ID:            testDatasetEditionID,
 			LatestVersion: -1,
@@ -351,7 +331,6 @@ func TestDatasetEditionUpdateLinks(t *testing.T) {
 	})
 
 	Convey("Given a valid DatasetEdition", t, func() {
-
 		Convey("UpdateLinks called with an empty codeListID fails with the expected error", func() {
 			err := datasetEdition1.UpdateLinks(testDatasetHost, "", testDatasetID)
 			So(err, ShouldResemble, errors.New("empty codeListID provided"))
@@ -383,5 +362,4 @@ func TestDatasetEditionUpdateLinks(t *testing.T) {
 			})
 		})
 	})
-
 }

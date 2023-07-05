@@ -99,7 +99,6 @@ var (
 )
 
 func TestGetCodes_DatastoreError(t *testing.T) {
-
 	Convey("Given datastore.CountCodes returns an error", t, func() {
 		mockDatastore := &storetest.DataStoreMock{
 			CountCodesFunc: func(ctx context.Context, codeListID string, edition string) (int64, error) {
@@ -226,7 +225,6 @@ func TestGetCodes_InvalidCode(t *testing.T) {
 }
 
 func TestGetCodes_Success(t *testing.T) {
-
 	Convey("Given a valid request", t, func() {
 		dbResult := dbmodels.CodeResults{
 			Items: []dbmodels.Code{dbCode1, dbCode2},
@@ -276,7 +274,6 @@ func TestGetCodes_Success(t *testing.T) {
 	})
 
 	Convey("Given a valid request for a codelist without codes", t, func() {
-
 		expectedResult := models.CodeResults{
 			Count:      0,
 			Limit:      20,

@@ -22,6 +22,11 @@ all: audit test build
 audit:
 	go list -m all | nancy sleuth
 
+.PHONY: lint
+lint:
+	go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.52.2
+	golangci-lint run ./...
+
 .PHONY: build
 build:
 	@mkdir -p $(BUILD_ARCH)/$(BIN_DIR)
@@ -30,6 +35,10 @@ build:
 .PHONY: test
 test:
 	go test -race -cover ./...
+
+.PHONY: test-component
+test-component: ## does not run component test. Added as part of nomad pipeline
+	exit
 
 .PHONY: debug
 debug:

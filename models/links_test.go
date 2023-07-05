@@ -10,6 +10,8 @@ import (
 var id = "id"
 
 func TestCreateLink(t *testing.T) {
+	var localhostURL = "http://localhost:22400"
+	var urlString = "/code-list/local-authority/codes/E01000064"
 	Convey("Given a valid domain config and fully qualified url", t, func() {
 		domain := "http://api.example.com/v1"
 		url := "http://localhost:22400/code-list/local-authority/codes/E01000064"
@@ -25,11 +27,10 @@ func TestCreateLink(t *testing.T) {
 	})
 
 	Convey("Given default config and fully qualified url", t, func() {
-		domain := "http://localhost:22400"
 		url := "http://somedomain/code-list/local-authority/codes/E01000064"
 
 		Convey("When the CreateLink function is called", func() {
-			link := models.CreateLink(id, url, domain)
+			link := models.CreateLink(id, url, localhostURL)
 
 			Convey("Then the returned values should be as expected", func() {
 				So(link.Href, ShouldEqual, "http://localhost:22400/code-list/local-authority/codes/E01000064")
@@ -39,11 +40,8 @@ func TestCreateLink(t *testing.T) {
 	})
 
 	Convey("Given default config and a path", t, func() {
-		domain := "http://localhost:22400"
-		url := "/code-list/local-authority/codes/E01000064"
-
 		Convey("When the CreateLink function is called", func() {
-			link := models.CreateLink(id, url, domain)
+			link := models.CreateLink(id, urlString, localhostURL)
 
 			Convey("Then the returned values should be as expected", func() {
 				So(link.Href, ShouldEqual, "http://localhost:22400/code-list/local-authority/codes/E01000064")
@@ -54,10 +52,9 @@ func TestCreateLink(t *testing.T) {
 
 	Convey("Given a malformed url", t, func() {
 		domain := "http://localhost:22400<<"
-		url := "/code-list/local-authority/codes/E01000064"
 
 		Convey("When the CreateLink function is called", func() {
-			link := models.CreateLink(id, url, domain)
+			link := models.CreateLink(id, urlString, domain)
 
 			Convey("Then the link is not created, and a nil value is returned", func() {
 				So(link, ShouldBeNil)

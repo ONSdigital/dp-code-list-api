@@ -11,7 +11,6 @@ import (
 )
 
 func TestNewCode(t *testing.T) {
-
 	Convey("NewCode function called with a nil argument results in an empty API Code model", t, func() {
 		code := models.NewCode(nil)
 		So(code, ShouldResemble, &models.Code{})
@@ -35,7 +34,6 @@ func TestNewCode(t *testing.T) {
 }
 
 func TestNewCodeResults(t *testing.T) {
-
 	Convey("NewCodeResults function called with a nil argument results in an empty API CodeResults model", t, func() {
 		codeResults := models.NewCodeResults(nil)
 		So(codeResults, ShouldResemble, &models.CodeResults{})
@@ -43,7 +41,7 @@ func TestNewCodeResults(t *testing.T) {
 
 	Convey("Given a valid database CodeResults model with items", t, func() {
 		dbCodeResults := []dbmodels.Code{
-			dbmodels.Code{
+			{
 				ID:    "testID",
 				Label: "testLabel",
 				Code:  "testCode",
@@ -54,7 +52,7 @@ func TestNewCodeResults(t *testing.T) {
 			codeResults := models.NewCodeResults(dbCodeResults)
 			So(codeResults, ShouldResemble, &models.CodeResults{
 				Items: []models.Code{
-					models.Code{
+					{
 						ID:    "testCode",
 						Label: "testLabel",
 					},
@@ -65,7 +63,6 @@ func TestNewCodeResults(t *testing.T) {
 }
 
 func TestCodeUpdateLinks(t *testing.T) {
-
 	Convey("Given a Code struct without ID", t, func() {
 		code := models.Code{}
 
@@ -76,7 +73,6 @@ func TestCodeUpdateLinks(t *testing.T) {
 	})
 
 	Convey("Given a valid Code struct", t, func() {
-
 		code := models.Code{
 			ID:    "testCode",
 			Label: "testLabel",

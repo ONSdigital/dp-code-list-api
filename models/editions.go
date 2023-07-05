@@ -32,7 +32,6 @@ type EditionLinks struct {
 
 // UpdateLinks updates the EditionLinks in the Edition struct with the provided codeListID
 func (e *Edition) UpdateLinks(codeListID, url string) error {
-
 	if e.ID == "" {
 		return errors.New("unable to create links - edition id not provided")
 	}
@@ -66,7 +65,8 @@ func NewEditions(dbEdition []dbmodels.Edition) *Editions {
 	}
 	items := []Edition{}
 	for _, dbItem := range dbEdition {
-		items = append(items, *NewEdition(&dbItem))
+		dbItemCopy := dbItem
+		items = append(items, *NewEdition(&dbItemCopy))
 	}
 	return &Editions{
 		Items: items,

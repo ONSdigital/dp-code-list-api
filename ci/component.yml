@@ -11,8 +11,5 @@ image_resource:
 inputs:
   - name: dp-code-list-api
 
-outputs:
-  - name: build
-
 run:
-  path: dp-code-list-api/ci/scripts/build.sh
+  path: dp-code-list-api/ci/scripts/component.sh

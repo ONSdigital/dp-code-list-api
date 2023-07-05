@@ -36,6 +36,10 @@ build:
 test:
 	go test -race -cover ./...
 
+.PHONY: test-component
+test-component: ## does not run component test. Added as part of nomad pipeline
+	exit
+
 .PHONY: debug
 debug:
 	HUMAN_LOG=1 go run $(LDFLAGS) -race cmd/dp-code-list-api/main.go

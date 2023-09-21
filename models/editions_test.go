@@ -11,14 +11,12 @@ import (
 )
 
 func TestNewEdition(t *testing.T) {
-
 	Convey("NewEdition function called with a nil argument results in an empty Edition model", t, func() {
 		edition := models.NewEdition(nil)
 		So(edition, ShouldResemble, &models.Edition{})
 	})
 
 	Convey("Given a valid a valid edition database model", t, func() {
-
 		dbEdition := &dbmodels.Edition{
 			ID:    "testEdition",
 			Label: "testLabel",
@@ -35,7 +33,6 @@ func TestNewEdition(t *testing.T) {
 }
 
 func TestNewEditions(t *testing.T) {
-
 	Convey("NewEditions function called with a nil argument results in an empty API Editions model", t, func() {
 		editions := models.NewEditions(nil)
 		So(editions, ShouldResemble, &models.Editions{})
@@ -43,7 +40,7 @@ func TestNewEditions(t *testing.T) {
 
 	Convey("Given a valid editions Datasets model", t, func() {
 		dbEditions := []dbmodels.Edition{
-			dbmodels.Edition{
+			{
 				ID:    "testEdition",
 				Label: "testLabel",
 			},
@@ -53,7 +50,7 @@ func TestNewEditions(t *testing.T) {
 			editions := models.NewEditions(dbEditions)
 			So(editions, ShouldResemble, &models.Editions{
 				Items: []models.Edition{
-					models.Edition{
+					{
 						ID:    "testEdition",
 						Label: "testLabel",
 					},
@@ -64,9 +61,7 @@ func TestNewEditions(t *testing.T) {
 }
 
 func TestEditionUpdateLinks(t *testing.T) {
-
 	Convey("Given an Edition struct without ID", t, func() {
-
 		edition := models.Edition{}
 
 		Convey("UpdateLinks fails with the expected error", func() {
@@ -76,7 +71,6 @@ func TestEditionUpdateLinks(t *testing.T) {
 	})
 
 	Convey("Given a valid Dataset struct with all Dataset items containing IDs", t, func() {
-
 		edition := models.Edition{
 			ID:    "testEdition",
 			Label: "testLabel",
@@ -105,5 +99,4 @@ func TestEditionUpdateLinks(t *testing.T) {
 			So(edition, ShouldResemble, editionWithLinks)
 		})
 	})
-
 }

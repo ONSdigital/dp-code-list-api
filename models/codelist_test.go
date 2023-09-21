@@ -11,7 +11,6 @@ import (
 )
 
 func TestNewCodeList(t *testing.T) {
-
 	Convey("NewCodeList function called with a nil argument results in an empty API CodeList model", t, func() {
 		codeList := models.NewCodeList(nil)
 		So(codeList, ShouldResemble, &models.CodeList{})
@@ -32,7 +31,6 @@ func TestNewCodeList(t *testing.T) {
 }
 
 func TestNewCodeListResults(t *testing.T) {
-
 	Convey("NewCodeListResults function called with a nil argument results in an empty API CodeListResults model", t, func() {
 		codeListResults := models.NewCodeListResults(nil)
 		So(codeListResults, ShouldResemble, &models.CodeListResults{})
@@ -40,7 +38,7 @@ func TestNewCodeListResults(t *testing.T) {
 
 	Convey("Given a valid database CodeListResults model with items", t, func() {
 		dbCodeListResults := []dbmodels.CodeList{
-			dbmodels.CodeList{
+			{
 				ID: "testID",
 			},
 		}
@@ -49,18 +47,16 @@ func TestNewCodeListResults(t *testing.T) {
 			codeListResults := models.NewCodeListResults(dbCodeListResults)
 			So(codeListResults, ShouldResemble, &models.CodeListResults{
 				Items: []models.CodeList{
-					models.CodeList{
+					{
 						ID: "testID",
 					},
 				},
 			})
 		})
 	})
-
 }
 
 func TestCodeListUpdateLinks(t *testing.T) {
-
 	Convey("Given a CodeList struct without ID", t, func() {
 		codeList := models.CodeList{}
 
@@ -71,7 +67,6 @@ func TestCodeListUpdateLinks(t *testing.T) {
 	})
 
 	Convey("Given a valid CodeList struct", t, func() {
-
 		codeList := models.CodeList{
 			ID: "codelistID",
 		}

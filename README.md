@@ -53,4 +53,4 @@ The endpoint `/health` checks the connection to the database and returns one of:
 
 Copyright © 2016-2021, Office for National Statistics (https://www.ons.gov.uk)
 
-Released under MIT license, see [LICENSE](LICENSE.md) for details
+Released under MIT license, see [LICENSE](LICENSE.md) for details.

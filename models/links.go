@@ -21,7 +21,6 @@ type Link struct {
 }
 
 func CreateLink(id, href, host string) *Link {
-
 	rel, err := url.Parse(href)
 	if err != nil {
 		return nil
@@ -32,8 +31,8 @@ func CreateLink(id, href, host string) *Link {
 		return nil
 	}
 
-	//if the configured host contains a path persist it
-	d.Path = d.Path + rel.Path
+	// if the configured host contains a path persist it
+	d.Path += rel.Path
 
 	return &Link{
 		ID:   id,

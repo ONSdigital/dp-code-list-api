@@ -86,18 +86,9 @@ var (
 		Limit:      1,
 		TotalCount: 2,
 	}
-
-	editionsPaginationTestFour = models.Editions{
-		Items:      []models.Edition{expectedEdition1},
-		Count:      1,
-		Offset:     0,
-		Limit:      20,
-		TotalCount: 1,
-	}
 )
 
 func TestGetEditions(t *testing.T) {
-
 	Convey("Get code list editions returns a status of http ok", t, func() {
 		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/%s/editions", codeListURL, codeListID1), nil)
 		w := httptest.NewRecorder()

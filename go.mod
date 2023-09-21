@@ -1,6 +1,6 @@
 module github.com/ONSdigital/dp-code-list-api
 
-go 1.19
+go 1.20
 
 require (
 	github.com/ONSdigital/dp-graph/v2 v2.17.0
@@ -10,7 +10,7 @@ require (
 	github.com/gorilla/mux v1.8.0
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/pkg/errors v0.9.1
-	github.com/smartystreets/goconvey v1.8.0
+	github.com/smartystreets/goconvey v1.8.1
 )
 
 require (

@@ -37,14 +37,14 @@ func main() {
 	// Get Config
 	cfg, err := config.Get()
 	if err != nil {
-		log.Fatal(ctx, "error getting config", err)
+		log.Error(ctx, "error getting config", err)
 		os.Exit(1)
 	}
 
 	// Create CodeList Store
 	datastore, err := graph.NewCodeListStore(ctx)
 	if err != nil {
-		log.Fatal(ctx, "error creating codelist store", err)
+		log.Error(ctx, "error creating codelist store", err)
 		os.Exit(1)
 	}
 
@@ -53,7 +53,7 @@ func main() {
 	// Create healthcheck object with versionInfo
 	versionInfo, err := healthcheck.NewVersionInfo(BuildTime, GitCommit, Version)
 	if err != nil {
-		log.Fatal(ctx, "failed to create versionInfo for healthcheck", err)
+		log.Error(ctx, "failed to create versionInfo for healthcheck", err)
 		os.Exit(1)
 	}
 	hc := healthcheck.New(versionInfo, cfg.HealthCheckCriticalTimeout, cfg.HealthCheckInterval)
@@ -92,7 +92,6 @@ func main() {
 
 	// Graceful shutdown function
 	shutdown := func() {
-
 		anyError := false
 		log.Info(shutdownCtx, "shutdown with timeout", log.Data{"timeout": cfg.GracefulShutdownTimeout})
 
@@ -149,7 +148,6 @@ func main() {
 
 // RegisterCheckers adds the checkers for the provided clients to the healthcheck object.
 func registerCheckers(ctx context.Context, hc *healthcheck.HealthCheck, db *graph.DB) (err error) {
-
 	hasErrors := false
 
 	if err = hc.AddCheck("Graph DB", db.Checker); err != nil {

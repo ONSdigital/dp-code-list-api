@@ -40,6 +40,15 @@ The endpoint `/health` checks the connection to the database and returns one of:
 | DEFAULT_LIMIT                | 20                                     | Default limit for pagination
 | DEFAULT_OFFSET               | 0                                      | Default offset for pagination
 
+#### Graph / Neptune Configuration
+
+| Environment variable    | Default | Description
+| ------------------------| ------- | -----------
+| GRAPH_DRIVER_TYPE       | ""      | string identifier for the implementation to be used (e.g. 'neptune' or 'mock')
+| GRAPH_ADDR              | ""      | address of the database matching the chosen driver type (web socket)
+| NEPTUNE_TLS_SKIP_VERIFY | false   | flag to skip TLS certificate verification, should only be true when run locally
+
+:warning: to connect to a remote Neptune environment on MacOSX using Go 1.18 or higher you must set `NEPTUNE_TLS_SKIP_VERIFY` to true. See our [Neptune guide](https://github.com/ONSdigital/dp/blob/main/guides/NEPTUNE.md) for more details.
 ### License
 
 Copyright © 2016-2021, Office for National Statistics (https://www.ons.gov.uk)

@@ -22,6 +22,9 @@ func TestGetReturnsDefaultValues(t *testing.T) {
 			DefaultOffset:              0,
 			DefaultLimit:               20,
 			DefaultMaxLimit:            1000,
+			OTExporterOTLPEndpoint:     "localhost:4317",
+			OTServiceName:              "dp-code-list-api",
+			OTBatchTimeout:             5 * time.Second,
 		})
 	})
 }

@@ -14,8 +14,11 @@ import (
 	"github.com/ONSdigital/dp-graph/v2/graph"
 	"github.com/ONSdigital/dp-healthcheck/healthcheck"
 	dphttp "github.com/ONSdigital/dp-net/v2/http"
+	dpotelgo "github.com/ONSdigital/dp-otel-go"
 	"github.com/ONSdigital/log.go/v2/log"
 	"github.com/gorilla/mux"
+	"go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
 
 var (
@@ -41,6 +44,23 @@ func main() {
 		os.Exit(1)
 	}
 
+	// Set up OpenTelemetry
+	otelConfig := dpotelgo.Config{
+		OtelServiceName:          cfg.OTServiceName,
+		OtelExporterOtlpEndpoint: cfg.OTExporterOTLPEndpoint,
+		OtelBatchTimeout:         cfg.OTBatchTimeout,
+	}
+
+	otelShutdown, err := dpotelgo.SetupOTelSDK(ctx, otelConfig)
+
+	if err != nil {
+		log.Error(ctx, "error setting up OpenTelemetry - hint: ensure OTEL_EXPORTER_OTLP_ENDPOINT is set", err)
+	}
+	// Handle shutdown properly so nothing leaks.
+	defer func() {
+		err = errors.Join(err, otelShutdown(context.Background()))
+	}()
+
 	// Create CodeList Store
 	datastore, err := graph.NewCodeListStore(ctx)
 	if err != nil {
@@ -65,10 +85,12 @@ func main() {
 
 	// Create HTTP Server with health endpoint and CodeList API
 	router := mux.NewRouter()
+	router.Use(otelmux.Middleware(cfg.OTServiceName))
 	router.Path("/health").HandlerFunc(hc.Handler)
 
 	api.CreateCodeListAPI(router, datastore, cfg.CodeListAPIURL, cfg.DatasetAPIURL, cfg.DefaultOffset, cfg.DefaultLimit, cfg.DefaultMaxLimit)
-	httpServer := dphttp.NewServer(cfg.BindAddr, router)
+	otelHandler := otelhttp.NewHandler(router, "/")
+	httpServer := dphttp.NewServer(cfg.BindAddr, otelHandler)
 	httpServer.HandleOSSignals = false
 
 	// Start healthcheck ticker

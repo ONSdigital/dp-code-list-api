@@ -39,6 +39,9 @@ The endpoint `/health` checks the connection to the database and returns one of:
 | DEFAULT_MAXIMUM_LIMIT        | 1000                                   | Default maximum limit for pagination
 | DEFAULT_LIMIT                | 20                                     | Default limit for pagination
 | DEFAULT_OFFSET               | 0                                      | Default offset for pagination
+| OTEL_EXPORTER_OTLP_ENDPOINT  | localhost:4317                         | Endpoint for OpenTelemetry service
+| OTEL_SERVICE_NAME            | dp-code-list-api                       | Label of service for OpenTelemetry service
+| OTEL_BATCH_TIMEOUT           | 5s                                     | Timeout for OpenTelemetry
 
 #### Graph / Neptune Configuration
 

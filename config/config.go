@@ -16,6 +16,9 @@ type Configuration struct {
 	DefaultLimit               int           `envconfig:"DEFAULT_LIMIT"`
 	DefaultOffset              int           `envconfig:"DEFAULT_OFFSET"`
 	DefaultMaxLimit            int           `envconfig:"DEFAULT_MAXIMUM_LIMIT"`
+	OTExporterOTLPEndpoint     string        `envconfig:"OTEL_EXPORTER_OTLP_ENDPOINT"`
+	OTServiceName              string        `envconfig:"OTEL_SERVICE_NAME"`
+	OTBatchTimeout             time.Duration `envconfig:"OTEL_BATCH_TIMEOUT"`
 }
 
 var cfg *Configuration
@@ -35,7 +38,10 @@ func Get() (*Configuration, error) {
 		HealthCheckCriticalTimeout: 90 * time.Second,
 		DefaultLimit:               20,
 		DefaultOffset:              0,
-		DefaultMaxLimit:            1000,
+		DefaultMaxLimit:            1000,		
+		OTExporterOTLPEndpoint:     "localhost:4317",
+		OTServiceName:              "dp-code-list-api",
+		OTBatchTimeout:             5 * time.Second,
 	}
 
 	return cfg, envconfig.Process("", cfg)

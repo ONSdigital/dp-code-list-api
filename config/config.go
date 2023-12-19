@@ -38,7 +38,7 @@ func Get() (*Configuration, error) {
 		HealthCheckCriticalTimeout: 90 * time.Second,
 		DefaultLimit:               20,
 		DefaultOffset:              0,
-		DefaultMaxLimit:            1000,		
+		DefaultMaxLimit:            1000,
 		OTExporterOTLPEndpoint:     "localhost:4317",
 		OTServiceName:              "dp-code-list-api",
 		OTBatchTimeout:             5 * time.Second,

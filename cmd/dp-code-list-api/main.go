@@ -30,6 +30,10 @@ var (
 	Version string
 )
 
+func run() {
+
+}
+
 func main() {
 	log.Namespace = "dp-code-list-api"
 	ctx := context.Background()
@@ -78,10 +82,6 @@ func main() {
 	if err != nil {
 		log.Error(ctx, "error setting up OpenTelemetry - hint: ensure OTEL_EXPORTER_OTLP_ENDPOINT is set", err)
 	}
-	// Handle shutdown properly so nothing leaks.
-	defer func() {
-		err = errors.Join(err, otelShutdown(context.Background()))
-	}()
 
 	// Create HTTP Server with health endpoint and CodeList API
 	router := mux.NewRouter()
@@ -125,6 +125,9 @@ func main() {
 		} else {
 			log.Info(shutdownCtx, "http server successful shutdown")
 		}
+
+		// Stop OpenTelemetry
+		err = errors.Join(err, otelShutdown(context.Background()))
 
 		// Stop healthcheck
 		hc.Stop()

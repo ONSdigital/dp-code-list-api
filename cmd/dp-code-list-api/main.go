@@ -44,23 +44,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	// Set up OpenTelemetry
-	otelConfig := dpotelgo.Config{
-		OtelServiceName:          cfg.OTServiceName,
-		OtelExporterOtlpEndpoint: cfg.OTExporterOTLPEndpoint,
-		OtelBatchTimeout:         cfg.OTBatchTimeout,
-	}
-
-	otelShutdown, err := dpotelgo.SetupOTelSDK(ctx, otelConfig)
-
-	if err != nil {
-		log.Error(ctx, "error setting up OpenTelemetry - hint: ensure OTEL_EXPORTER_OTLP_ENDPOINT is set", err)
-	}
-	// Handle shutdown properly so nothing leaks.
-	defer func() {
-		err = errors.Join(err, otelShutdown(context.Background()))
-	}()
-
 	// Create CodeList Store
 	datastore, err := graph.NewCodeListStore(ctx)
 	if err != nil {
@@ -82,6 +65,23 @@ func main() {
 	if err := registerCheckers(ctx, &hc, datastore); err != nil {
 		os.Exit(1)
 	}
+
+	// Set up OpenTelemetry
+	otelConfig := dpotelgo.Config{
+		OtelServiceName:          cfg.OTServiceName,
+		OtelExporterOtlpEndpoint: cfg.OTExporterOTLPEndpoint,
+		OtelBatchTimeout:         cfg.OTBatchTimeout,
+	}
+
+	otelShutdown, err := dpotelgo.SetupOTelSDK(ctx, otelConfig)
+
+	if err != nil {
+		log.Error(ctx, "error setting up OpenTelemetry - hint: ensure OTEL_EXPORTER_OTLP_ENDPOINT is set", err)
+	}
+	// Handle shutdown properly so nothing leaks.
+	defer func() {
+		err = errors.Join(err, otelShutdown(context.Background()))
+	}()
 
 	// Create HTTP Server with health endpoint and CodeList API
 	router := mux.NewRouter()

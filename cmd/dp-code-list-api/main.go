@@ -30,10 +30,6 @@ var (
 	Version string
 )
 
-func run() {
-
-}
-
 func main() {
 	log.Namespace = "dp-code-list-api"
 	ctx := context.Background()

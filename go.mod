@@ -2,6 +2,9 @@ module github.com/ONSdigital/dp-code-list-api
 
 go 1.20
 
+// to fix: [CVE-2023-48795] CWE-354: Improper Validation of Integrity Check Value
+replace google.golang.org/x/crypto => google.golang.org/x/crypto v0.18.0
+
 require (
 	github.com/ONSdigital/dp-graph/v2 v2.17.0
 	github.com/ONSdigital/dp-healthcheck v1.6.1

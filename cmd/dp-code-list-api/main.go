@@ -66,6 +66,7 @@ func main() {
 		os.Exit(1)
 	}
 
+	var otelShutdown func(context.Context) error
 	if cfg.OtelEnabled {
 		// Set up OpenTelemetry
 		otelConfig := dpotelgo.Config{
@@ -74,16 +75,11 @@ func main() {
 			OtelBatchTimeout:         cfg.OTBatchTimeout,
 		}
 
-		otelShutdown, err := dpotelgo.SetupOTelSDK(ctx, otelConfig)
+		otelShutdown, err = dpotelgo.SetupOTelSDK(ctx, otelConfig)
 
 		if err != nil {
 			log.Error(ctx, "error setting up OpenTelemetry - hint: ensure OTEL_EXPORTER_OTLP_ENDPOINT is set", err)
 		}
-
-		// Handle shutdown properly so nothing leaks.
-		defer func() {
-			err = errors.Join(err, otelShutdown(context.Background()))
-		}()
 	}
 
 	// Create HTTP Server with health endpoint and CodeList API
@@ -136,6 +132,11 @@ func main() {
 			log.Error(shutdownCtx, "http server shutdown error", err)
 		} else {
 			log.Info(shutdownCtx, "http server successful shutdown")
+		}
+
+		if cfg.OtelEnabled {
+			// Stop OpenTelemetry
+			err = errors.Join(err, otelShutdown(context.Background()))
 		}
 
 		// Stop healthcheck

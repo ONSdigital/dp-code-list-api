@@ -66,27 +66,43 @@ func main() {
 		os.Exit(1)
 	}
 
-	// Set up OpenTelemetry
-	otelConfig := dpotelgo.Config{
-		OtelServiceName:          cfg.OTServiceName,
-		OtelExporterOtlpEndpoint: cfg.OTExporterOTLPEndpoint,
-		OtelBatchTimeout:         cfg.OTBatchTimeout,
-	}
+	if cfg.OtelEnabled {
+		// Set up OpenTelemetry
+		otelConfig := dpotelgo.Config{
+			OtelServiceName:          cfg.OTServiceName,
+			OtelExporterOtlpEndpoint: cfg.OTExporterOTLPEndpoint,
+			OtelBatchTimeout:         cfg.OTBatchTimeout,
+		}
 
-	otelShutdown, err := dpotelgo.SetupOTelSDK(ctx, otelConfig)
+		otelShutdown, err := dpotelgo.SetupOTelSDK(ctx, otelConfig)
 
-	if err != nil {
-		log.Error(ctx, "error setting up OpenTelemetry - hint: ensure OTEL_EXPORTER_OTLP_ENDPOINT is set", err)
+		if err != nil {
+			log.Error(ctx, "error setting up OpenTelemetry - hint: ensure OTEL_EXPORTER_OTLP_ENDPOINT is set", err)
+		}
+
+		// Handle shutdown properly so nothing leaks.
+		defer func() {
+			err = errors.Join(err, otelShutdown(context.Background()))
+		}()
 	}
 
 	// Create HTTP Server with health endpoint and CodeList API
 	router := mux.NewRouter()
-	router.Use(otelmux.Middleware(cfg.OTServiceName))
+	if cfg.OtelEnabled {
+		router.Use(otelmux.Middleware(cfg.OTServiceName))
+	}
 	router.Path("/health").HandlerFunc(hc.Handler)
 
 	api.CreateCodeListAPI(router, datastore, cfg.CodeListAPIURL, cfg.DatasetAPIURL, cfg.DefaultOffset, cfg.DefaultLimit, cfg.DefaultMaxLimit)
-	otelHandler := otelhttp.NewHandler(router, "/")
-	httpServer := dphttp.NewServer(cfg.BindAddr, otelHandler)
+
+	var httpServer *dphttp.Server
+
+	if cfg.OtelEnabled {
+		otelHandler := otelhttp.NewHandler(router, "/")
+		httpServer = dphttp.NewServer(cfg.BindAddr, otelHandler)
+	} else {
+		httpServer = dphttp.NewServer(cfg.BindAddr, router)
+	}
 	httpServer.HandleOSSignals = false
 
 	// Start healthcheck ticker
@@ -121,9 +137,6 @@ func main() {
 		} else {
 			log.Info(shutdownCtx, "http server successful shutdown")
 		}
-
-		// Stop OpenTelemetry
-		err = errors.Join(err, otelShutdown(context.Background()))
 
 		// Stop healthcheck
 		hc.Stop()

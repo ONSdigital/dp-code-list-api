@@ -42,6 +42,7 @@ The endpoint `/health` checks the connection to the database and returns one of:
 | OTEL_EXPORTER_OTLP_ENDPOINT  | localhost:4317                         | Endpoint for OpenTelemetry service
 | OTEL_SERVICE_NAME            | dp-code-list-api                       | Label of service for OpenTelemetry service
 | OTEL_BATCH_TIMEOUT           | 5s                                     | Timeout for OpenTelemetry
+| OTEL_ENABLED                 | false                                  | Feature flag to enable OpenTelemetry
 
 #### Graph / Neptune Configuration
 

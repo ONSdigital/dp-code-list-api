@@ -90,7 +90,7 @@ var (
 
 func TestGetEditions(t *testing.T) {
 	Convey("Get code list editions returns a status of http ok", t, func() {
-		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/%s/editions", codeListURL, codeListID1), nil)
+		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/%s/editions", codeListURL, codeListID1), http.NoBody)
 		w := httptest.NewRecorder()
 
 		mockDatastore := &storetest.DataStoreMock{
@@ -107,7 +107,7 @@ func TestGetEditions(t *testing.T) {
 	})
 
 	Convey("Get code list editions returns a status of http not found if code list doesn't exist", t, func() {
-		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/12345/editions", codeListURL), nil)
+		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/12345/editions", codeListURL), http.NoBody)
 		w := httptest.NewRecorder()
 
 		mockDatastore := &storetest.DataStoreMock{
@@ -122,7 +122,7 @@ func TestGetEditions(t *testing.T) {
 	})
 
 	Convey("Get code list editions returns a status internal server error if store returns any other error", t, func() {
-		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/12345/editions", codeListURL), nil)
+		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/12345/editions", codeListURL), http.NoBody)
 		w := httptest.NewRecorder()
 
 		mockDatastore := &storetest.DataStoreMock{
@@ -137,7 +137,7 @@ func TestGetEditions(t *testing.T) {
 	})
 
 	Convey("Get code list editions returns a status internal server error if store returns an invalid edition (empty ID)", t, func() {
-		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/12345/editions", codeListURL), nil)
+		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/12345/editions", codeListURL), http.NoBody)
 		w := httptest.NewRecorder()
 
 		mockDatastore := &storetest.DataStoreMock{
@@ -158,7 +158,7 @@ func TestGetEditions_Pagination(t *testing.T) {
 	t.Parallel()
 
 	Convey("When valid limit and offset query parameters are provided, then return editions information according to the offset and limit", t, func() {
-		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/%s/editions?offset=0&limit=1", codeListURL, codeListID1), nil)
+		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/%s/editions?offset=0&limit=1", codeListURL, codeListID1), http.NoBody)
 		w := httptest.NewRecorder()
 
 		mockDatastore := &storetest.DataStoreMock{
@@ -175,7 +175,7 @@ func TestGetEditions_Pagination(t *testing.T) {
 	})
 
 	Convey("When valid limit above maximum and offset query parameters are provided, then return editions information according to the offset and limit", t, func() {
-		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/%s/editions?offset=1&limit=7", codeListURL, codeListID1), nil)
+		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/%s/editions?offset=1&limit=7", codeListURL, codeListID1), http.NoBody)
 		w := httptest.NewRecorder()
 
 		mockDatastore := &storetest.DataStoreMock{
@@ -192,7 +192,7 @@ func TestGetEditions_Pagination(t *testing.T) {
 	})
 
 	Convey("When offset value greater than count provided, then return zero items", t, func() {
-		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/%s/editions?offset=3&limit=1", codeListURL, codeListID1), nil)
+		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/%s/editions?offset=3&limit=1", codeListURL, codeListID1), http.NoBody)
 		w := httptest.NewRecorder()
 
 		mockDatastore := &storetest.DataStoreMock{
@@ -209,7 +209,7 @@ func TestGetEditions_Pagination(t *testing.T) {
 	})
 
 	Convey("When negative offset query parameters is provided, then 400 status returned", t, func() {
-		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/%s/editions?offset=-1", codeListURL, codeListID1), nil)
+		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/%s/editions?offset=-1", codeListURL, codeListID1), http.NoBody)
 		w := httptest.NewRecorder()
 
 		api := CreateCodeListAPI(mux.NewRouter(), &storetest.DataStoreMock{}, codeListURL, datasetURL, defaultOffset, defaultLimit, maxLimit)
@@ -218,7 +218,7 @@ func TestGetEditions_Pagination(t *testing.T) {
 	})
 
 	Convey("When negative limit query parameters is provided, then 400 status returned", t, func() {
-		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/%s/editions?limit=-1", codeListURL, codeListID1), nil)
+		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/%s/editions?limit=-1", codeListURL, codeListID1), http.NoBody)
 		w := httptest.NewRecorder()
 
 		api := CreateCodeListAPI(mux.NewRouter(), &storetest.DataStoreMock{}, codeListURL, datasetURL, defaultOffset, defaultLimit, maxLimit)
@@ -227,7 +227,7 @@ func TestGetEditions_Pagination(t *testing.T) {
 	})
 
 	Convey("When limit above default maximum is provided, then 400 status returned", t, func() {
-		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/%s/editions?limit=1001", codeListURL, codeListID1), nil)
+		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/%s/editions?limit=1001", codeListURL, codeListID1), http.NoBody)
 		w := httptest.NewRecorder()
 
 		api := CreateCodeListAPI(mux.NewRouter(), &storetest.DataStoreMock{}, codeListURL, datasetURL, defaultOffset, defaultLimit, maxLimit)
@@ -236,7 +236,7 @@ func TestGetEditions_Pagination(t *testing.T) {
 	})
 
 	Convey("When non-integer query parameter value provided, then 400 status returned", t, func() {
-		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/%s/editions?offset=x&limit=y", codeListURL, codeListID1), nil)
+		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/%s/editions?offset=x&limit=y", codeListURL, codeListID1), http.NoBody)
 		w := httptest.NewRecorder()
 
 		api := CreateCodeListAPI(mux.NewRouter(), &storetest.DataStoreMock{}, codeListURL, datasetURL, defaultOffset, defaultLimit, maxLimit)
@@ -247,7 +247,7 @@ func TestGetEditions_Pagination(t *testing.T) {
 
 func TestGetEdition(t *testing.T) {
 	Convey("Get code list edition returns a status of http ok", t, func() {
-		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/%s/editions/%s", codeListURL, codeListID1, editionID1), nil)
+		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/%s/editions/%s", codeListURL, codeListID1, editionID1), http.NoBody)
 		w := httptest.NewRecorder()
 
 		mockDatastore := &storetest.DataStoreMock{
@@ -264,7 +264,7 @@ func TestGetEdition(t *testing.T) {
 	})
 
 	Convey("Get code list edition returns a status of http not found if code list doesn't exist", t, func() {
-		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/12345/editions/2016", codeListURL), nil)
+		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/12345/editions/2016", codeListURL), http.NoBody)
 		w := httptest.NewRecorder()
 
 		mockDatastore := &storetest.DataStoreMock{
@@ -279,7 +279,7 @@ func TestGetEdition(t *testing.T) {
 	})
 
 	Convey("Get code list edition returns a status internal server error if store returns any other error", t, func() {
-		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/12345/editions/2016", codeListURL), nil)
+		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/12345/editions/2016", codeListURL), http.NoBody)
 		w := httptest.NewRecorder()
 
 		mockDatastore := &storetest.DataStoreMock{
@@ -294,7 +294,7 @@ func TestGetEdition(t *testing.T) {
 	})
 
 	Convey("Get code list edition returns a status internal server error if store returns any other error", t, func() {
-		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/12345/editions/2016", codeListURL), nil)
+		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/12345/editions/2016", codeListURL), http.NoBody)
 		w := httptest.NewRecorder()
 
 		mockDatastore := &storetest.DataStoreMock{

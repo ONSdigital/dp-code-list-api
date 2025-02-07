@@ -26,6 +26,7 @@ const (
 	defaultOffset               = 0
 	defaultLimit                = 20
 	maxLimit                    = 1000
+	enableURLRewriting          = false
 )
 
 // ErrInternal is the error returned by mocks to emulate an internal service error

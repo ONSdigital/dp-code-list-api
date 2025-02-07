@@ -25,6 +25,7 @@ func TestGetReturnsDefaultValues(t *testing.T) {
 			OTExporterOTLPEndpoint:     "localhost:4317",
 			OTServiceName:              "dp-code-list-api",
 			OTBatchTimeout:             5 * time.Second,
+			EnableURLRewriting:         false,
 		})
 	})
 }

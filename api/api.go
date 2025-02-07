@@ -21,18 +21,19 @@ const (
 
 // CodeListAPI holds all endpoints which are used to access the code list resources
 type CodeListAPI struct {
-	router        *mux.Router
-	store         datastore.DataStore
-	writeBody     func(w http.ResponseWriter, bytes []byte) error
-	apiURL        string
-	datasetAPIURL string
-	defaultOffset int
-	defaultLimit  int
-	maxLimit      int
+	router             *mux.Router
+	store              datastore.DataStore
+	writeBody          func(w http.ResponseWriter, bytes []byte) error
+	apiURL             string
+	datasetAPIURL      string
+	defaultOffset      int
+	defaultLimit       int
+	maxLimit           int
+	enableURLRewriting bool
 }
 
 // CreateCodeListAPI returns a constructed code list api
-func CreateCodeListAPI(route *mux.Router, store datastore.DataStore, apiURL, datasetAPIURL string, defaultOffset, defaultLimit, maxLimit int) *CodeListAPI {
+func CreateCodeListAPI(route *mux.Router, store datastore.DataStore, apiURL, datasetAPIURL string, defaultOffset, defaultLimit, maxLimit int, enableURLRewriting bool) *CodeListAPI {
 	api := CodeListAPI{
 		router:        route,
 		store:         store,
@@ -45,9 +46,10 @@ func CreateCodeListAPI(route *mux.Router, store datastore.DataStore, apiURL, dat
 			}
 			return nil
 		},
-		defaultOffset: defaultOffset,
-		defaultLimit:  defaultLimit,
-		maxLimit:      maxLimit,
+		defaultOffset:      defaultOffset,
+		defaultLimit:       defaultLimit,
+		maxLimit:           maxLimit,
+		enableURLRewriting: enableURLRewriting,
 	}
 
 	api.router.HandleFunc("/code-lists", api.getCodeLists).Methods("GET")

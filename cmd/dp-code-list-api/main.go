@@ -89,7 +89,7 @@ func main() {
 	}
 	router.Path("/health").HandlerFunc(hc.Handler)
 
-	api.CreateCodeListAPI(router, datastore, cfg.CodeListAPIURL, cfg.DatasetAPIURL, cfg.DefaultOffset, cfg.DefaultLimit, cfg.DefaultMaxLimit)
+	api.CreateCodeListAPI(router, datastore, cfg.CodeListAPIURL, cfg.DatasetAPIURL, cfg.DefaultOffset, cfg.DefaultLimit, cfg.DefaultMaxLimit, cfg.EnableURLRewriting)
 
 	var httpServer *dphttp.Server
 

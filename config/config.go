@@ -20,6 +20,7 @@ type Configuration struct {
 	OTServiceName              string        `envconfig:"OTEL_SERVICE_NAME"`
 	OTBatchTimeout             time.Duration `envconfig:"OTEL_BATCH_TIMEOUT"`
 	OtelEnabled                bool          `envconfig:"OTEL_ENABLED"`
+	EnableURLRewriting         bool          `envconfig:"ENABLE_URL_REWRITING"`
 }
 
 var cfg *Configuration
@@ -44,6 +45,7 @@ func Get() (*Configuration, error) {
 		OTServiceName:              "dp-code-list-api",
 		OTBatchTimeout:             5 * time.Second,
 		OtelEnabled:                false,
+		EnableURLRewriting:         false,
 	}
 
 	return cfg, envconfig.Process("", cfg)

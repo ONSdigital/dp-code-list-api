@@ -27,6 +27,9 @@ const (
 	defaultLimit                = 20
 	maxLimit                    = 1000
 	enableURLRewriting          = false
+	expectedProto               = "https"
+	expectedHost                = "api.example.com"
+	expectedPathPrefix          = "v1"
 )
 
 // ErrInternal is the error returned by mocks to emulate an internal service error

@@ -197,9 +197,6 @@ func TestGetCodeLists(t *testing.T) {
 			},
 		}
 
-		expectedProto := "https"
-		expectedHost := "api.example.com"
-		expectedPathPrefix := "v1"
 		r.Header.Add("X-Forwarded-Proto", expectedProto)
 		r.Header.Add("X-Forwarded-Host", expectedHost)
 		r.Header.Add("X-Forwarded-Path-Prefix", expectedPathPrefix)
@@ -320,5 +317,61 @@ func TestGetCodeList(t *testing.T) {
 		api := CreateCodeListAPI(mux.NewRouter(), mockDatastore, codeListURL, datasetURL, defaultOffset, defaultLimit, maxLimit, enableURLRewriting)
 		api.router.ServeHTTP(w, r)
 		So(w.Code, ShouldEqual, http.StatusInternalServerError)
+	})
+
+	Convey("Given a request to get a code list", t, func() {
+		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/%s", codeListURL, codeListID1), http.NoBody)
+		w := httptest.NewRecorder()
+
+		mockDatastore := &storetest.DataStoreMock{
+			GetCodeListFunc: func(ctx context.Context, id string) (*dbmodels.CodeList, error) {
+				return &dbCodeList1, nil
+			},
+		}
+
+		r.Header.Add("X-Forwarded-Proto", expectedProto)
+		r.Header.Add("X-Forwarded-Host", expectedHost)
+		r.Header.Add("X-Forwarded-Path-Prefix", expectedPathPrefix)
+
+		Convey("When URL rewriting is disabled", func() {
+			enableURLRewritingIsFalse := false
+			api := CreateCodeListAPI(mux.NewRouter(), mockDatastore, codeListURL, datasetURL, defaultOffset, defaultLimit, maxLimit, enableURLRewritingIsFalse)
+			api.router.ServeHTTP(w, r)
+
+			Convey("Then the response should have a status code of 200", func() {
+				So(w.Code, ShouldEqual, http.StatusOK)
+			})
+
+			Convey("And the response body should contain the original links", func() {
+				var codeList models.CodeList
+				err := json.Unmarshal(w.Body.Bytes(), &codeList)
+				So(err, ShouldBeNil)
+
+				So(codeList.Links.Self.Href, ShouldEqual, fmt.Sprintf("%s/code-lists/%s", codeListURL, codeListID1))
+				So(codeList.Links.Editions.Href, ShouldEqual, fmt.Sprintf("%s/code-lists/%s/editions", codeListURL, codeListID1))
+			})
+		})
+
+		Convey("When URL rewriting is enabled", func() {
+			enableURLRewritingIsTrue := true
+			api := CreateCodeListAPI(mux.NewRouter(), mockDatastore, codeListURL, datasetURL, defaultOffset, defaultLimit, maxLimit, enableURLRewritingIsTrue)
+			api.router.ServeHTTP(w, r)
+
+			Convey("Then the response should have a status code of 200", func() {
+				So(w.Code, ShouldEqual, http.StatusOK)
+			})
+
+			Convey("And the response body should contain the rewritten links", func() {
+				var codeList models.CodeList
+				err := json.Unmarshal(w.Body.Bytes(), &codeList)
+				So(err, ShouldBeNil)
+
+				expectedSelfLink := fmt.Sprintf("%s://%s/%s/code-lists/%s", expectedProto, expectedHost, expectedPathPrefix, codeListID1)
+				expectedEditionsLink := fmt.Sprintf("%s://%s/%s/code-lists/%s/editions", expectedProto, expectedHost, expectedPathPrefix, codeListID1)
+
+				So(codeList.Links.Self.Href, ShouldEqual, expectedSelfLink)
+				So(codeList.Links.Editions.Href, ShouldEqual, expectedEditionsLink)
+			})
+		})
 	})
 }

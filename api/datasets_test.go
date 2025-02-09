@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -148,6 +149,71 @@ func TestGetCodeDatasets(t *testing.T) {
 		api := CreateCodeListAPI(mux.NewRouter(), mockDatastore, codeListURL, datasetURL, defaultOffset, defaultLimit, maxLimit, enableURLRewriting)
 		api.router.ServeHTTP(w, r)
 		So(w.Code, ShouldEqual, http.StatusInternalServerError)
+	})
+
+	Convey("Given a request to get code datasets", t, func() {
+		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/%s/editions/%s/codes/%s/datasets", codeListURL, codeListID1, editionID1, codeID1), http.NoBody)
+		w := httptest.NewRecorder()
+
+		mockDatastore := &storetest.DataStoreMock{
+			GetCodeDatasetsFunc: func(ctx context.Context, codeListID string, edition string, code string) (*dbmodels.Datasets, error) {
+				return &dbDatasets, nil
+			},
+		}
+
+		r.Header.Add("X-Forwarded-Proto", expectedProto)
+		r.Header.Add("X-Forwarded-Host", expectedHost)
+		r.Header.Add("X-Forwarded-Path-Prefix", expectedPathPrefix)
+
+		Convey("When URL rewriting is disabled", func() {
+			enableURLRewritingIsFalse := false
+			api := CreateCodeListAPI(mux.NewRouter(), mockDatastore, codeListURL, datasetURL, defaultOffset, defaultLimit, maxLimit, enableURLRewritingIsFalse)
+			api.router.ServeHTTP(w, r)
+
+			Convey("Then the response should have a status code of 200", func() {
+				So(w.Code, ShouldEqual, http.StatusOK)
+			})
+
+			Convey("And the response body should contain the original links", func() {
+				var datasets models.Datasets
+				err := json.Unmarshal(w.Body.Bytes(), &datasets)
+				So(err, ShouldBeNil)
+
+				So(datasets.Items[0].Links.Self.Href, ShouldEqual, fmt.Sprintf("%s/datasets/%s", datasetURL, datasetID1))
+				So(datasets.Items[1].Links.Self.Href, ShouldEqual, fmt.Sprintf("%s/datasets/%s", datasetURL, datasetID2))
+
+				So(datasets.Items[0].Editions[0].Links.Self.Href, ShouldEqual, fmt.Sprintf("%s/datasets/%s/editions/%s", datasetURL, datasetID1, datasetEditionID))
+				So(datasets.Items[0].Editions[0].Links.DatasetDimension.Href, ShouldEqual, fmt.Sprintf("%s/datasets/%s/editions/%s/versions/%d/dimensions/%s", datasetURL, datasetID1, datasetEditionID, latestDatasetEditionVersion, codeListID1))
+				So(datasets.Items[0].Editions[0].Links.LatestVersion.Href, ShouldEqual, fmt.Sprintf("%s/datasets/%s/editions/%s/versions/%d", datasetURL, datasetID1, datasetEditionID, latestDatasetEditionVersion))
+
+				So(datasets.Items[1].Editions, ShouldBeEmpty)
+			})
+		})
+
+		Convey("When URL rewriting is enabled", func() {
+			enableURLRewritingIsTrue := true
+			api := CreateCodeListAPI(mux.NewRouter(), mockDatastore, codeListURL, datasetURL, defaultOffset, defaultLimit, maxLimit, enableURLRewritingIsTrue)
+			api.router.ServeHTTP(w, r)
+
+			Convey("Then the response should have a status code of 200", func() {
+				So(w.Code, ShouldEqual, http.StatusOK)
+			})
+
+			Convey("And the response body should contain the rewritten links", func() {
+				var datasets models.Datasets
+				err := json.Unmarshal(w.Body.Bytes(), &datasets)
+				So(err, ShouldBeNil)
+
+				So(datasets.Items[0].Links.Self.Href, ShouldEqual, fmt.Sprintf("%s://%s/%s/datasets/%s", expectedProto, expectedHost, expectedPathPrefix, datasetID1))
+				So(datasets.Items[1].Links.Self.Href, ShouldEqual, fmt.Sprintf("%s://%s/%s/datasets/%s", expectedProto, expectedHost, expectedPathPrefix, datasetID2))
+
+				So(datasets.Items[0].Editions[0].Links.Self.Href, ShouldEqual, fmt.Sprintf("%s://%s/%s/datasets/%s/editions/%s", expectedProto, expectedHost, expectedPathPrefix, datasetID1, datasetEditionID))
+				So(datasets.Items[0].Editions[0].Links.DatasetDimension.Href, ShouldEqual, fmt.Sprintf("%s://%s/%s/datasets/%s/editions/%s/versions/%d/dimensions/%s", expectedProto, expectedHost, expectedPathPrefix, datasetID1, datasetEditionID, latestDatasetEditionVersion, codeListID1))
+				So(datasets.Items[0].Editions[0].Links.LatestVersion.Href, ShouldEqual, fmt.Sprintf("%s://%s/%s/datasets/%s/editions/%s/versions/%d", expectedProto, expectedHost, expectedPathPrefix, datasetID1, datasetEditionID, latestDatasetEditionVersion))
+
+				So(datasets.Items[1].Editions, ShouldBeEmpty)
+			})
+		})
 	})
 }
 

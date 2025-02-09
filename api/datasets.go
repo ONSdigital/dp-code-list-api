@@ -3,10 +3,12 @@ package api
 import (
 	"encoding/json"
 	"net/http"
+	"net/url"
 	"sort"
 
 	"github.com/ONSdigital/dp-code-list-api/models"
 	dbmodels "github.com/ONSdigital/dp-graph/v2/models"
+	"github.com/ONSdigital/dp-net/v2/links"
 	"github.com/ONSdigital/log.go/v2/log"
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
@@ -75,6 +77,52 @@ func (c *CodeListAPI) getCodeDatasets(w http.ResponseWriter, r *http.Request) {
 		log.Error(ctx, "error updating links", errors.WithMessage(err, "getCodeDatasets endpoint: links could not be created"))
 		http.Error(w, internalServerErr, http.StatusInternalServerError)
 		return
+	}
+
+	datasetAPIURL, err := url.Parse(c.datasetAPIURL)
+	if err != nil {
+		log.Error(ctx, "could not parse dataset api url", err, logData)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	datasetLinksBuilder := links.FromHeadersOrDefault(&r.Header, datasetAPIURL)
+
+	if c.enableURLRewriting {
+		for i, item := range datasets.Items {
+			item.Links.Self.Href, err = datasetLinksBuilder.BuildLink(item.Links.Self.Href)
+			if err != nil {
+				log.Error(ctx, "could not build self link", err, logData)
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			for j, e := range item.Editions {
+				e.Links.Self.Href, err = datasetLinksBuilder.BuildLink(e.Links.Self.Href)
+				if err != nil {
+					log.Error(ctx, "could not build self link", err, logData)
+					http.Error(w, err.Error(), http.StatusInternalServerError)
+					return
+				}
+
+				e.Links.DatasetDimension.Href, err = datasetLinksBuilder.BuildLink(e.Links.DatasetDimension.Href)
+				if err != nil {
+					log.Error(ctx, "could not build dataset dimension link", err, logData)
+					http.Error(w, err.Error(), http.StatusInternalServerError)
+					return
+				}
+
+				e.Links.LatestVersion.Href, err = datasetLinksBuilder.BuildLink(e.Links.LatestVersion.Href)
+				if err != nil {
+					log.Error(ctx, "could not build latest version link", err, logData)
+					http.Error(w, err.Error(), http.StatusInternalServerError)
+					return
+				}
+				item.Editions[j] = e
+			}
+
+			datasets.Items[i] = item
+		}
 	}
 
 	count := len(slicedResults)

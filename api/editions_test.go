@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -151,6 +152,71 @@ func TestGetEditions(t *testing.T) {
 		api := CreateCodeListAPI(mux.NewRouter(), mockDatastore, codeListURL, datasetURL, defaultOffset, defaultLimit, maxLimit, enableURLRewriting)
 		api.router.ServeHTTP(w, r)
 		So(w.Code, ShouldEqual, http.StatusInternalServerError)
+	})
+
+	Convey("Given a request to get editions", t, func() {
+		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/%s/editions", codeListURL, codeListID1), http.NoBody)
+		w := httptest.NewRecorder()
+
+		mockDatastore := &storetest.DataStoreMock{
+			GetEditionsFunc: func(ctx context.Context, f string) (*dbmodels.Editions, error) {
+				return &dbEditions, nil
+			},
+		}
+
+		r.Header.Add("X-Forwarded-Proto", expectedProto)
+		r.Header.Add("X-Forwarded-Host", expectedHost)
+		r.Header.Add("X-Forwarded-Path-Prefix", expectedPathPrefix)
+
+		Convey("When URL rewriting is disabled", func() {
+			enableURLRewritingIsFalse := false
+			api := CreateCodeListAPI(mux.NewRouter(), mockDatastore, codeListURL, datasetURL, defaultOffset, defaultLimit, maxLimit, enableURLRewritingIsFalse)
+			api.router.ServeHTTP(w, r)
+
+			Convey("Then the response should have a status code of 200", func() {
+				So(w.Code, ShouldEqual, http.StatusOK)
+			})
+
+			Convey("And the response body should contain the original links", func() {
+				var editions models.Editions
+				err := json.Unmarshal(w.Body.Bytes(), &editions)
+				So(err, ShouldBeNil)
+
+				So(editions.Items[0].Links.Self.Href, ShouldEqual, fmt.Sprintf("%s/code-lists/%s/editions/%s", codeListURL, codeListID1, editionID1))
+				So(editions.Items[1].Links.Self.Href, ShouldEqual, fmt.Sprintf("%s/code-lists/%s/editions/%s", codeListURL, codeListID1, editionID2))
+
+				So(editions.Items[0].Links.Editions.Href, ShouldEqual, fmt.Sprintf("%s/code-lists/%s/editions", codeListURL, codeListID1))
+				So(editions.Items[1].Links.Editions.Href, ShouldEqual, fmt.Sprintf("%s/code-lists/%s/editions", codeListURL, codeListID1))
+
+				So(editions.Items[0].Links.Codes.Href, ShouldEqual, fmt.Sprintf("%s/code-lists/%s/editions/%s/codes", codeListURL, codeListID1, editionID1))
+				So(editions.Items[1].Links.Codes.Href, ShouldEqual, fmt.Sprintf("%s/code-lists/%s/editions/%s/codes", codeListURL, codeListID1, editionID2))
+			})
+		})
+
+		Convey("When URL rewriting is enabled", func() {
+			enableURLRewritingIsTrue := true
+			api := CreateCodeListAPI(mux.NewRouter(), mockDatastore, codeListURL, datasetURL, defaultOffset, defaultLimit, maxLimit, enableURLRewritingIsTrue)
+			api.router.ServeHTTP(w, r)
+
+			Convey("Then the response should have a status code of 200", func() {
+				So(w.Code, ShouldEqual, http.StatusOK)
+			})
+
+			Convey("And the response body should contain the rewritten links", func() {
+				var editions models.Editions
+				err := json.Unmarshal(w.Body.Bytes(), &editions)
+				So(err, ShouldBeNil)
+
+				So(editions.Items[0].Links.Self.Href, ShouldEqual, fmt.Sprintf("%s://%s/%s/code-lists/%s/editions/%s", expectedProto, expectedHost, expectedPathPrefix, codeListID1, editionID1))
+				So(editions.Items[1].Links.Self.Href, ShouldEqual, fmt.Sprintf("%s://%s/%s/code-lists/%s/editions/%s", expectedProto, expectedHost, expectedPathPrefix, codeListID1, editionID2))
+
+				So(editions.Items[0].Links.Editions.Href, ShouldEqual, fmt.Sprintf("%s://%s/%s/code-lists/%s/editions", expectedProto, expectedHost, expectedPathPrefix, codeListID1))
+				So(editions.Items[1].Links.Editions.Href, ShouldEqual, fmt.Sprintf("%s://%s/%s/code-lists/%s/editions", expectedProto, expectedHost, expectedPathPrefix, codeListID1))
+
+				So(editions.Items[0].Links.Codes.Href, ShouldEqual, fmt.Sprintf("%s://%s/%s/code-lists/%s/editions/%s/codes", expectedProto, expectedHost, expectedPathPrefix, codeListID1, editionID1))
+				So(editions.Items[1].Links.Codes.Href, ShouldEqual, fmt.Sprintf("%s://%s/%s/code-lists/%s/editions/%s/codes", expectedProto, expectedHost, expectedPathPrefix, codeListID1, editionID2))
+			})
+		})
 	})
 }
 

@@ -373,4 +373,59 @@ func TestGetEdition(t *testing.T) {
 		api.router.ServeHTTP(w, r)
 		So(w.Code, ShouldEqual, http.StatusInternalServerError)
 	})
+
+	Convey("Given a request to get edition", t, func() {
+		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/%s/editions/%s", codeListURL, codeListID1, editionID1), http.NoBody)
+		w := httptest.NewRecorder()
+
+		mockDatastore := &storetest.DataStoreMock{
+			GetEditionFunc: func(ctx context.Context, f, e string) (*dbmodels.Edition, error) {
+				return &dbEdition1, nil
+			},
+		}
+
+		r.Header.Add("X-Forwarded-Proto", expectedProto)
+		r.Header.Add("X-Forwarded-Host", expectedHost)
+		r.Header.Add("X-Forwarded-Path-Prefix", expectedPathPrefix)
+
+		Convey("When URL rewriting is disabled", func() {
+			enableURLRewritingIsFalse := false
+			api := CreateCodeListAPI(mux.NewRouter(), mockDatastore, codeListURL, datasetURL, defaultOffset, defaultLimit, maxLimit, enableURLRewritingIsFalse)
+			api.router.ServeHTTP(w, r)
+
+			Convey("Then the response should have a status code of 200", func() {
+				So(w.Code, ShouldEqual, http.StatusOK)
+			})
+
+			Convey("And the response body should contain the original links", func() {
+				var edition models.Edition
+				err := json.Unmarshal(w.Body.Bytes(), &edition)
+				So(err, ShouldBeNil)
+
+				So(edition.Links.Self.Href, ShouldEqual, fmt.Sprintf("%s/code-lists/%s/editions/%s", codeListURL, codeListID1, editionID1))
+				So(edition.Links.Editions.Href, ShouldEqual, fmt.Sprintf("%s/code-lists/%s/editions", codeListURL, codeListID1))
+				So(edition.Links.Codes.Href, ShouldEqual, fmt.Sprintf("%s/code-lists/%s/editions/%s/codes", codeListURL, codeListID1, editionID1))
+			})
+		})
+
+		Convey("When URL rewriting is enabled", func() {
+			enableURLRewritingIsTrue := true
+			api := CreateCodeListAPI(mux.NewRouter(), mockDatastore, codeListURL, datasetURL, defaultOffset, defaultLimit, maxLimit, enableURLRewritingIsTrue)
+			api.router.ServeHTTP(w, r)
+
+			Convey("Then the response should have a status code of 200", func() {
+				So(w.Code, ShouldEqual, http.StatusOK)
+			})
+
+			Convey("And the response body should contain the rewritten links", func() {
+				var edition models.Edition
+				err := json.Unmarshal(w.Body.Bytes(), &edition)
+				So(err, ShouldBeNil)
+
+				So(edition.Links.Self.Href, ShouldEqual, fmt.Sprintf("%s://%s/%s/code-lists/%s/editions/%s", expectedProto, expectedHost, expectedPathPrefix, codeListID1, editionID1))
+				So(edition.Links.Editions.Href, ShouldEqual, fmt.Sprintf("%s://%s/%s/code-lists/%s/editions", expectedProto, expectedHost, expectedPathPrefix, codeListID1))
+				So(edition.Links.Codes.Href, ShouldEqual, fmt.Sprintf("%s://%s/%s/code-lists/%s/editions/%s/codes", expectedProto, expectedHost, expectedPathPrefix, codeListID1, editionID1))
+			})
+		})
+	})
 }

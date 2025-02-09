@@ -154,6 +154,38 @@ func (c *CodeListAPI) getEdition(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	codeListAPIURL, err := url.Parse(c.apiURL)
+	if err != nil {
+		log.Error(ctx, "could not parse code list api url", err, data)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	codeListLinksBuilder := links.FromHeadersOrDefault(&r.Header, codeListAPIURL)
+
+	if c.enableURLRewriting {
+		editionModel.Links.Self.Href, err = codeListLinksBuilder.BuildLink(editionModel.Links.Self.Href)
+		if err != nil {
+			log.Error(ctx, "could not build self link", err, data)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		editionModel.Links.Codes.Href, err = codeListLinksBuilder.BuildLink(editionModel.Links.Codes.Href)
+		if err != nil {
+			log.Error(ctx, "could not build codes link", err, data)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		editionModel.Links.Editions.Href, err = codeListLinksBuilder.BuildLink(editionModel.Links.Editions.Href)
+		if err != nil {
+			log.Error(ctx, "could not build editions link", err, data)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
+
 	b, err := json.Marshal(editionModel)
 	if err != nil {
 		handleError(ctx, "failed to marshal editions", data, err, w)

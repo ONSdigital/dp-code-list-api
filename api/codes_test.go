@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -307,6 +308,76 @@ func TestGetCodes_Success(t *testing.T) {
 					So(mockDatastore.CountCodesCalls()[0].CodeListID, ShouldEqual, codeListID1)
 					So(mockDatastore.CountCodesCalls()[0].Edition, ShouldEqual, editionID1)
 				})
+			})
+		})
+	})
+
+	Convey("Given a request to get codes", t, func() {
+		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/%s/editions/%s/codes", codeListURL, codeListID1, editionID1), http.NoBody)
+		w := httptest.NewRecorder()
+
+		mockDatastore := &storetest.DataStoreMock{
+			CountCodesFunc: func(ctx context.Context, codeListID string, edition string) (int64, error) {
+				return 2, nil
+			},
+			GetCodesFunc: func(ctx context.Context, codeListID string, editionID string) (*dbmodels.CodeResults, error) {
+				return &dbCodeResults, nil
+			},
+		}
+
+		r.Header.Add("X-Forwarded-Proto", expectedProto)
+		r.Header.Add("X-Forwarded-Host", expectedHost)
+		r.Header.Add("X-Forwarded-Path-Prefix", expectedPathPrefix)
+
+		Convey("When URL rewriting is disabled", func() {
+			enableURLRewritingIsFalse := false
+			api := CreateCodeListAPI(mux.NewRouter(), mockDatastore, codeListURL, datasetURL, defaultOffset, defaultLimit, maxLimit, enableURLRewritingIsFalse)
+			api.router.ServeHTTP(w, r)
+
+			Convey("Then the response should have a status code of 200", func() {
+				So(w.Code, ShouldEqual, http.StatusOK)
+			})
+
+			Convey("And the response body should contain the original links", func() {
+				var model models.CodeResults
+				err := json.Unmarshal(w.Body.Bytes(), &model)
+				So(err, ShouldBeNil)
+				So(model.Count, ShouldEqual, 2)
+
+				So(model.Items[0].Links.Self.Href, ShouldEqual, fmt.Sprintf("%s/code-lists/%s/editions/%s/codes/%s", codeListURL, codeListID1, editionID1, codeID1))
+				So(model.Items[1].Links.Self.Href, ShouldEqual, fmt.Sprintf("%s/code-lists/%s/editions/%s/codes/%s", codeListURL, codeListID1, editionID1, codeID2))
+
+				So(model.Items[0].Links.Datasets.Href, ShouldEqual, fmt.Sprintf("%s/code-lists/%s/editions/%s/codes/%s/datasets", codeListURL, codeListID1, editionID1, codeID1))
+				So(model.Items[1].Links.Datasets.Href, ShouldEqual, fmt.Sprintf("%s/code-lists/%s/editions/%s/codes/%s/datasets", codeListURL, codeListID1, editionID1, codeID2))
+
+				So(model.Items[0].Links.CodeList.Href, ShouldEqual, fmt.Sprintf("%s/code-lists/%s", codeListURL, codeListID1))
+				So(model.Items[1].Links.CodeList.Href, ShouldEqual, fmt.Sprintf("%s/code-lists/%s", codeListURL, codeListID1))
+			})
+		})
+
+		Convey("When URL rewriting is enabled", func() {
+			enableURLRewritingIsTrue := true
+			api := CreateCodeListAPI(mux.NewRouter(), mockDatastore, codeListURL, datasetURL, defaultOffset, defaultLimit, maxLimit, enableURLRewritingIsTrue)
+			api.router.ServeHTTP(w, r)
+
+			Convey("Then the response should have a status code of 200", func() {
+				So(w.Code, ShouldEqual, http.StatusOK)
+			})
+
+			Convey("And the response body should contain the rewritten links", func() {
+				var model models.CodeResults
+				err := json.Unmarshal(w.Body.Bytes(), &model)
+				So(err, ShouldBeNil)
+				So(model.Count, ShouldEqual, 2)
+
+				So(model.Items[0].Links.Self.Href, ShouldEqual, fmt.Sprintf("%s://%s/%s/code-lists/%s/editions/%s/codes/%s", expectedProto, expectedHost, expectedPathPrefix, codeListID1, editionID1, codeID1))
+				So(model.Items[1].Links.Self.Href, ShouldEqual, fmt.Sprintf("%s://%s/%s/code-lists/%s/editions/%s/codes/%s", expectedProto, expectedHost, expectedPathPrefix, codeListID1, editionID1, codeID2))
+
+				So(model.Items[0].Links.Datasets.Href, ShouldEqual, fmt.Sprintf("%s://%s/%s/code-lists/%s/editions/%s/codes/%s/datasets", expectedProto, expectedHost, expectedPathPrefix, codeListID1, editionID1, codeID1))
+				So(model.Items[1].Links.Datasets.Href, ShouldEqual, fmt.Sprintf("%s://%s/%s/code-lists/%s/editions/%s/codes/%s/datasets", expectedProto, expectedHost, expectedPathPrefix, codeListID1, editionID1, codeID2))
+
+				So(model.Items[0].Links.CodeList.Href, ShouldEqual, fmt.Sprintf("%s://%s/%s/code-lists/%s", expectedProto, expectedHost, expectedPathPrefix, codeListID1))
+				So(model.Items[1].Links.CodeList.Href, ShouldEqual, fmt.Sprintf("%s://%s/%s/code-lists/%s", expectedProto, expectedHost, expectedPathPrefix, codeListID1))
 			})
 		})
 	})

@@ -160,6 +160,38 @@ func (c *CodeListAPI) getCode(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	codeListAPIURL, err := url.Parse(c.apiURL)
+	if err != nil {
+		log.Error(ctx, "could not parse code list api url", err, data)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	codeListLinksBuilder := links.FromHeadersOrDefault(&r.Header, codeListAPIURL)
+
+	if c.enableURLRewriting {
+		apiCode.Links.Self.Href, err = codeListLinksBuilder.BuildLink(apiCode.Links.Self.Href)
+		if err != nil {
+			log.Error(ctx, "could not build self link", err, data)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		apiCode.Links.CodeList.Href, err = codeListLinksBuilder.BuildLink(apiCode.Links.CodeList.Href)
+		if err != nil {
+			log.Error(ctx, "could not build code list link", err, data)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		apiCode.Links.Datasets.Href, err = codeListLinksBuilder.BuildLink(apiCode.Links.Datasets.Href)
+		if err != nil {
+			log.Error(ctx, "could not build datasets link", err, data)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
+
 	b, err := json.Marshal(apiCode)
 	if err != nil {
 		handleError(ctx, "failed to marshal code", data, err, w)

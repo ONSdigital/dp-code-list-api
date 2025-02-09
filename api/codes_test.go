@@ -381,6 +381,61 @@ func TestGetCodes_Success(t *testing.T) {
 			})
 		})
 	})
+
+	Convey("Given a request to get code", t, func() {
+		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/%s/editions/%s/codes/%s", codeListURL, codeListID1, editionID1, codeID1), http.NoBody)
+		w := httptest.NewRecorder()
+
+		mockDatastore := &storetest.DataStoreMock{
+			GetCodeFunc: func(ctx context.Context, codeListID string, editionID string, codeID string) (*dbmodels.Code, error) {
+				return &dbCode1, nil
+			},
+		}
+
+		r.Header.Add("X-Forwarded-Proto", expectedProto)
+		r.Header.Add("X-Forwarded-Host", expectedHost)
+		r.Header.Add("X-Forwarded-Path-Prefix", expectedPathPrefix)
+
+		Convey("When URL rewriting is disabled", func() {
+			enableURLRewritingIsFalse := false
+			api := CreateCodeListAPI(mux.NewRouter(), mockDatastore, codeListURL, datasetURL, defaultOffset, defaultLimit, maxLimit, enableURLRewritingIsFalse)
+			api.router.ServeHTTP(w, r)
+
+			Convey("Then the response should have a status code of 200", func() {
+				So(w.Code, ShouldEqual, http.StatusOK)
+			})
+
+			Convey("And the response body should contain the original links", func() {
+				var model models.Code
+				err := json.Unmarshal(w.Body.Bytes(), &model)
+				So(err, ShouldBeNil)
+
+				So(model.Links.Self.Href, ShouldEqual, fmt.Sprintf("%s/code-lists/%s/editions/%s/codes/%s", codeListURL, codeListID1, editionID1, codeID1))
+				So(model.Links.Datasets.Href, ShouldEqual, fmt.Sprintf("%s/code-lists/%s/editions/%s/codes/%s/datasets", codeListURL, codeListID1, editionID1, codeID1))
+				So(model.Links.CodeList.Href, ShouldEqual, fmt.Sprintf("%s/code-lists/%s", codeListURL, codeListID1))
+			})
+		})
+
+		Convey("When URL rewriting is enabled", func() {
+			enableURLRewritingIsTrue := true
+			api := CreateCodeListAPI(mux.NewRouter(), mockDatastore, codeListURL, datasetURL, defaultOffset, defaultLimit, maxLimit, enableURLRewritingIsTrue)
+			api.router.ServeHTTP(w, r)
+
+			Convey("Then the response should have a status code of 200", func() {
+				So(w.Code, ShouldEqual, http.StatusOK)
+			})
+
+			Convey("And the response body should contain the rewritten links", func() {
+				var model models.Code
+				err := json.Unmarshal(w.Body.Bytes(), &model)
+				So(err, ShouldBeNil)
+
+				So(model.Links.Self.Href, ShouldEqual, fmt.Sprintf("%s://%s/%s/code-lists/%s/editions/%s/codes/%s", expectedProto, expectedHost, expectedPathPrefix, codeListID1, editionID1, codeID1))
+				So(model.Links.Datasets.Href, ShouldEqual, fmt.Sprintf("%s://%s/%s/code-lists/%s/editions/%s/codes/%s/datasets", expectedProto, expectedHost, expectedPathPrefix, codeListID1, editionID1, codeID1))
+				So(model.Links.CodeList.Href, ShouldEqual, fmt.Sprintf("%s://%s/%s/code-lists/%s", expectedProto, expectedHost, expectedPathPrefix, codeListID1))
+			})
+		})
+	})
 }
 
 func TestGetCodes_Pagination(t *testing.T) {

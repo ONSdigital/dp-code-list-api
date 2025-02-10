@@ -102,7 +102,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	api.CreateCodeListAPI(router, datastore, cfg.CodeListAPIURL, cfg.CodeListAPIURL, cfg.DefaultOffset, cfg.DefaultLimit, cfg.DefaultMaxLimit, cfg.EnableURLRewriting, parsedCodeListAPIURL, parsedDatasetAPIURL)
+	api.CreateCodeListAPI(router, datastore, cfg.CodeListAPIURL, cfg.DatasetAPIURL, cfg.DefaultOffset, cfg.DefaultLimit, cfg.DefaultMaxLimit, cfg.EnableURLRewriting, parsedCodeListAPIURL, parsedDatasetAPIURL)
 
 	var httpServer *dphttp.Server
 

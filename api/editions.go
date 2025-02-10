@@ -3,7 +3,6 @@ package api
 import (
 	"encoding/json"
 	"net/http"
-	"net/url"
 	"sort"
 
 	"github.com/ONSdigital/dp-code-list-api/models"
@@ -71,14 +70,7 @@ func (c *CodeListAPI) getEditions(w http.ResponseWriter, r *http.Request) {
 
 	editions := models.NewEditions(slicedResults)
 
-	codeListAPIURL, err := url.Parse(c.apiURL)
-	if err != nil {
-		log.Error(ctx, "could not parse code list api url", err, logData)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	codeListLinksBuilder := links.FromHeadersOrDefault(&r.Header, codeListAPIURL)
+	codeListLinksBuilder := links.FromHeadersOrDefault(&r.Header, c.parsedAPIURL)
 
 	for i, item := range editions.Items {
 		if err := item.UpdateLinks(id, c.apiURL); err != nil {
@@ -90,21 +82,21 @@ func (c *CodeListAPI) getEditions(w http.ResponseWriter, r *http.Request) {
 		if c.enableURLRewriting {
 			item.Links.Self.Href, err = codeListLinksBuilder.BuildLink(item.Links.Self.Href)
 			if err != nil {
-				log.Error(ctx, "could not build self link", err, logData)
+				log.Error(ctx, "could not build self link", err, log.Data{"link": item.Links.Self.Href})
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
 
 			item.Links.Codes.Href, err = codeListLinksBuilder.BuildLink(item.Links.Codes.Href)
 			if err != nil {
-				log.Error(ctx, "could not build codes link", err, logData)
+				log.Error(ctx, "could not build codes link", err, log.Data{"link": item.Links.Codes.Href})
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
 
 			item.Links.Editions.Href, err = codeListLinksBuilder.BuildLink(item.Links.Editions.Href)
 			if err != nil {
-				log.Error(ctx, "could not build editions link", err, logData)
+				log.Error(ctx, "could not build editions link", err, log.Data{"link": item.Links.Editions.Href})
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
@@ -154,33 +146,26 @@ func (c *CodeListAPI) getEdition(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	codeListAPIURL, err := url.Parse(c.apiURL)
-	if err != nil {
-		log.Error(ctx, "could not parse code list api url", err, data)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	codeListLinksBuilder := links.FromHeadersOrDefault(&r.Header, codeListAPIURL)
+	codeListLinksBuilder := links.FromHeadersOrDefault(&r.Header, c.parsedAPIURL)
 
 	if c.enableURLRewriting {
 		editionModel.Links.Self.Href, err = codeListLinksBuilder.BuildLink(editionModel.Links.Self.Href)
 		if err != nil {
-			log.Error(ctx, "could not build self link", err, data)
+			log.Error(ctx, "could not build self link", err, log.Data{"link": editionModel.Links.Self.Href})
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 		editionModel.Links.Codes.Href, err = codeListLinksBuilder.BuildLink(editionModel.Links.Codes.Href)
 		if err != nil {
-			log.Error(ctx, "could not build codes link", err, data)
+			log.Error(ctx, "could not build codes link", err, log.Data{"link": editionModel.Links.Codes.Href})
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 		editionModel.Links.Editions.Href, err = codeListLinksBuilder.BuildLink(editionModel.Links.Editions.Href)
 		if err != nil {
-			log.Error(ctx, "could not build editions link", err, data)
+			log.Error(ctx, "could not build editions link", err, log.Data{"link": editionModel.Links.Editions.Href})
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}

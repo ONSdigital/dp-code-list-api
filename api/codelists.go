@@ -3,7 +3,6 @@ package api
 import (
 	"encoding/json"
 	"net/http"
-	"net/url"
 	"sort"
 
 	"github.com/ONSdigital/dp-code-list-api/models"
@@ -70,14 +69,7 @@ func (c *CodeListAPI) getCodeLists(w http.ResponseWriter, r *http.Request) {
 
 	codeLists := models.NewCodeListResults(slicedResults)
 
-	codeListAPIURL, err := url.Parse(c.apiURL)
-	if err != nil {
-		log.Error(ctx, "could not parse code list api url", err, logData)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	codeListLinksBuilder := links.FromHeadersOrDefault(&r.Header, codeListAPIURL)
+	codeListLinksBuilder := links.FromHeadersOrDefault(&r.Header, c.parsedAPIURL)
 
 	for i, item := range codeLists.Items {
 		if err := item.UpdateLinks(c.apiURL); err != nil {
@@ -89,14 +81,14 @@ func (c *CodeListAPI) getCodeLists(w http.ResponseWriter, r *http.Request) {
 		if c.enableURLRewriting {
 			item.Links.Self.Href, err = codeListLinksBuilder.BuildLink(item.Links.Self.Href)
 			if err != nil {
-				log.Error(ctx, "could not build self link", err, logData)
+				log.Error(ctx, "could not build self link", err, log.Data{"link": item.Links.Self.Href})
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
 
 			item.Links.Editions.Href, err = codeListLinksBuilder.BuildLink(item.Links.Editions.Href)
 			if err != nil {
-				log.Error(ctx, "could not build editions link", err, logData)
+				log.Error(ctx, "could not build editions link", err, log.Data{"link": item.Links.Editions.Href})
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
@@ -143,26 +135,19 @@ func (c *CodeListAPI) getCodeList(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	codeListAPIURL, err := url.Parse(c.apiURL)
-	if err != nil {
-		log.Error(ctx, "could not parse code list api url", err, data)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	codeListLinksBuilder := links.FromHeadersOrDefault(&r.Header, codeListAPIURL)
+	codeListLinksBuilder := links.FromHeadersOrDefault(&r.Header, c.parsedAPIURL)
 
 	if c.enableURLRewriting {
 		codeList.Links.Self.Href, err = codeListLinksBuilder.BuildLink(codeList.Links.Self.Href)
 		if err != nil {
-			log.Error(ctx, "could not build self link", err, data)
+			log.Error(ctx, "could not build self link", err, log.Data{"link": codeList.Links.Self.Href})
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 		codeList.Links.Editions.Href, err = codeListLinksBuilder.BuildLink(codeList.Links.Editions.Href)
 		if err != nil {
-			log.Error(ctx, "could not build editions link", err, data)
+			log.Error(ctx, "could not build editions link", err, log.Data{"link": codeList.Links.Editions.Href})
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}

@@ -2,6 +2,7 @@ package api
 
 import (
 	"net/http"
+	"net/url"
 	"strconv"
 
 	"context"
@@ -21,24 +22,28 @@ const (
 
 // CodeListAPI holds all endpoints which are used to access the code list resources
 type CodeListAPI struct {
-	router             *mux.Router
-	store              datastore.DataStore
-	writeBody          func(w http.ResponseWriter, bytes []byte) error
-	apiURL             string
-	datasetAPIURL      string
-	defaultOffset      int
-	defaultLimit       int
-	maxLimit           int
-	enableURLRewriting bool
+	router              *mux.Router
+	store               datastore.DataStore
+	writeBody           func(w http.ResponseWriter, bytes []byte) error
+	apiURL              string
+	parsedAPIURL        *url.URL
+	datasetAPIURL       string
+	parsedDatasetAPIURL *url.URL
+	defaultOffset       int
+	defaultLimit        int
+	maxLimit            int
+	enableURLRewriting  bool
 }
 
 // CreateCodeListAPI returns a constructed code list api
-func CreateCodeListAPI(route *mux.Router, store datastore.DataStore, apiURL, datasetAPIURL string, defaultOffset, defaultLimit, maxLimit int, enableURLRewriting bool) *CodeListAPI {
+func CreateCodeListAPI(route *mux.Router, store datastore.DataStore, apiURL, datasetAPIURL string, defaultOffset, defaultLimit, maxLimit int, enableURLRewriting bool, parsedAPIURL, parsedDatasetAPIURL *url.URL) *CodeListAPI {
 	api := CodeListAPI{
-		router:        route,
-		store:         store,
-		apiURL:        apiURL,
-		datasetAPIURL: datasetAPIURL,
+		router:              route,
+		store:               store,
+		apiURL:              apiURL,
+		parsedAPIURL:        parsedAPIURL,
+		datasetAPIURL:       datasetAPIURL,
+		parsedDatasetAPIURL: parsedDatasetAPIURL,
 		writeBody: func(w http.ResponseWriter, bytes []byte) error {
 			w.Header().Set(contentTypeHeader, contentTypeJSON)
 			if _, err := w.Write(bytes); err != nil {

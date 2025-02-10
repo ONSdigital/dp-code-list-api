@@ -3,7 +3,6 @@ package api
 import (
 	"encoding/json"
 	"net/http"
-	"net/url"
 
 	"github.com/ONSdigital/dp-code-list-api/models"
 	dbmodels "github.com/ONSdigital/dp-graph/v2/models"
@@ -76,14 +75,7 @@ func (c *CodeListAPI) getCodes(w http.ResponseWriter, r *http.Request) {
 
 	codes := models.NewCodeResults(slicedResults)
 
-	codeListAPIURL, err := url.Parse(c.apiURL)
-	if err != nil {
-		log.Error(ctx, "could not parse code list api url", err, logData)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	codeListLinksBuilder := links.FromHeadersOrDefault(&r.Header, codeListAPIURL)
+	codeListLinksBuilder := links.FromHeadersOrDefault(&r.Header, c.parsedAPIURL)
 
 	for i, item := range codes.Items {
 		if err := item.UpdateLinks(c.apiURL, id, edition); err != nil {
@@ -95,21 +87,21 @@ func (c *CodeListAPI) getCodes(w http.ResponseWriter, r *http.Request) {
 		if c.enableURLRewriting {
 			item.Links.Self.Href, err = codeListLinksBuilder.BuildLink(item.Links.Self.Href)
 			if err != nil {
-				log.Error(ctx, "could not build self link", err, logData)
+				log.Error(ctx, "could not build self link", err, log.Data{"link": item.Links.Self.Href})
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
 
 			item.Links.CodeList.Href, err = codeListLinksBuilder.BuildLink(item.Links.CodeList.Href)
 			if err != nil {
-				log.Error(ctx, "could not build code list link", err, logData)
+				log.Error(ctx, "could not build code list link", err, log.Data{"link": item.Links.CodeList.Href})
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
 
 			item.Links.Datasets.Href, err = codeListLinksBuilder.BuildLink(item.Links.Datasets.Href)
 			if err != nil {
-				log.Error(ctx, "could not build datasets link", err, logData)
+				log.Error(ctx, "could not build datasets link", err, log.Data{"link": item.Links.Datasets.Href})
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
@@ -160,33 +152,26 @@ func (c *CodeListAPI) getCode(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	codeListAPIURL, err := url.Parse(c.apiURL)
-	if err != nil {
-		log.Error(ctx, "could not parse code list api url", err, data)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	codeListLinksBuilder := links.FromHeadersOrDefault(&r.Header, codeListAPIURL)
+	codeListLinksBuilder := links.FromHeadersOrDefault(&r.Header, c.parsedAPIURL)
 
 	if c.enableURLRewriting {
 		apiCode.Links.Self.Href, err = codeListLinksBuilder.BuildLink(apiCode.Links.Self.Href)
 		if err != nil {
-			log.Error(ctx, "could not build self link", err, data)
+			log.Error(ctx, "could not build self link", err, log.Data{"link": apiCode.Links.Self.Href})
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 		apiCode.Links.CodeList.Href, err = codeListLinksBuilder.BuildLink(apiCode.Links.CodeList.Href)
 		if err != nil {
-			log.Error(ctx, "could not build code list link", err, data)
+			log.Error(ctx, "could not build code list link", err, log.Data{"link": apiCode.Links.CodeList.Href})
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 		apiCode.Links.Datasets.Href, err = codeListLinksBuilder.BuildLink(apiCode.Links.Datasets.Href)
 		if err != nil {
-			log.Error(ctx, "could not build datasets link", err, data)
+			log.Error(ctx, "could not build datasets link", err, log.Data{"link": apiCode.Links.Datasets.Href})
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}

@@ -3,7 +3,6 @@ package api
 import (
 	"encoding/json"
 	"net/http"
-	"net/url"
 	"sort"
 
 	"github.com/ONSdigital/dp-code-list-api/models"
@@ -79,20 +78,13 @@ func (c *CodeListAPI) getCodeDatasets(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	datasetAPIURL, err := url.Parse(c.datasetAPIURL)
-	if err != nil {
-		log.Error(ctx, "could not parse dataset api url", err, logData)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	datasetLinksBuilder := links.FromHeadersOrDefault(&r.Header, datasetAPIURL)
+	datasetLinksBuilder := links.FromHeadersOrDefault(&r.Header, c.parsedDatasetAPIURL)
 
 	if c.enableURLRewriting {
 		for i, item := range datasets.Items {
 			item.Links.Self.Href, err = datasetLinksBuilder.BuildLink(item.Links.Self.Href)
 			if err != nil {
-				log.Error(ctx, "could not build self link", err, logData)
+				log.Error(ctx, "could not build self link", err, log.Data{"link": item.Links.Self.Href})
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
@@ -100,21 +92,21 @@ func (c *CodeListAPI) getCodeDatasets(w http.ResponseWriter, r *http.Request) {
 			for j, e := range item.Editions {
 				e.Links.Self.Href, err = datasetLinksBuilder.BuildLink(e.Links.Self.Href)
 				if err != nil {
-					log.Error(ctx, "could not build self link", err, logData)
+					log.Error(ctx, "could not build self link", err, log.Data{"link": e.Links.Self.Href})
 					http.Error(w, err.Error(), http.StatusInternalServerError)
 					return
 				}
 
 				e.Links.DatasetDimension.Href, err = datasetLinksBuilder.BuildLink(e.Links.DatasetDimension.Href)
 				if err != nil {
-					log.Error(ctx, "could not build dataset dimension link", err, logData)
+					log.Error(ctx, "could not build dataset dimension link", err, log.Data{"link": e.Links.DatasetDimension.Href})
 					http.Error(w, err.Error(), http.StatusInternalServerError)
 					return
 				}
 
 				e.Links.LatestVersion.Href, err = datasetLinksBuilder.BuildLink(e.Links.LatestVersion.Href)
 				if err != nil {
-					log.Error(ctx, "could not build latest version link", err, logData)
+					log.Error(ctx, "could not build latest version link", err, log.Data{"link": e.Links.LatestVersion.Href})
 					http.Error(w, err.Error(), http.StatusInternalServerError)
 					return
 				}

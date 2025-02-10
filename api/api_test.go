@@ -4,9 +4,15 @@ import (
 	"bytes"
 	"encoding/json"
 	"io"
+	"net/url"
 
 	"github.com/pkg/errors"
 	. "github.com/smartystreets/goconvey/convey"
+)
+
+var (
+	parsedCodeListAPIURL = &url.URL{Scheme: "http", Host: "codelist-url"}
+	parsedDatasetAPIURL  = &url.URL{Scheme: "http", Host: "dataset-url"}
 )
 
 // Constants used by tests

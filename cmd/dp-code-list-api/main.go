@@ -92,13 +92,13 @@ func main() {
 
 	parsedCodeListAPIURL, err := url.Parse(cfg.CodeListAPIURL)
 	if err != nil {
-		log.Error(ctx, "could not parse code list api url", err, log.Data{"url": cfg.CodeListAPIURL})
+		log.Fatal(ctx, "could not parse code list api url", err, log.Data{"url": cfg.CodeListAPIURL})
 		os.Exit(1)
 	}
 
 	parsedDatasetAPIURL, err := url.Parse(cfg.DatasetAPIURL)
 	if err != nil {
-		log.Error(ctx, "could not parse dataset api url", err, log.Data{"url": cfg.DatasetAPIURL})
+		log.Fatal(ctx, "could not parse dataset api url", err, log.Data{"url": cfg.DatasetAPIURL})
 		os.Exit(1)
 	}
 

@@ -112,7 +112,7 @@ func TestGetCodeDatasets(t *testing.T) {
 			},
 		}
 
-		api := CreateCodeListAPI(mux.NewRouter(), mockDatastore, codeListURL, datasetURL, defaultOffset, defaultLimit, maxLimit, enableURLRewriting, parsedCodeListAPIURL, parsedDatasetAPIURL)
+		api := CreateCodeListAPI(mux.NewRouter(), mockDatastore, codeListAPIURL, datasetAPIURL, defaultOffset, defaultLimit, maxLimit, enableURLRewriting)
 		api.router.ServeHTTP(w, r)
 		So(w.Code, ShouldEqual, http.StatusOK)
 
@@ -129,7 +129,7 @@ func TestGetCodeDatasets(t *testing.T) {
 			},
 		}
 
-		api := CreateCodeListAPI(mux.NewRouter(), mockDatastore, codeListURL, datasetURL, defaultOffset, defaultLimit, maxLimit, enableURLRewriting, parsedCodeListAPIURL, parsedDatasetAPIURL)
+		api := CreateCodeListAPI(mux.NewRouter(), mockDatastore, codeListAPIURL, datasetAPIURL, defaultOffset, defaultLimit, maxLimit, enableURLRewriting)
 		api.router.ServeHTTP(w, r)
 		So(w.Code, ShouldEqual, http.StatusInternalServerError)
 	})
@@ -146,7 +146,7 @@ func TestGetCodeDatasets(t *testing.T) {
 			},
 		}
 
-		api := CreateCodeListAPI(mux.NewRouter(), mockDatastore, codeListURL, datasetURL, defaultOffset, defaultLimit, maxLimit, enableURLRewriting, parsedCodeListAPIURL, parsedDatasetAPIURL)
+		api := CreateCodeListAPI(mux.NewRouter(), mockDatastore, codeListAPIURL, datasetAPIURL, defaultOffset, defaultLimit, maxLimit, enableURLRewriting)
 		api.router.ServeHTTP(w, r)
 		So(w.Code, ShouldEqual, http.StatusInternalServerError)
 	})
@@ -167,7 +167,7 @@ func TestGetCodeDatasets(t *testing.T) {
 
 		Convey("When URL rewriting is disabled", func() {
 			enableURLRewritingIsFalse := false
-			api := CreateCodeListAPI(mux.NewRouter(), mockDatastore, codeListURL, datasetURL, defaultOffset, defaultLimit, maxLimit, enableURLRewritingIsFalse, parsedCodeListAPIURL, parsedDatasetAPIURL)
+			api := CreateCodeListAPI(mux.NewRouter(), mockDatastore, codeListAPIURL, datasetAPIURL, defaultOffset, defaultLimit, maxLimit, enableURLRewritingIsFalse)
 			api.router.ServeHTTP(w, r)
 
 			Convey("Then the response should have a status code of 200", func() {
@@ -192,7 +192,7 @@ func TestGetCodeDatasets(t *testing.T) {
 
 		Convey("When URL rewriting is enabled", func() {
 			enableURLRewritingIsTrue := true
-			api := CreateCodeListAPI(mux.NewRouter(), mockDatastore, codeListURL, datasetURL, defaultOffset, defaultLimit, maxLimit, enableURLRewritingIsTrue, parsedCodeListAPIURL, parsedDatasetAPIURL)
+			api := CreateCodeListAPI(mux.NewRouter(), mockDatastore, codeListAPIURL, datasetAPIURL, defaultOffset, defaultLimit, maxLimit, enableURLRewritingIsTrue)
 			api.router.ServeHTTP(w, r)
 
 			Convey("Then the response should have a status code of 200", func() {
@@ -230,7 +230,7 @@ func TestGetCodeDatasets_Pagination(t *testing.T) {
 			},
 		}
 
-		api := CreateCodeListAPI(mux.NewRouter(), mockDatastore, codeListURL, datasetURL, defaultOffset, defaultLimit, maxLimit, enableURLRewriting, parsedCodeListAPIURL, parsedDatasetAPIURL)
+		api := CreateCodeListAPI(mux.NewRouter(), mockDatastore, codeListAPIURL, datasetAPIURL, defaultOffset, defaultLimit, maxLimit, enableURLRewriting)
 		api.router.ServeHTTP(w, r)
 		So(w.Code, ShouldEqual, http.StatusOK)
 
@@ -247,7 +247,7 @@ func TestGetCodeDatasets_Pagination(t *testing.T) {
 			},
 		}
 
-		api := CreateCodeListAPI(mux.NewRouter(), mockDatastore, codeListURL, datasetURL, defaultOffset, defaultLimit, maxLimit, enableURLRewriting, parsedCodeListAPIURL, parsedDatasetAPIURL)
+		api := CreateCodeListAPI(mux.NewRouter(), mockDatastore, codeListAPIURL, datasetAPIURL, defaultOffset, defaultLimit, maxLimit, enableURLRewriting)
 		api.router.ServeHTTP(w, r)
 		So(w.Code, ShouldEqual, http.StatusOK)
 
@@ -264,7 +264,7 @@ func TestGetCodeDatasets_Pagination(t *testing.T) {
 			},
 		}
 
-		api := CreateCodeListAPI(mux.NewRouter(), mockDatastore, codeListURL, datasetURL, defaultOffset, defaultLimit, maxLimit, enableURLRewriting, parsedCodeListAPIURL, parsedDatasetAPIURL)
+		api := CreateCodeListAPI(mux.NewRouter(), mockDatastore, codeListAPIURL, datasetAPIURL, defaultOffset, defaultLimit, maxLimit, enableURLRewriting)
 		api.router.ServeHTTP(w, r)
 		So(w.Code, ShouldEqual, http.StatusOK)
 
@@ -275,7 +275,7 @@ func TestGetCodeDatasets_Pagination(t *testing.T) {
 		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/%s/editions/%s/codes/%s/datasets?offset=-1", codeListURL, codeListID1, editionID1, codeID1), http.NoBody)
 		w := httptest.NewRecorder()
 
-		api := CreateCodeListAPI(mux.NewRouter(), &storetest.DataStoreMock{}, codeListURL, datasetURL, defaultOffset, defaultLimit, maxLimit, enableURLRewriting, parsedCodeListAPIURL, parsedDatasetAPIURL)
+		api := CreateCodeListAPI(mux.NewRouter(), &storetest.DataStoreMock{}, codeListAPIURL, datasetAPIURL, defaultOffset, defaultLimit, maxLimit, enableURLRewriting)
 		api.router.ServeHTTP(w, r)
 		So(w.Code, ShouldEqual, http.StatusBadRequest)
 	})
@@ -284,7 +284,7 @@ func TestGetCodeDatasets_Pagination(t *testing.T) {
 		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/%s/editions/%s/codes/%s/datasets?limit=-1", codeListURL, codeListID1, editionID1, codeID1), http.NoBody)
 		w := httptest.NewRecorder()
 
-		api := CreateCodeListAPI(mux.NewRouter(), &storetest.DataStoreMock{}, codeListURL, datasetURL, defaultOffset, defaultLimit, maxLimit, enableURLRewriting, parsedCodeListAPIURL, parsedDatasetAPIURL)
+		api := CreateCodeListAPI(mux.NewRouter(), &storetest.DataStoreMock{}, codeListAPIURL, datasetAPIURL, defaultOffset, defaultLimit, maxLimit, enableURLRewriting)
 		api.router.ServeHTTP(w, r)
 		So(w.Code, ShouldEqual, http.StatusBadRequest)
 	})
@@ -293,7 +293,7 @@ func TestGetCodeDatasets_Pagination(t *testing.T) {
 		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/%s/editions/%s/codes/%s/datasets?limit=1001", codeListURL, codeListID1, editionID1, codeID1), http.NoBody)
 		w := httptest.NewRecorder()
 
-		api := CreateCodeListAPI(mux.NewRouter(), &storetest.DataStoreMock{}, codeListURL, datasetURL, defaultOffset, defaultLimit, maxLimit, enableURLRewriting, parsedCodeListAPIURL, parsedDatasetAPIURL)
+		api := CreateCodeListAPI(mux.NewRouter(), &storetest.DataStoreMock{}, codeListAPIURL, datasetAPIURL, defaultOffset, defaultLimit, maxLimit, enableURLRewriting)
 		api.router.ServeHTTP(w, r)
 		So(w.Code, ShouldEqual, http.StatusBadRequest)
 	})
@@ -302,7 +302,7 @@ func TestGetCodeDatasets_Pagination(t *testing.T) {
 		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/%s/editions/%s/codes/%s/datasets?offset=x&limit=y", codeListURL, codeListID1, editionID1, codeID1), http.NoBody)
 		w := httptest.NewRecorder()
 
-		api := CreateCodeListAPI(mux.NewRouter(), &storetest.DataStoreMock{}, codeListURL, datasetURL, defaultOffset, defaultLimit, maxLimit, enableURLRewriting, parsedCodeListAPIURL, parsedDatasetAPIURL)
+		api := CreateCodeListAPI(mux.NewRouter(), &storetest.DataStoreMock{}, codeListAPIURL, datasetAPIURL, defaultOffset, defaultLimit, maxLimit, enableURLRewriting)
 		api.router.ServeHTTP(w, r)
 		So(w.Code, ShouldEqual, http.StatusBadRequest)
 	})

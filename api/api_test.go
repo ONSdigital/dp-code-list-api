@@ -11,14 +11,14 @@ import (
 )
 
 var (
-	parsedCodeListAPIURL = &url.URL{Scheme: "http", Host: "codelist-url"}
-	parsedDatasetAPIURL  = &url.URL{Scheme: "http", Host: "dataset-url"}
+	codeListAPIURL = &url.URL{Scheme: "http", Host: "localhost:22400"}
+	datasetAPIURL  = &url.URL{Scheme: "http", Host: "localhost:22000"}
 )
 
 // Constants used by tests
 const (
-	codeListURL                 = "http://codelist-url"
-	datasetURL                  = "http://dataset-url"
+	codeListURL                 = "http://localhost:22400"
+	datasetURL                  = "http://localhost:22000"
 	codeListID1                 = "testCodeList1"
 	codeListID2                 = "testCodeList2"
 	codeID1                     = "testCode1"

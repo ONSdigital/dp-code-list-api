@@ -90,19 +90,19 @@ func main() {
 	}
 	router.Path("/health").HandlerFunc(hc.Handler)
 
-	parsedCodeListAPIURL, err := url.Parse(cfg.CodeListAPIURL)
+	codeListAPIURL, err := url.Parse(cfg.CodeListAPIURL)
 	if err != nil {
 		log.Fatal(ctx, "could not parse code list api url", err, log.Data{"url": cfg.CodeListAPIURL})
 		os.Exit(1)
 	}
 
-	parsedDatasetAPIURL, err := url.Parse(cfg.DatasetAPIURL)
+	datasetAPIURL, err := url.Parse(cfg.DatasetAPIURL)
 	if err != nil {
 		log.Fatal(ctx, "could not parse dataset api url", err, log.Data{"url": cfg.DatasetAPIURL})
 		os.Exit(1)
 	}
 
-	api.CreateCodeListAPI(router, datastore, cfg.CodeListAPIURL, cfg.DatasetAPIURL, cfg.DefaultOffset, cfg.DefaultLimit, cfg.DefaultMaxLimit, cfg.EnableURLRewriting, parsedCodeListAPIURL, parsedDatasetAPIURL)
+	api.CreateCodeListAPI(router, datastore, codeListAPIURL, datasetAPIURL, cfg.DefaultOffset, cfg.DefaultLimit, cfg.DefaultMaxLimit, cfg.EnableURLRewriting)
 
 	var httpServer *dphttp.Server
 

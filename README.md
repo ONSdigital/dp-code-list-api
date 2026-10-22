@@ -56,6 +56,6 @@ The endpoint `/health` checks the connection to the database and returns one of:
 :warning: to connect to a remote Neptune environment on MacOSX using Go 1.18 or higher you must set `NEPTUNE_TLS_SKIP_VERIFY` to true. See our [Neptune guide](https://github.com/ONSdigital/dp/blob/main/guides/NEPTUNE.md) for more details.
 ### License
 
-Copyright © 2016-2021, Office for National Statistics (https://www.ons.gov.uk)
+Copyright © 2016-2026, Office for National Statistics (https://www.ons.gov.uk)
 
 Released under MIT license, see [LICENSE](LICENSE.md) for details.

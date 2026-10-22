@@ -72,7 +72,7 @@ func (c *CodeListAPI) getCodeLists(w http.ResponseWriter, r *http.Request) {
 	codeListLinksBuilder := links.FromHeadersOrDefault(&r.Header, c.apiURL)
 
 	for i, item := range codeLists.Items {
-		if err := item.UpdateLinks(c.apiURL.String()); err != nil {
+		if err = item.UpdateLinks(c.apiURL.String()); err != nil {
 			log.Error(ctx, "error updating links", errors.WithMessage(err, "getCodeLists endpoint: links could not be created"))
 			http.Error(w, internalServerErr, http.StatusInternalServerError)
 			return
@@ -129,7 +129,7 @@ func (c *CodeListAPI) getCodeList(w http.ResponseWriter, r *http.Request) {
 
 	codeList := models.NewCodeList(dbCodeList)
 
-	if err := codeList.UpdateLinks(c.apiURL.String()); err != nil {
+	if err = codeList.UpdateLinks(c.apiURL.String()); err != nil {
 		log.Error(ctx, "error updating links", errors.WithMessage(err, "getCodeList endpoint: links could not be created"))
 		http.Error(w, internalServerErr, http.StatusInternalServerError)
 		return

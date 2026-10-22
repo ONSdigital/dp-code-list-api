@@ -72,7 +72,7 @@ func (c *CodeListAPI) getCodeDatasets(w http.ResponseWriter, r *http.Request) {
 
 	datasets := models.NewDatasets(slicedResults)
 
-	if err := datasets.UpdateLinks(c.datasetAPIURL.String(), codeListID); err != nil {
+	if err = datasets.UpdateLinks(c.datasetAPIURL.String(), codeListID); err != nil {
 		log.Error(ctx, "error updating links", errors.WithMessage(err, "getCodeDatasets endpoint: links could not be created"))
 		http.Error(w, internalServerErr, http.StatusInternalServerError)
 		return

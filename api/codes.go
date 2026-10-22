@@ -78,7 +78,7 @@ func (c *CodeListAPI) getCodes(w http.ResponseWriter, r *http.Request) {
 	codeListLinksBuilder := links.FromHeadersOrDefault(&r.Header, c.apiURL)
 
 	for i, item := range codes.Items {
-		if err := item.UpdateLinks(c.apiURL.String(), id, edition); err != nil {
+		if err = item.UpdateLinks(c.apiURL.String(), id, edition); err != nil {
 			log.Error(ctx, "error updating links", errors.WithMessage(err, "getCodes endpoint: links could not be created"))
 			http.Error(w, internalServerErr, http.StatusInternalServerError)
 			return
@@ -146,7 +146,7 @@ func (c *CodeListAPI) getCode(w http.ResponseWriter, r *http.Request) {
 	}
 	apiCode := models.NewCode(dbCode)
 
-	if err := apiCode.UpdateLinks(c.apiURL.String(), id, edition); err != nil {
+	if err = apiCode.UpdateLinks(c.apiURL.String(), id, edition); err != nil {
 		log.Error(ctx, "error updating links", errors.WithMessage(err, "getCode endpoint: links could not be created"))
 		http.Error(w, internalServerErr, http.StatusInternalServerError)
 		return

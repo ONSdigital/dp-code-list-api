@@ -63,7 +63,7 @@ func main() {
 	hc := healthcheck.New(versionInfo, cfg.HealthCheckCriticalTimeout, cfg.HealthCheckInterval)
 
 	// Register checkers
-	if err := registerCheckers(ctx, &hc, datastore); err != nil {
+	if err = registerCheckers(ctx, &hc, datastore); err != nil {
 		os.Exit(1)
 	}
 
@@ -120,9 +120,9 @@ func main() {
 	// Start HTTP Server
 	go func() {
 		log.Info(ctx, "code list api starting.....", log.Data{"bind_addr": cfg.BindAddr})
-		if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		if serveErr := httpServer.ListenAndServe(); serveErr != nil && serveErr != http.ErrServerClosed {
 			hc.Stop()
-			log.Error(ctx, "error starting http server", err)
+			log.Error(ctx, "error starting http server", serveErr)
 		}
 	}()
 

@@ -73,7 +73,7 @@ func (c *CodeListAPI) getEditions(w http.ResponseWriter, r *http.Request) {
 	codeListLinksBuilder := links.FromHeadersOrDefault(&r.Header, c.apiURL)
 
 	for i, item := range editions.Items {
-		if err := item.UpdateLinks(id, c.apiURL.String()); err != nil {
+		if err = item.UpdateLinks(id, c.apiURL.String()); err != nil {
 			log.Error(ctx, "error updating links", errors.WithMessage(err, "getEditions endpoint: links could not be created"))
 			http.Error(w, internalServerErr, http.StatusInternalServerError)
 			return
@@ -140,7 +140,7 @@ func (c *CodeListAPI) getEdition(w http.ResponseWriter, r *http.Request) {
 	}
 	editionModel := models.NewEdition(dbEditionModel)
 
-	if err := editionModel.UpdateLinks(id, c.apiURL.String()); err != nil {
+	if err = editionModel.UpdateLinks(id, c.apiURL.String()); err != nil {
 		log.Error(ctx, "error updating links", errors.WithMessage(err, "getEdition endpoint: links could not be created"))
 		http.Error(w, internalServerErr, http.StatusInternalServerError)
 		return

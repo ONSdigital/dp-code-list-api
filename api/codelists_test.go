@@ -84,6 +84,22 @@ func TestGetCodeLists(t *testing.T) {
 		validateBody(w.Body, &models.CodeListResults{}, &expectedCodeListResults)
 	})
 
+	Convey("Get code lists with an invalid type parameter returns a 400", t, func() {
+		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists?type=something", codeListURL), http.NoBody)
+		w := httptest.NewRecorder()
+
+		mockDatastore := &storetest.DataStoreMock{
+			GetCodeListsFunc: func(ctx context.Context, filterBy string) (*dbmodels.CodeListResults, error) {
+				return &dbCodeListResults, nil
+			},
+		}
+
+		api := CreateCodeListAPI(mux.NewRouter(), mockDatastore, codeListAPIURL, datasetAPIURL, defaultOffset, defaultLimit, maxLimit, enableURLRewriting)
+		api.router.ServeHTTP(w, r)
+		So(w.Code, ShouldEqual, http.StatusBadRequest)
+		So(mockDatastore.GetCodeListsCalls(), ShouldHaveLength, 0)
+	})
+
 	Convey("When valid limit and offset query parameters are provided, then return codelist information according to the offset and limit", t, func() {
 		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists?offset=0&limit=1", codeListURL), http.NoBody)
 		w := httptest.NewRecorder()
@@ -272,6 +288,18 @@ func TestGetCodeList(t *testing.T) {
 		So(w.Code, ShouldEqual, http.StatusOK)
 
 		validateBody(w.Body, &models.CodeList{}, &expectedCodeList1)
+	})
+
+	Convey("Get code lists with invalid code-list returns not found", t, func() {
+		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/!@.something()", codeListURL), http.NoBody)
+		w := httptest.NewRecorder()
+
+		mockDatastore := &storetest.DataStoreMock{}
+
+		api := CreateCodeListAPI(mux.NewRouter(), mockDatastore, codeListAPIURL, datasetAPIURL, defaultOffset, defaultLimit, maxLimit, enableURLRewriting)
+		api.router.ServeHTTP(w, r)
+		So(w.Code, ShouldEqual, http.StatusNotFound)
+		So(mockDatastore.GetCodeCalls(), ShouldHaveLength, 0)
 	})
 
 	Convey("Get a code list returns a status of not found", t, func() {

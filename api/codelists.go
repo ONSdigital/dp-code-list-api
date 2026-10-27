@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"sort"
+	"strings"
 
 	"github.com/ONSdigital/dp-code-list-api/models"
 	dbmodels "github.com/ONSdigital/dp-graph/v2/models"
@@ -43,6 +44,13 @@ func (c *CodeListAPI) getCodeLists(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
+	}
+
+	if filterBy != "" && !strings.EqualFold(filterBy, "geography") {
+		errFilterBy := errors.New("invalid query parameter")
+		log.Error(ctx, "invalid query parameter: type", errFilterBy, logData)
+		http.Error(w, errFilterBy.Error(), http.StatusBadRequest)
+		return
 	}
 
 	if limit > c.maxLimit {

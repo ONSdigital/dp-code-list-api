@@ -329,6 +329,18 @@ func TestGetEdition(t *testing.T) {
 		validateBody(w.Body, &models.Edition{}, &expectedEdition1)
 	})
 
+	Convey("Get code list edition returns a status of not found for an invalid edition", t, func() {
+		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/%s/editions/$edition.something()", codeListURL, codeListID1), http.NoBody)
+		w := httptest.NewRecorder()
+
+		mockDatastore := &storetest.DataStoreMock{}
+
+		api := CreateCodeListAPI(mux.NewRouter(), mockDatastore, codeListAPIURL, datasetAPIURL, defaultOffset, defaultLimit, maxLimit, enableURLRewriting)
+		api.router.ServeHTTP(w, r)
+		So(w.Code, ShouldEqual, http.StatusNotFound)
+		So(mockDatastore.GetEditionCalls(), ShouldHaveLength, 0)
+	})
+
 	Convey("Get code list edition returns a status of http not found if code list doesn't exist", t, func() {
 		r := httptest.NewRequest("GET", fmt.Sprintf("%s/code-lists/12345/editions/2016", codeListURL), http.NoBody)
 		w := httptest.NewRecorder()

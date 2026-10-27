@@ -653,3 +653,21 @@ func TestGetCode_InvalidCode(t *testing.T) {
 		})
 	})
 }
+
+func TestGetCode_FailsValidation(t *testing.T) {
+	mockDatastore := &storetest.DataStoreMock{}
+
+	Convey("when getCode is called for an invalid code", t, func() {
+		router := mux.NewRouter()
+		CreateCodeListAPI(router, mockDatastore, codeListAPIURL, datasetAPIURL, defaultOffset, defaultLimit, maxLimit, enableURLRewriting)
+		w := httptest.NewRecorder()
+		r := httptest.NewRequest(http.MethodGet, fmt.Sprintf("%s/code-lists/%s/editions/%s/codes/!@.this.is.a.code()", codeListURL, codeListID1, editionID1), http.NoBody)
+
+		router.ServeHTTP(w, r)
+
+		Convey("then a 404 status is returned, and the datastore is not called", func() {
+			So(w.Code, ShouldEqual, http.StatusNotFound)
+			So(mockDatastore.GetCodeCalls(), ShouldHaveLength, 0)
+		})
+	})
+}

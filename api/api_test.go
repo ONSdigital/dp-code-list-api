@@ -23,6 +23,7 @@ const (
 	codeListID2                 = "testCodeList2"
 	codeID1                     = "testCode1"
 	codeID2                     = "testCode2"
+	codeIDPlus                  = "testCode1+"
 	datasetID1                  = "testDataset1"
 	datasetID2                  = "testDataset2"
 	editionID1                  = "testEdition1"

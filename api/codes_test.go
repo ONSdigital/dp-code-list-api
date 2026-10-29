@@ -32,6 +32,12 @@ var (
 		Label: "test two",
 	}
 
+	dbCodeWithPlus = dbmodels.Code{
+		ID:    "ignored",
+		Code:  codeIDPlus,
+		Label: "test one plus",
+	}
+
 	dbCodeResults = dbmodels.CodeResults{
 		Items: []dbmodels.Code{dbCode1, dbCode2},
 	}
@@ -66,6 +72,25 @@ var (
 			Datasets: &models.Link{
 				ID:   "",
 				Href: fmt.Sprintf("%s/code-lists/%s/editions/%s/codes/%s/datasets", codeListURL, codeListID1, editionID1, codeID2),
+			},
+			CodeList: &models.Link{
+				ID:   "",
+				Href: fmt.Sprintf("%s/code-lists/%s", codeListURL, codeListID1),
+			},
+		},
+	}
+
+	expectedCodePlus = models.Code{
+		ID:    codeIDPlus,
+		Label: "test one plus",
+		Links: &models.CodeLinks{
+			Self: &models.Link{
+				ID:   codeIDPlus,
+				Href: fmt.Sprintf("%s/code-lists/%s/editions/%s/codes/%s", codeListURL, codeListID1, editionID1, codeIDPlus),
+			},
+			Datasets: &models.Link{
+				ID:   "",
+				Href: fmt.Sprintf("%s/code-lists/%s/editions/%s/codes/%s/datasets", codeListURL, codeListID1, editionID1, codeIDPlus),
 			},
 			CodeList: &models.Link{
 				ID:   "",
@@ -562,6 +587,36 @@ func TestGetCode_Success(t *testing.T) {
 				So(mockDatastore.GetCodeCalls()[0].CodeListID, ShouldEqual, codeListID1)
 				So(mockDatastore.GetCodeCalls()[0].EditionID, ShouldEqual, editionID1)
 				So(mockDatastore.GetCodeCalls()[0].CodeID, ShouldEqual, codeID1)
+			})
+		})
+	})
+
+	Convey("Given a valid request with a plus symbol", t, func() {
+		mockDatastore := &storetest.DataStoreMock{
+			GetCodeFunc: func(ctx context.Context, codeListID string, editionID1 string, codeIDPlus string) (*dbmodels.Code, error) {
+				return &dbCodeWithPlus, nil
+			},
+		}
+
+		Convey("when getCodes is called", func() {
+			router := mux.NewRouter()
+
+			CreateCodeListAPI(router, mockDatastore, codeListAPIURL, datasetAPIURL, defaultOffset, defaultLimit, maxLimit, enableURLRewriting)
+
+			w := httptest.NewRecorder()
+			r := httptest.NewRequest(http.MethodGet, fmt.Sprintf("%s/code-lists/%s/editions/%s/codes/%s", codeListURL, codeListID1, editionID1, codeIDPlus), http.NoBody)
+
+			router.ServeHTTP(w, r)
+
+			Convey("then a 200 status is returned with the expected body", func() {
+				So(w.Code, ShouldEqual, http.StatusOK)
+
+				validateBody(w.Body, &models.Code{}, &expectedCodePlus)
+
+				So(mockDatastore.GetCodeCalls(), ShouldHaveLength, 1)
+				So(mockDatastore.GetCodeCalls()[0].CodeListID, ShouldEqual, codeListID1)
+				So(mockDatastore.GetCodeCalls()[0].EditionID, ShouldEqual, editionID1)
+				So(mockDatastore.GetCodeCalls()[0].CodeID, ShouldEqual, codeIDPlus)
 			})
 		})
 	})

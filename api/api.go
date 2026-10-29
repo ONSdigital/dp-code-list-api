@@ -58,8 +58,8 @@ func CreateCodeListAPI(route *mux.Router, store datastore.DataStore, apiURL, dat
 	api.router.HandleFunc("/code-lists/{id:[A-Za-z0-9_-]+}/editions", api.getEditions).Methods("GET")
 	api.router.HandleFunc("/code-lists/{id:[A-Za-z0-9_-]+}/editions/{edition:[A-Za-z0-9_-]+}", api.getEdition).Methods("GET")
 	api.router.HandleFunc("/code-lists/{id:[A-Za-z0-9_-]+}/editions/{edition:[A-Za-z0-9_-]+}/codes", api.getCodes).Methods("GET")
-	api.router.HandleFunc("/code-lists/{id:[A-Za-z0-9_-]+}/editions/{edition:[A-Za-z0-9_-]+}/codes/{code:[A-Za-z0-9_-]+}", api.getCode).Methods("GET")
-	api.router.HandleFunc("/code-lists/{id:[A-Za-z0-9_-]+}/editions/{edition:[A-Za-z0-9_-]+}/codes/{code:[A-Za-z0-9_-]+}/datasets", api.getCodeDatasets).Methods("GET")
+	api.router.HandleFunc("/code-lists/{id:[A-Za-z0-9_-]+}/editions/{edition:[A-Za-z0-9_-]+}/codes/{code:[A-Za-z0-9_+-]+}", api.getCode).Methods("GET")
+	api.router.HandleFunc("/code-lists/{id:[A-Za-z0-9_-]+}/editions/{edition:[A-Za-z0-9_-]+}/codes/{code:[A-Za-z0-9_+-]+}/datasets", api.getCodeDatasets).Methods("GET")
 	return &api
 }
 
